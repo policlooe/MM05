@@ -1,0 +1,288 @@
+{
+  "project": "MM05 Furniture Store - Backend",
+  "description": "Complete backend code for MM05 e-commerce platform with order management, stock reservation, and invoice generation",
+  "stack": ["Node.js", "Express", "TypeScript", "Prisma", "PostgreSQL", "Zod", "JWT", "Stripe", "Sentry"],
+  "version": "2.1.0",
+  "features": [
+    "Order creation with stock reservation (transaction + row-level locking)",
+    "Guest checkout support (no authentication required)",
+    "Unique order number generation (MM05-YYYY-XXXX)",
+    "HTML invoice generation (print-ready)",
+    "WhatsApp notification URL generation",
+    "JWT authentication with refresh tokens",
+    "Admin panel endpoints",
+    "Rate limiting and security middleware",
+    "Error handling with Sentry integration"
+  ],
+  "structure": {
+    "src/controllers": {
+      "order.create.controller.ts": "Order creation with stock reservation",
+      "invoice.controller.ts": "Invoice HTML generation",
+      "order.controller.ts": "Order management (get, update status)",
+      "auth.controller.ts": "Authentication (register, login, refresh, logout)",
+      "product.controller.ts": "Product CRUD operations",
+      "cart.controller.ts": "Cart management",
+      "admin.controller.ts": "Admin operations",
+      "checkout.controller.ts": "Stripe checkout",
+      "payment.controller.ts": "Payment processing",
+      "webhook.controller.ts": "Stripe webhooks"
+    },
+    "src/middleware": {
+      "auth.middleware.ts": "JWT authentication and authorization",
+      "error.middleware.ts": "Global error handler",
+      "rateLimiter.middleware.ts": "Rate limiting"
+    },
+    "src/services": {
+      "auth.service.ts": "Authentication business logic",
+      "token.service.ts": "JWT token generation and verification",
+      "stripe.service.ts": "Stripe payment integration"
+    },
+    "src/routes": {
+      "order.routes.ts": "Order endpoints",
+      "auth.routes.ts": "Authentication endpoints",
+      "product.routes.ts": "Product endpoints",
+      "cart.routes.ts": "Cart endpoints",
+      "admin.routes.ts": "Admin endpoints",
+      "checkout.routes.ts": "Checkout endpoints",
+      "webhook.routes.ts": "Webhook endpoints"
+    },
+    "prisma": {
+      "schema.prisma": "Database schema with Order, OrderItem, Product, User, etc.",
+      "migrations": "Database migrations"
+    }
+  },
+  "keyEndpoints": {
+    "POST /api/orders": {
+      "purpose": "Create order with stock reservation",
+      "authentication": "Optional (supports guest checkout)",
+      "request": {
+        "customerName": "string (min 2, max 100)",
+        "customerPhone": "string (min 10, max 20)",
+        "customerEmail": "string (optional, email)",
+        "deliveryAddress": "string (min 10, max 500)",
+        "customerNote": "string (optional, max 1000)",
+        "items": [
+          {
+            "productId": "uuid",
+            "quantity": "number (1-99)",
+            "price": "number (base price)",
+            "finalPrice": "number (configured price)",
+            "configuration": "object (optional)",
+            "options": "object (optional)"
+          }
+        ],
+        "totalPrice": "number"
+      },
+      "response": {
+        "success": true,
+        "message": "Заказ успешно создан",
+        "data": {
+          "order": "Order object with items",
+          "whatsappUrl": "WhatsApp URL with pre-filled message"
+        }
+      },
+      "errors": {
+        "400": "Validation error",
+        "409": "Insufficient stock",
+        "500": "Server error"
+      },
+      "transaction": "Uses Prisma transaction with row-level locking (FOR UPDATE)",
+      "stockReservation": "Decrements product.stockQuantity atomically"
+    },
+    "GET /api/orders/:id/invoice": {
+      "purpose": "Generate HTML invoice",
+      "authentication": "None (public by order ID)",
+      "response": "HTML document (print-ready)",
+      "features": [
+        "Branded design with company logo",
+        "Order details (number, date, status)",
+        "Customer information",
+        "Product list with prices",
+        "Total calculation",
+        "Print-friendly CSS"
+      ]
+    },
+    "GET /api/orders": {
+      "purpose": "Get user orders",
+      "authentication": "Required (JWT)",
+      "response": "Array of orders with items"
+    },
+    "GET /api/orders/:id": {
+      "purpose": "Get order by ID",
+      "authentication": "Required (JWT)",
+      "response": "Order object with items"
+    },
+    "PATCH /api/orders/:id/status": {
+      "purpose": "Update order status",
+      "authentication": "Required (Admin)",
+      "request": {
+        "status": "OrderStatus enum"
+      },
+      "statuses": ["NEW", "RESERVED", "CONFIRMED", "PROCESSING", "SHIPPED", "DELIVERED", "COMPLETED", "CANCELLED"]
+    }
+  },
+  "database": {
+    "provider": "PostgreSQL",
+    "orm": "Prisma",
+    "models": {
+      "Order": {
+        "fields": [
+          "id (uuid)",
+          "orderNumber (unique, MM05-YYYY-XXXX)",
+          "userId (nullable for guest orders)",
+          "status (OrderStatus enum)",
+          "paymentStatus (PaymentStatus enum)",
+          "subtotal, deliveryCost, discount, total (Decimal)",
+          "customerName, customerPhone, customerEmail, deliveryAddress",
+          "customerNote, adminNote",
+          "isStockReserved (boolean)",
+          "reservedAt, createdAt, updatedAt, paidAt, confirmedAt, shippedAt, deliveredAt, completedAt, cancelledAt"
+        ],
+        "relations": ["user (User)", "items (OrderItem[])"]
+      },
+      "OrderItem": {
+        "fields": [
+          "id (uuid)",
+          "orderId",
+          "productId (nullable)",
+          "productSnapshot (JSON - saves product details)",
+          "quantity, price, total (Decimal)",
+          "options (JSON - assembly, delivery, etc.)"
+        ],
+        "relations": ["order (Order)", "product (Product)"]
+      },
+      "Product": {
+        "fields": [
+          "id, categoryId, name, slug, description",
+          "price, oldPrice, images (JSON), thumbnailUrl",
+          "specifications (JSON)",
+          "stockQuantity (CRITICAL for reservation)",
+          "isActive, isFeatured, badge",
+          "viewsCount, salesCount"
+        ]
+      },
+      "User": {
+        "fields": [
+          "id, email, passwordHash, fullName, phone",
+          "role (USER | ADMIN)",
+          "createdAt, updatedAt, lastLoginAt"
+        ]
+      }
+    },
+    "enums": {
+      "OrderStatus": ["NEW", "RESERVED", "CONFIRMED", "PROCESSING", "SHIPPED", "DELIVERED", "COMPLETED", "CANCELLED"],
+      "PaymentStatus": ["PENDING", "PROCESSING", "SUCCEEDED", "FAILED", "REFUNDED"],
+      "UserRole": ["USER", "ADMIN"]
+    }
+  },
+  "orderCreationFlow": {
+    "step1": "Validate request data with Zod",
+    "step2": "Generate unique order number (MM05-2026-0001)",
+    "step3": "Start Prisma transaction",
+    "step4": "Reserve stock (SELECT FOR UPDATE + check quantity + UPDATE)",
+    "step5": "Create Order record",
+    "step6": "Create OrderItem records",
+    "step7": "Commit transaction",
+    "step8": "Return order + WhatsApp URL",
+    "errorHandling": "Rollback transaction on any error"
+  },
+  "stockReservation": {
+    "method": "Prisma transaction with row-level locking",
+    "locking": "SELECT FOR UPDATE prevents concurrent modifications",
+    "validation": "Check stockQuantity >= requested quantity",
+    "update": "Decrement stockQuantity atomically",
+    "rollback": "Automatic rollback on error",
+    "release": "cancelOrderAndReleaseStock() method for order cancellation"
+  },
+  "invoiceGeneration": {
+    "format": "HTML with inline CSS",
+    "design": "Professional, print-ready",
+    "sections": [
+      "Company header with logo and contact info",
+      "Order number and date",
+      "Customer information",
+      "Product list with quantities and prices",
+      "Total calculation",
+      "Footer with thank you message"
+    ],
+    "styling": "Responsive, mobile-friendly, print-optimized"
+  },
+  "whatsappIntegration": {
+    "method": "wa.me URL with pre-filled message",
+    "phoneNumber": "79288331532 (configurable in order.create.controller.ts line 145)",
+    "messageFormat": "Order number, customer info, address, items, total, date",
+    "encoding": "encodeURIComponent for URL safety"
+  },
+  "authentication": {
+    "method": "JWT with refresh tokens",
+    "accessToken": "Short-lived (15 minutes)",
+    "refreshToken": "Long-lived (7 days), stored in httpOnly cookie",
+    "middleware": "authMiddleware for protected routes",
+    "adminMiddleware": "Checks role === ADMIN"
+  },
+  "security": {
+    "helmet": "Security headers",
+    "cors": "Configured for frontend URL",
+    "rateLimiting": "API rate limiter",
+    "validation": "Zod schemas for all inputs",
+    "errorHandling": "Global error handler with Sentry",
+    "cookies": "httpOnly, secure (production), sameSite: strict"
+  },
+  "environment": {
+    "DATABASE_URL": "PostgreSQL connection string",
+    "JWT_SECRET": "Secret for JWT signing",
+    "JWT_REFRESH_SECRET": "Secret for refresh token signing",
+    "FRONTEND_URL": "Frontend URL for CORS",
+    "PORT": "Server port (default 3000)",
+    "NODE_ENV": "development | production",
+    "STRIPE_SECRET_KEY": "Stripe API key",
+    "STRIPE_WEBHOOK_SECRET": "Stripe webhook secret",
+    "SENTRY_DSN": "Sentry error tracking"
+  },
+  "deployment": {
+    "platform": "Railway",
+    "database": "Supabase PostgreSQL",
+    "buildCommand": "npm run build",
+    "startCommand": "npm start",
+    "nodeVersion": "18.x",
+    "migration": "npx prisma migrate deploy (production)"
+  },
+  "localDevelopment": {
+    "database": "Docker Compose (docker-compose.yml)",
+    "setup": [
+      "cd backend",
+      "docker-compose up -d",
+      "copy .env.local .env",
+      "npx prisma migrate dev",
+      "npx prisma generate",
+      "npm run dev"
+    ]
+  },
+  "migration": {
+    "name": "add_order_reservation_system",
+    "changes": [
+      "Added OrderStatus enum with NEW, RESERVED, CONFIRMED, etc.",
+      "Added isStockReserved, reservedAt, completedAt to Order",
+      "Made userId and customerEmail nullable for guest orders",
+      "Changed deliveryAddress to String",
+      "Added options field to OrderItem"
+    ],
+    "apply": "npx prisma migrate dev --name add_order_reservation_system"
+  },
+  "configuration": {
+    "orderNumberFormat": "MM05-YYYY-XXXX (customizable in order.create.controller.ts)",
+    "whatsappPhone": "79288331532 (change in order.create.controller.ts line 145)",
+    "companyInfo": "Change in invoice.controller.ts HTML template"
+  },
+  "notes": [
+    "Stock reservation uses transaction + row-level locking to prevent overselling",
+    "Guest checkout is supported (userId is nullable)",
+    "Order number is unique and auto-generated",
+    "Invoice is HTML-based (no PDF generation needed)",
+    "WhatsApp integration is simple URL-based (no API required)",
+    "All methods are wrapped in try/catch",
+    "TypeScript types are used everywhere",
+    "Prisma handles database connections and pooling",
+    "Error handling includes validation errors, stock errors, and general errors"
+  ]
+}

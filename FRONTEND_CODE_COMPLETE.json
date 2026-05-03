@@ -1,0 +1,183 @@
+{
+  "project": "MM05 Furniture Store - Frontend",
+  "description": "Complete frontend code for MM05 e-commerce platform with product configuration, cart management, and order system",
+  "stack": ["React", "TypeScript", "Vite", "TailwindCSS", "Framer Motion", "Zustand", "React Router", "Zod", "Axios"],
+  "version": "2.1.0",
+  "features": [
+    "Product configuration system (Amazon-level)",
+    "Shopping cart with localStorage persistence",
+    "Guest checkout with validation",
+    "Order success page with invoice and WhatsApp",
+    "Responsive design (mobile-first)",
+    "Animations and transitions",
+    "Type-safe API client"
+  ],
+  "structure": {
+    "src/pages": {
+      "Checkout.tsx": "Checkout form with validation, cart summary, and order creation",
+      "CheckoutSuccess.tsx": "Success page with order details, invoice print, and WhatsApp button",
+      "ProductPage.tsx": "Product details with configurator integration"
+    },
+    "src/components": {
+      "ProductConfigurator.tsx": "Advanced product configuration with variants and options",
+      "CartSidebar.tsx": "Shopping cart sidebar with configuration display",
+      "Navbar.tsx": "Header with search, profile, and cart icons",
+      "MobileNav.tsx": "Bottom mobile navigation",
+      "Footer.tsx": "Footer with contact information",
+      "ChatLauncher.tsx": "WhatsApp chat launcher"
+    },
+    "src/store": {
+      "cart.tsx": "Cart state management with localStorage persistence"
+    },
+    "src/services": {
+      "order.ts": "Order API client with TypeScript types",
+      "api.ts": "Axios instance with interceptors"
+    },
+    "src/types": {
+      "product-config.ts": "Product configuration types and utilities"
+    },
+    "src/data": {
+      "products.ts": "Product data with configuration examples"
+    }
+  },
+  "keyFiles": {
+    "src/pages/Checkout.tsx": {
+      "purpose": "Checkout form with Zod validation",
+      "features": [
+        "Form validation with error display",
+        "Cart summary sidebar",
+        "Guest checkout support",
+        "Loading states and error handling",
+        "Redirect to success page after order creation"
+      ],
+      "validation": {
+        "customerName": "min 2, max 100 characters",
+        "customerPhone": "min 10, max 20 characters",
+        "customerEmail": "optional, valid email",
+        "deliveryAddress": "min 10, max 500 characters",
+        "customerNote": "optional, max 1000 characters"
+      }
+    },
+    "src/pages/CheckoutSuccess.tsx": {
+      "purpose": "Order confirmation page",
+      "features": [
+        "Order details display",
+        "Print invoice button (opens backend HTML)",
+        "WhatsApp button (opens pre-filled message)",
+        "Return to home button",
+        "Animations and success icon"
+      ]
+    },
+    "src/components/ProductConfigurator.tsx": {
+      "purpose": "Product configuration UI",
+      "features": [
+        "Variant selection (color, size, material)",
+        "Toggle options (assembly, delivery)",
+        "Select options (delivery method)",
+        "Real-time price calculation",
+        "Dependency checking",
+        "Animations and visual feedback"
+      ],
+      "priceCalculation": "calculateConfiguredPrice() from product-config.ts"
+    },
+    "src/components/CartSidebar.tsx": {
+      "purpose": "Shopping cart sidebar",
+      "features": [
+        "Display cart items with configuration",
+        "Quantity controls",
+        "Remove items",
+        "Total price calculation",
+        "Checkout button (navigates to /checkout)",
+        "Empty cart state"
+      ],
+      "important": "Always uses finalPrice, never recalculates from basePrice"
+    },
+    "src/store/cart.tsx": {
+      "purpose": "Cart state management",
+      "features": [
+        "Add items with configuration",
+        "Remove items",
+        "Update quantity",
+        "Clear cart",
+        "localStorage persistence",
+        "Toast notifications"
+      ],
+      "cartItem": {
+        "id": "Product ID",
+        "name": "Product name",
+        "basePrice": "Original price",
+        "finalPrice": "Price with configuration (CRITICAL)",
+        "configuration": "Selected variants and options",
+        "assemblySelected": "Boolean for UI display",
+        "assemblyPrice": "Assembly price for UI display",
+        "qty": "Quantity"
+      }
+    },
+    "src/services/order.ts": {
+      "purpose": "Order API client",
+      "endpoints": {
+        "POST /orders": "Create order",
+        "GET /orders": "Get user orders",
+        "GET /orders/:id": "Get order by ID",
+        "GET /orders/:id/invoice": "Get invoice HTML"
+      },
+      "types": {
+        "CreateOrderRequest": "Order creation payload",
+        "CreateOrderResponse": "Order creation response with whatsappUrl",
+        "Order": "Order details"
+      }
+    },
+    "src/types/product-config.ts": {
+      "purpose": "Product configuration types and utilities",
+      "exports": [
+        "ProductConfiguration",
+        "SelectedConfiguration",
+        "Variant",
+        "ProductOption",
+        "calculateConfiguredPrice()",
+        "checkDependencies()"
+      ],
+      "priceCalculation": "Base price + variant modifiers + option prices"
+    }
+  },
+  "routing": {
+    "/": "Home page",
+    "/catalog": "Product catalog",
+    "/product/:slug": "Product details",
+    "/checkout": "Checkout form",
+    "/checkout/success": "Order success page",
+    "/about": "About page",
+    "/contact": "Contact page"
+  },
+  "environment": {
+    "VITE_API_URL": "Backend API URL (e.g., http://localhost:3000/api or https://api.mm05.ru/api)"
+  },
+  "styling": {
+    "framework": "TailwindCSS",
+    "theme": "Custom design system with CSS variables",
+    "colors": {
+      "accent": "Primary brand color (green)",
+      "surface": "Card background",
+      "border": "Border color",
+      "muted": "Muted text color"
+    },
+    "animations": "Framer Motion for page transitions and micro-interactions"
+  },
+  "deployment": {
+    "platform": "Vercel",
+    "buildCommand": "npm run build",
+    "outputDirectory": "dist",
+    "nodeVersion": "18.x"
+  },
+  "notes": [
+    "Cart uses finalPrice everywhere - never recalculate from basePrice",
+    "Configuration is stored in cart items for order creation",
+    "Guest checkout is supported (no authentication required)",
+    "WhatsApp integration uses wa.me links with pre-filled messages",
+    "Invoice is generated on backend and opened in new tab",
+    "All forms use Zod for validation",
+    "Toast notifications use sonner library",
+    "Mobile-first responsive design",
+    "Animations are subtle and performant"
+  ]
+}

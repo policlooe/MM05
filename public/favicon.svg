@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <rect width="64" height="64" rx="14" fill="#1f4430" />
+  <text x="50%" y="53%" text-anchor="middle" dominant-baseline="middle" font-family="Montserrat, Arial, sans-serif" font-size="26" font-weight="700" fill="#ffffff">MM</text>
+  <text x="50%" y="74%" text-anchor="middle" dominant-baseline="middle" font-family="Montserrat, Arial, sans-serif" font-size="12" font-weight="700" fill="#86b69a">05</text>
+</svg>

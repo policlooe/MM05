@@ -1,0 +1,22 @@
+# Robots.txt для MM05
+
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /api
+Disallow: /payment
+
+# Sitemap
+Sitemap: https://mm05.vercel.app/sitemap.xml
+
+# Yandex
+User-agent: Yandex
+Allow: /
+Disallow: /admin
+Disallow: /api
+
+# Google
+User-agent: Googlebot
+Allow: /
+Disallow: /admin
+Disallow: /api
