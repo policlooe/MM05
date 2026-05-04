@@ -22,7 +22,7 @@ import { cn } from "@/lib/utils";
 export default function ProductPage() {
   const { slug = "" } = useParams();
   const product = getProductBySlug(slug);
-  const { add, open } = useCart();
+  const { add } = useCart();
   const navigate = useNavigate();
   
   // Состояние для выбранного изображения в галерее
@@ -60,10 +60,10 @@ export default function ProductPage() {
     }
   });
 
-  // Все изображения товара (основное + галерея)
+  // Все изображения товара (основное + галерея) - убираем дубликаты
   const allImages = useMemo(() => {
     if (!product) return [];
-    return [product.image, ...(product.gallery || [])];
+    return Array.from(new Set([product.image, ...(product.gallery || [])]));
   }, [product]);
 
   // Обработчик изменения конфигурации (старая система)
@@ -78,7 +78,8 @@ export default function ProductPage() {
   // Обработчик изменения расширенной конфигурации (новая система)
   const handleAdvancedConfigChange = (config: AdvancedSelectedConfiguration, price: number) => {
     setAdvancedConfig(config);
-    setFinalPrice(price);
+    const assemblyPrice = assemblySelected && product?.assemblyPrice ? product.assemblyPrice : 0;
+    setFinalPrice(price + assemblyPrice);
   };
 
   // Обработчик изменения изображения при выборе цвета
@@ -129,12 +130,21 @@ export default function ProductPage() {
   useEffect(() => {
     if (product) {
       setSelectedImage(product.image);
+      // Обновляем состояние сборки при смене товара
+      setAssemblySelected(() => {
+        try {
+          const saved = localStorage.getItem(`mm05_assembly_${product.id}`);
+          return saved === 'true';
+        } catch {
+          return false;
+        }
+      });
     }
   }, [product]);
 
   // Прокрутка вверх при открытии страницы товара
   useEffect(() => {
-    window.scrollTo({ top: 0, behavior: 'instant' });
+    window.scrollTo({ top: 0, behavior: 'auto' });
   }, [slug]);
 
   // Открытие viewer
@@ -178,14 +188,17 @@ export default function ProductPage() {
               className="bg-surface rounded-xl overflow-hidden border border-border aspect-square mb-3 cursor-pointer group relative"
               whileHover={{ scale: 1.02 }}
               transition={{ duration: 0.3 }}
-              onClick={() => openViewer(selectedImage)}
+              onClick={() => openViewer(selectedImage || product.image)}
             >
               <img
-                src={selectedImage}
+                src={selectedImage || product.image}
                 alt={product.name}
                 width={800}
                 height={800}
                 className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                onError={(e) => {
+                  e.currentTarget.src = product.image;
+                }}
               />
               {/* Индикатор увеличения */}
               <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center">
@@ -204,16 +217,17 @@ export default function ProductPage() {
               <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-muted scrollbar-track-transparent">
                 {allImages.map((img, index) => (
                   <motion.button
-                    key={index}
+                    key={`${img}-${index}`}
                     onClick={() => {
                       setCurrentImage(index);
+                      setSelectedImage(img);
                       setViewerOpen(true);
                     }}
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                     className={cn(
                       "shrink-0 bg-surface rounded-lg overflow-hidden border-2 transition-all aspect-square hover:opacity-80 cursor-pointer",
-                      selectedImage === img ? "border-accent opacity-100 ring-2 ring-accent/20" : "border-border opacity-70"
+                      (selectedImage || product.image) === img ? "border-accent opacity-100 ring-2 ring-accent/20" : "border-border opacity-70"
                     )}
                     style={{ width: '80px', height: '80px' }}
                   >
@@ -223,6 +237,9 @@ export default function ProductPage() {
                       width={80}
                       height={80}
                       className="w-full h-full object-cover"
+                      onError={(e) => {
+                        e.currentTarget.src = product.image;
+                      }}
                     />
                   </motion.button>
                 ))}
@@ -319,10 +336,27 @@ export default function ProductPage() {
                 onClick={() => {
                   // Используем расширенную конфигурацию если есть, иначе старую
                   const configToUse = product.advancedConfiguration 
-                    ? advancedConfig
+                    ? {
+                        ...advancedConfig,
+                        options: {
+                          ...advancedConfig.options,
+                          assembly: assemblySelected,
+                        },
+                      }
                     : product.configuration 
-                      ? { ...selectedConfig, options: { ...selectedConfig.options, assembly: assemblySelected } }
-                      : { variants: {}, options: { assembly: assemblySelected } };
+                      ? {
+                          ...selectedConfig,
+                          options: {
+                            ...selectedConfig.options,
+                            assembly: assemblySelected,
+                          },
+                        }
+                      : {
+                          variants: {},
+                          options: {
+                            assembly: assemblySelected,
+                          },
+                        };
                   
                   // Передаем конфигурацию и финальную цену в корзину
                   add(product, configToUse as any, finalPrice);

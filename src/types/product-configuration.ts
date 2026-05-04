@@ -3,38 +3,34 @@
  * Поддерживает варианты с изображениями и дополнительные опции
  */
 
-// Опция варианта (размер, цвет и т.д.)
 export interface VariantOption {
   value: string;
   label: string;
-  priceModifier: number; // Изменение цены (может быть отрицательным)
-  image?: string; // URL изображения для этого варианта (для цветов)
-  default?: boolean; // Вариант по умолчанию
-  disabled?: boolean; // Недоступен для выбора
+  priceModifier: number;
+  image?: string;
+  default?: boolean;
+  disabled?: boolean;
 }
 
-// Группа вариантов (размер, цвет)
 export interface VariantGroup {
   label: string;
   required: boolean;
   options: VariantOption[];
 }
 
-// Опция toggle (вкл/выкл)
 export interface ToggleOption {
   label: string;
-  type: 'toggle';
+  type: "toggle";
   price: number;
   description?: string;
   default?: boolean;
   disabled?: boolean;
-  disabledMessage?: string; // Сообщение почему недоступно
+  disabledMessage?: string;
 }
 
-// Опция select (выбор из списка)
 export interface SelectOption {
   label: string;
-  type: 'select';
+  type: "select";
   required?: boolean;
   options: Array<{
     value: string;
@@ -45,30 +41,26 @@ export interface SelectOption {
   }>;
 }
 
-// Все типы опций
 export type ProductOption = ToggleOption | SelectOption;
 
-// Полная конфигурация товара
 export interface ProductConfiguration {
   variants?: {
-    [key: string]: VariantGroup; // size, color, etc.
+    [key: string]: VariantGroup;
   };
   options?: {
-    [key: string]: ProductOption; // headboard, mattress, delivery, etc.
+    [key: string]: ProductOption;
   };
 }
 
-// Выбранная конфигурация пользователя
 export interface SelectedConfiguration {
   variants: {
-    [key: string]: string; // { size: "160x200", color: "natural" }
+    [key: string]: string;
   };
   options: {
-    [key: string]: string | boolean; // { headboard: "soft-fabric", mattress: true, delivery: "city" }
+    [key: string]: string | boolean;
   };
 }
 
-// Результат расчета цены
 export interface PriceCalculation {
   basePrice: number;
   variantsTotal: number;
@@ -93,59 +85,55 @@ export function calculatePrice(
   configuration: ProductConfiguration,
   selected: SelectedConfiguration
 ): PriceCalculation {
-  // Валидация входных данных
   if (basePrice < 0) {
-    throw new Error('Base price cannot be negative');
+    throw new Error("Base price cannot be negative");
   }
 
   let variantsTotal = 0;
   let optionsTotal = 0;
   const breakdown: Array<{ label: string; value: string; price: number }> = [];
 
-  // Рассчитываем цену вариантов
   if (configuration.variants) {
     Object.entries(configuration.variants).forEach(([key, group]) => {
       const selectedValue = selected.variants[key];
-      if (selectedValue) {
-        const option = group.options.find(opt => opt.value === selectedValue);
-        if (option && option.priceModifier !== 0) {
-          variantsTotal += option.priceModifier;
-          breakdown.push({
-            label: group.label,
-            value: option.label,
-            price: option.priceModifier,
-          });
-        }
-      }
+      if (!selectedValue) return;
+
+      const option = group.options.find((opt) => opt.value === selectedValue);
+      if (!option) return;
+
+      variantsTotal += option.priceModifier;
+      breakdown.push({
+        label: group.label,
+        value: option.label,
+        price: option.priceModifier,
+      });
     });
   }
 
-  // Рассчитываем цену опций
   if (configuration.options) {
     Object.entries(configuration.options).forEach(([key, option]) => {
-      if (option.type === 'toggle') {
-        const isSelected = selected.options[key] === true;
-        if (isSelected && option.price >= 0) {
+      const selectedValue = selected.options[key];
+      if (selectedValue === undefined || selectedValue === null) return;
+
+      if (option.type === "toggle") {
+        if (selectedValue === true) {
           optionsTotal += option.price;
           breakdown.push({
             label: option.label,
-            value: 'Да',
+            value: "Да",
             price: option.price,
           });
         }
-      } else if (option.type === 'select') {
-        const selectedValue = selected.options[key] as string;
-        if (selectedValue) {
-          const selectedOption = option.options.find(opt => opt.value === selectedValue);
-          if (selectedOption && selectedOption.priceModifier !== 0) {
-            optionsTotal += selectedOption.priceModifier;
-            breakdown.push({
-              label: option.label,
-              value: selectedOption.label,
-              price: selectedOption.priceModifier,
-            });
-          }
-        }
+      } else if (option.type === "select") {
+        const selectedOption = option.options.find((opt) => opt.value === selectedValue);
+        if (!selectedOption) return;
+
+        optionsTotal += selectedOption.priceModifier;
+        breakdown.push({
+          label: option.label,
+          value: selectedOption.label,
+          price: selectedOption.priceModifier,
+        });
       }
     });
   }
@@ -156,7 +144,7 @@ export function calculatePrice(
     basePrice,
     variantsTotal,
     optionsTotal,
-    finalPrice: Math.max(0, finalPrice), // Защита от отрицательной цены
+    finalPrice,
     breakdown,
   };
 }

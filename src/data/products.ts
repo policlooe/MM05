@@ -6,8 +6,8 @@ import desk from "@/assets/p-desk.jpg";
 import rocking from "@/assets/p-rocking.jpg";
 import gazebo from "@/assets/p-gazebo.jpg";
 import nightstand from "@/assets/p-nightstand.jpg";
-import { ProductConfiguration as OldProductConfiguration } from "@/types/product-config";
-import { ProductConfiguration } from "@/types/product-configuration";
+import { ProductConfiguration as LegacyProductConfiguration } from "@/types/product-config";
+import { ProductConfiguration as AdvancedProductConfiguration } from "@/types/product-configuration";
 
 export type Category = "Кровати" | "Шкафы" | "Столы" | "Кресла" | "Беседки" | "Тумбы";
 
@@ -26,9 +26,9 @@ export type Product = {
   specs: { label: string; value: string }[];
   leadTime: string;
   inStock: boolean;
-  assemblyPrice?: number; // Цена сборки (опционально, задается админом)
-  configuration?: OldProductConfiguration; // Старая конфигурация (для совместимости)
-  advancedConfiguration?: ProductConfiguration; // Новая расширенная конфигурация с изображениями
+  assemblyPrice?: number;
+  configuration?: LegacyProductConfiguration;
+  advancedConfiguration?: AdvancedProductConfiguration;
 };
 
 export const products: Product[] = [
@@ -37,10 +37,10 @@ export const products: Product[] = [
     slug: "krovat-almak",
     name: "Кровать «Альмак»",
     category: "Кровати",
-    price: 46500, // Базовая цена для размера 160x200
+    price: 46500,
     oldPrice: 56000,
     image: bed1,
-    gallery: [bed1, bed1, bed1, bed1], // Дополнительные фото товара
+    gallery: [bed1, bed1, bed1, bed1],
     badge: "Хит",
     shortDescription: "Двуспальная кровать из массива дуба с лаконичным изголовьем.",
     description:
@@ -54,30 +54,29 @@ export const products: Product[] = [
     ],
     leadTime: "10–14 дней",
     inStock: true,
-    assemblyPrice: 3500, // Цена сборки кровати
-    // НОВАЯ РАСШИРЕННАЯ КОНФИГУРАЦИЯ с изображениями для цветов
+    assemblyPrice: 3500,
     advancedConfiguration: {
       variants: {
         size: {
           label: "Размер спального места",
           required: true,
           options: [
-            { 
-              value: "140x200", 
-              label: "140×200 см (полуторная)", 
+            {
+              value: "140x200",
+              label: "140×200 см (полуторная)",
               priceModifier: -5000,
-              default: false
+              default: false,
             },
-            { 
-              value: "160x200", 
-              label: "160×200 см (двуспальная)", 
+            {
+              value: "160x200",
+              label: "160×200 см (двуспальная)",
               priceModifier: 0,
-              default: true // Базовый размер
+              default: true,
             },
-            { 
-              value: "180x200", 
-              label: "180×200 см (king size)", 
-              priceModifier: 8000 
+            {
+              value: "180x200",
+              label: "180×200 см (king size)",
+              priceModifier: 8000,
             },
           ],
         },
@@ -85,24 +84,24 @@ export const products: Product[] = [
           label: "Цвет покрытия",
           required: true,
           options: [
-            { 
-              value: "natural", 
-              label: "Натуральный дуб", 
+            {
+              value: "natural",
+              label: "Натуральный дуб",
               priceModifier: 0,
-              image: bed1, // Изображение для натурального цвета
-              default: true
+              image: bed1,
+              default: true,
             },
-            { 
-              value: "dark", 
-              label: "Темный орех", 
+            {
+              value: "dark",
+              label: "Темный орех",
               priceModifier: 2000,
-              image: bed1 // ЗАМЕНИТЬ на изображение темного цвета
+              image: bed1,
             },
-            { 
-              value: "white", 
-              label: "Белый", 
+            {
+              value: "white",
+              label: "Белый",
               priceModifier: 3000,
-              image: bed1 // ЗАМЕНИТЬ на изображение белого цвета
+              image: bed1,
             },
           ],
         },
@@ -113,21 +112,21 @@ export const products: Product[] = [
           type: "select",
           required: true,
           options: [
-            { 
-              value: "standard", 
-              label: "Стандартное", 
+            {
+              value: "standard",
+              label: "Стандартное",
               priceModifier: 0,
-              default: true
+              default: true,
             },
-            { 
-              value: "soft-fabric", 
-              label: "Мягкое (ткань)", 
-              priceModifier: 5000 
+            {
+              value: "soft-fabric",
+              label: "Мягкое (ткань)",
+              priceModifier: 5000,
             },
-            { 
-              value: "soft-leather", 
-              label: "Мягкое (кожа)", 
-              priceModifier: 12000 
+            {
+              value: "soft-leather",
+              label: "Мягкое (кожа)",
+              priceModifier: 12000,
             },
           ],
         },
@@ -150,26 +149,26 @@ export const products: Product[] = [
           type: "select",
           required: true,
           options: [
-            { 
-              value: "pickup", 
-              label: "Самовывоз", 
+            {
+              value: "pickup",
+              label: "Самовывоз",
               priceModifier: 0,
-              default: true
+              default: true,
             },
-            { 
-              value: "city", 
-              label: "Доставка по городу", 
-              priceModifier: 2000 
+            {
+              value: "city",
+              label: "Доставка по городу",
+              priceModifier: 2000,
             },
-            { 
-              value: "floor5", 
-              label: "Доставка + подъем до 5 этажа", 
-              priceModifier: 3500 
+            {
+              value: "floor5",
+              label: "Доставка + подъем до 5 этажа",
+              priceModifier: 3500,
             },
-            { 
-              value: "floor5plus", 
-              label: "Доставка + подъем выше 5 этажа", 
-              priceModifier: 5000 
+            {
+              value: "floor5plus",
+              label: "Доставка + подъем выше 5 этажа",
+              priceModifier: 5000,
             },
           ],
         },
@@ -183,7 +182,7 @@ export const products: Product[] = [
     category: "Шкафы",
     price: 62000,
     image: wardrobe,
-    assemblyPrice: 4500, // Цена сборки шкафа
+    assemblyPrice: 4500,
     gallery: [wardrobe, wardrobe, wardrobe],
     shortDescription: "Распашной шкаф с минималистичными фасадами и доводчиками.",
     description:
@@ -219,7 +218,7 @@ export const products: Product[] = [
     ],
     leadTime: "7–10 дней",
     inStock: true,
-    assemblyPrice: 2000, // Цена сборки стола
+    assemblyPrice: 2000,
   },
   {
     id: "p4",
@@ -241,7 +240,7 @@ export const products: Product[] = [
     ],
     leadTime: "5–7 дней",
     inStock: true,
-    assemblyPrice: 1500, // Цена сборки кресла
+    assemblyPrice: 1500,
   },
   {
     id: "p5",
@@ -266,7 +265,7 @@ export const products: Product[] = [
     ],
     leadTime: "21–30 дней",
     inStock: true,
-    assemblyPrice: 15000, // Цена сборки беседки
+    assemblyPrice: 15000,
   },
   {
     id: "p6",
@@ -288,7 +287,7 @@ export const products: Product[] = [
     ],
     leadTime: "7–10 дней",
     inStock: true,
-    assemblyPrice: 1000, // Цена сборки тумбы
+    assemblyPrice: 1000,
   },
   {
     id: "p7",
@@ -310,7 +309,7 @@ export const products: Product[] = [
     ],
     leadTime: "10–14 дней",
     inStock: true,
-    assemblyPrice: 3000, // Цена сборки кровати
+    assemblyPrice: 3000,
   },
   {
     id: "p8",
@@ -331,7 +330,7 @@ export const products: Product[] = [
       { label: "Гарантия", value: "12 месяцев" },
     ],
     leadTime: "5–7 дней",
-    assemblyPrice: 1500, // Цена сборки письменного стола
+    assemblyPrice: 1500,
     inStock: true,
   },
 ];
@@ -348,9 +347,11 @@ export const categories = [
 export const allCategories: Category[] = ["Кровати", "Шкафы", "Столы", "Кресла", "Беседки", "Тумбы"];
 
 export function getProductBySlug(slug: string): Product | undefined {
-  // Защита от инъекций - только буквы, цифры и дефисы
-  if (!/^[a-z0-9-]+$/i.test(slug)) {
+  const normalizedSlug = slug.toLowerCase().trim();
+
+  if (!/^[a-z0-9-]+$/.test(normalizedSlug)) {
     return undefined;
   }
-  return products.find((p) => p.slug === slug);
+
+  return products.find((p) => p.slug === normalizedSlug);
 }
