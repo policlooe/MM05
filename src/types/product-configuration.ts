@@ -83,12 +83,21 @@ export interface PriceCalculation {
 
 /**
  * Рассчитывает финальную цену на основе выбранной конфигурации
+ * @param basePrice - базовая цена товара
+ * @param configuration - конфигурация товара
+ * @param selected - выбранная пользователем конфигурация
+ * @returns объект с детализацией цены
  */
 export function calculatePrice(
   basePrice: number,
   configuration: ProductConfiguration,
   selected: SelectedConfiguration
 ): PriceCalculation {
+  // Валидация входных данных
+  if (basePrice < 0) {
+    throw new Error('Base price cannot be negative');
+  }
+
   let variantsTotal = 0;
   let optionsTotal = 0;
   const breakdown: Array<{ label: string; value: string; price: number }> = [];
@@ -116,7 +125,7 @@ export function calculatePrice(
     Object.entries(configuration.options).forEach(([key, option]) => {
       if (option.type === 'toggle') {
         const isSelected = selected.options[key] === true;
-        if (isSelected) {
+        if (isSelected && option.price >= 0) {
           optionsTotal += option.price;
           breakdown.push({
             label: option.label,
@@ -141,11 +150,13 @@ export function calculatePrice(
     });
   }
 
+  const finalPrice = basePrice + variantsTotal + optionsTotal;
+
   return {
     basePrice,
     variantsTotal,
     optionsTotal,
-    finalPrice: basePrice + variantsTotal + optionsTotal,
+    finalPrice: Math.max(0, finalPrice), // Защита от отрицательной цены
     breakdown,
   };
 }

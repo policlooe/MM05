@@ -12,15 +12,21 @@ export function Navbar() {
   const { count, open } = useCart();
   const { open: openCatalog } = useCatalog();
   const [q, setQ] = useState("");
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<{ fullName?: string; email: string } | null>(null);
   const [scrolled, setScrolled] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
     // Проверяем наличие пользователя в localStorage
-    const userData = localStorage.getItem('user');
-    if (userData) {
-      setUser(JSON.parse(userData));
+    try {
+      const userData = localStorage.getItem('user');
+      if (userData) {
+        const parsed = JSON.parse(userData);
+        setUser(parsed);
+      }
+    } catch (error) {
+      console.error('Failed to parse user data:', error);
+      localStorage.removeItem('user');
     }
 
     // Добавляем эффект при скролле
@@ -40,6 +46,7 @@ export function Navbar() {
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
     const v = q.trim();
+    if (v.length > 100) return; // Дополнительная защита
     navigate(v ? `/catalog?q=${encodeURIComponent(v)}` : "/catalog");
   };
 

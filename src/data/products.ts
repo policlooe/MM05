@@ -347,6 +347,10 @@ export const categories = [
 
 export const allCategories: Category[] = ["Кровати", "Шкафы", "Столы", "Кресла", "Беседки", "Тумбы"];
 
-export function getProductBySlug(slug: string) {
+export function getProductBySlug(slug: string): Product | undefined {
+  // Защита от инъекций - только буквы, цифры и дефисы
+  if (!/^[a-z0-9-]+$/i.test(slug)) {
+    return undefined;
+  }
   return products.find((p) => p.slug === slug);
 }

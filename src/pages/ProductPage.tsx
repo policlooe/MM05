@@ -49,11 +49,15 @@ export default function ProductPage() {
   // Состояние для сборки (отдельно от конфигуратора)
   const [assemblySelected, setAssemblySelected] = useState<boolean>(() => {
     // Загружаем из localStorage при инициализации
-    if (product) {
+    if (!product) return false;
+    
+    try {
       const saved = localStorage.getItem(`mm05_assembly_${product.id}`);
       return saved === 'true';
+    } catch (error) {
+      console.error('Failed to load assembly state:', error);
+      return false;
     }
-    return false;
   });
 
   // Все изображения товара (основное + галерея)
@@ -105,8 +109,12 @@ export default function ProductPage() {
     const newValue = !assemblySelected;
     setAssemblySelected(newValue);
     
-    // Сохраняем в localStorage
-    localStorage.setItem(`mm05_assembly_${product.id}`, String(newValue));
+    // Сохраняем в localStorage с обработкой ошибок
+    try {
+      localStorage.setItem(`mm05_assembly_${product.id}`, String(newValue));
+    } catch (error) {
+      console.error('Failed to save assembly state:', error);
+    }
     
     // Пересчитываем цену
     let basePrice = product.price;
@@ -126,7 +134,7 @@ export default function ProductPage() {
 
   // Прокрутка вверх при открытии страницы товара
   useEffect(() => {
-    window.scrollTo(0, 0);
+    window.scrollTo({ top: 0, behavior: 'instant' });
   }, [slug]);
 
   // Открытие viewer
@@ -154,7 +162,7 @@ export default function ProductPage() {
     );
   }
 
-  const wa = `${CONTACTS.whatsapp}?text=${encodeURIComponent(`Здравствуйте! Интересует "${product.name}" — ${formatPrice(product.price)}.`)}`;
+  const wa = `${CONTACTS.whatsapp}?text=${encodeURIComponent(`Здравствуйте! Интересует "${product.name.replace(/[<>]/g, '')}" — ${formatPrice(product.price)}.`)}`;
 
   return (
     <div className="min-h-screen bg-background">
