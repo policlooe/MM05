@@ -121,8 +121,8 @@ export function ContactUs() {
             </div>
           </div>
 
-          {/* Мессенджеры */}
-          <div className="bg-surface border border-border rounded-xl p-5 shadow-sm flex-1">
+          {/* Мессенджеры — скрыто на мобильных по требованию (раздел "Связь с нами / Выберите удобный мессенджер") */}
+          <div className="hidden md:flex flex-col bg-surface border border-border rounded-xl p-5 shadow-sm flex-1">
             <h3 className="text-lg font-semibold mb-1">Выберите удобный мессенджер</h3>
             <p className="text-xs text-muted-foreground mb-4">
               Ответим в рабочее время, обычно до 10 минут

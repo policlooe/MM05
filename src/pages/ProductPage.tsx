@@ -36,6 +36,16 @@ export default function ProductPage() {
     options: {},
   });
   const [finalPrice, setFinalPrice] = useState(0);
+  
+  // Состояние для сборки (отдельно от конфигуратора)
+  const [assemblySelected, setAssemblySelected] = useState<boolean>(() => {
+    // Загружаем из localStorage при инициализации
+    if (product) {
+      const saved = localStorage.getItem(`mm05_assembly_${product.id}`);
+      return saved === 'true';
+    }
+    return false;
+  });
 
   // Все изображения товара (основное + галерея)
   const allImages = useMemo(() => {
@@ -46,22 +56,46 @@ export default function ProductPage() {
   // Обработчик изменения конфигурации
   const handleConfigChange = (config: SelectedConfiguration, price: number) => {
     setSelectedConfig(config);
-    setFinalPrice(price);
+    
+    // Добавляем цену сборки к базовой цене конфигурации
+    const assemblyPrice = assemblySelected && product?.assemblyPrice ? product.assemblyPrice : 0;
+    setFinalPrice(price + assemblyPrice);
   };
 
   // Инициализация цены при загрузке товара
   useEffect(() => {
     if (product) {
+      let basePrice = product.price;
+      
       if (product.configuration) {
         // Если есть конфигуратор, цена будет установлена через handleConfigChange
-        const initialPrice = calculateConfiguredPrice(product.price, product.configuration, selectedConfig);
-        setFinalPrice(initialPrice);
-      } else {
-        // Если нет конфигуратора, используем базовую цену
-        setFinalPrice(product.price);
+        basePrice = calculateConfiguredPrice(product.price, product.configuration, selectedConfig);
       }
+      
+      // Добавляем цену сборки, если выбрана
+      const assemblyPrice = assemblySelected && product.assemblyPrice ? product.assemblyPrice : 0;
+      setFinalPrice(basePrice + assemblyPrice);
     }
-  }, [product]);
+  }, [product, selectedConfig, assemblySelected]);
+  
+  // Обработчик переключения сборки
+  const handleAssemblyToggle = () => {
+    if (!product) return;
+    
+    const newValue = !assemblySelected;
+    setAssemblySelected(newValue);
+    
+    // Сохраняем в localStorage
+    localStorage.setItem(`mm05_assembly_${product.id}`, String(newValue));
+    
+    // Пересчитываем цену
+    let basePrice = product.price;
+    if (product.configuration) {
+      basePrice = calculateConfiguredPrice(product.price, product.configuration, selectedConfig);
+    }
+    const assemblyPrice = newValue && product.assemblyPrice ? product.assemblyPrice : 0;
+    setFinalPrice(basePrice + assemblyPrice);
+  };
 
   // Устанавливаем основное изображение при загрузке товара
   useEffect(() => {
@@ -191,6 +225,34 @@ export default function ProductPage() {
                   </span>
                 )}
               </div>
+              
+              {/* Опция сборки */}
+              {product.assemblyPrice && product.assemblyPrice > 0 && (
+                <div className="mt-4 pt-4 border-t border-border">
+                  <label className="flex items-start gap-3 cursor-pointer group">
+                    <div className="relative flex items-center">
+                      <input
+                        type="checkbox"
+                        checked={assemblySelected}
+                        onChange={handleAssemblyToggle}
+                        className="sr-only peer"
+                      />
+                      <div className="w-11 h-6 bg-muted peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-accent/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-accent"></div>
+                    </div>
+                    <div className="flex-1">
+                      <div className="flex items-baseline gap-2">
+                        <span className="text-sm font-medium">Сборка мебели</span>
+                        <span className="text-sm text-accent font-semibold">
+                          +{formatPrice(product.assemblyPrice)}
+                        </span>
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-0.5">
+                        Профессиональная сборка на дому
+                      </p>
+                    </div>
+                  </label>
+                </div>
+              )}
             </div>
 
             {/* Конфигуратор товара (если есть) */}
@@ -216,8 +278,13 @@ export default function ProductPage() {
             <div className="flex flex-col sm:flex-row gap-3 mb-8">
               <motion.button
                 onClick={() => {
+                  // Создаем конфигурацию с учетом сборки
+                  const configWithAssembly: SelectedConfiguration = product.configuration 
+                    ? { ...selectedConfig, options: { ...selectedConfig.options, assembly: assemblySelected } }
+                    : { variants: {}, options: { assembly: assemblySelected } };
+                  
                   // Передаем конфигурацию и финальную цену в корзину
-                  add(product, product.configuration ? selectedConfig : undefined, finalPrice);
+                  add(product, configWithAssembly, finalPrice);
                   toast.success("Добавлено в корзину", { description: product.name });
                 }}
                 whileHover={{ scale: 1.02 }}

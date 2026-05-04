@@ -114,6 +114,7 @@ model Product {
   shortDescription String?  @map("short_description")
   price            Decimal  @db.Decimal(10, 2)
   oldPrice         Decimal? @map("old_price") @db.Decimal(10, 2)
+  assemblyPrice    Decimal? @map("assembly_price") @db.Decimal(10, 2) // Цена сборки (опционально)
   images           Json     @default("[]")
   thumbnailUrl     String?  @map("thumbnail_url")
   specifications   Json     @default("{}")
