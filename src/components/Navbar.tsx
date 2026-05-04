@@ -54,7 +54,6 @@ export function Navbar() {
           : 'bg-surface/90 border-border/50'
       }`}
       style={{ 
-        position: 'sticky',
         maxWidth: '100vw',
         overflowX: 'hidden'
       }}
