@@ -83,8 +83,36 @@ const ContactPage = () => {
                 <h2 className="font-serif text-xl font-semibold mb-4">Контактная информация</h2>
                 
                 <div className="space-y-4">
-                  {/* Телефон */}
+                  {/* Адрес - ПЕРВЫМ */}
                   <div className="flex items-start gap-3">
+                    <PremiumIconMark icon={MapPin} size="sm" tone="neutral" className="shrink-0 mt-1" />
+                    <div>
+                      <p className="text-xs text-muted-foreground mb-1">Склад / шоурум</p>
+                      <p className="text-sm font-medium leading-tight mb-2">
+                        {CONTACTS.address}
+                      </p>
+                      <a
+                        href={googleMapsUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-xs text-accent hover:underline"
+                      >
+                        Открыть в картах →
+                      </a>
+                    </div>
+                  </div>
+
+                  {/* Режим работы */}
+                  <div className="flex items-start gap-3">
+                    <PremiumIconMark icon={Clock} size="sm" tone="neutral" className="shrink-0 mt-1" />
+                    <div>
+                      <p className="text-xs text-muted-foreground mb-1">Режим работы</p>
+                      <p className="text-sm font-semibold">{CONTACTS.schedule}</p>
+                    </div>
+                  </div>
+
+                  {/* Телефон */}
+                  <div className="flex items-start gap-3 pt-3 border-t border-border">
                     <PremiumIconMark icon={Phone} size="sm" tone="accent" className="shrink-0 mt-1" />
                     <div>
                       <p className="text-xs text-muted-foreground mb-1">Телефон</p>
@@ -144,34 +172,55 @@ const ContactPage = () => {
                       </a>
                     </div>
                   </div>
+                </div>
+              </div>
+              
+              {/* Блок "Связь с нами" - ПОЛНОСТЬЮ СКРЫТ НА МОБИЛЬНЫХ */}
+              <div className="hidden lg:flex flex-col bg-surface border border-border rounded-xl p-6 shadow-sm">
+                <h2 className="font-serif text-xl font-semibold mb-2">Связь с нами</h2>
+                <p className="text-xs text-muted-foreground mb-4">
+                  Выберите удобный мессенджер — ответим в рабочее время, обычно до 10 минут.
+                </p>
 
-                  {/* Адрес */}
-                  <div className="flex items-start gap-3 pt-3 border-t border-border">
-                    <PremiumIconMark icon={MapPin} size="sm" tone="neutral" className="shrink-0 mt-1" />
+                <div className="space-y-3">
+                  <a
+                    href={CONTACTS.whatsapp}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-3 p-3 bg-card border border-border rounded-lg hover:border-accent hover:bg-accent/5 transition-all group"
+                  >
+                    <PremiumIconMark icon={MessageCircle} size="md" tone="accent" className="shrink-0" />
                     <div>
-                      <p className="text-xs text-muted-foreground mb-1">Склад / шоурум</p>
-                      <p className="text-sm font-medium leading-tight mb-2">
-                        {CONTACTS.address}
-                      </p>
-                      <a
-                        href={googleMapsUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-xs text-accent hover:underline"
-                      >
-                        Открыть в картах →
-                      </a>
+                      <p className="font-semibold text-sm group-hover:text-accent transition-colors">WhatsApp</p>
+                      <p className="text-xs text-muted-foreground">Написать в WhatsApp</p>
                     </div>
-                  </div>
+                  </a>
 
-                  {/* Режим работы */}
-                  <div className="flex items-start gap-3">
-                    <PremiumIconMark icon={Clock} size="sm" tone="neutral" className="shrink-0 mt-1" />
+                  <a
+                    href={CONTACTS.telegram}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-3 p-3 bg-card border border-border rounded-lg hover:border-accent hover:bg-accent/5 transition-all group"
+                  >
+                    <PremiumIconMark icon={Send} size="md" tone="accent" className="shrink-0" />
                     <div>
-                      <p className="text-xs text-muted-foreground mb-1">Режим работы</p>
-                      <p className="text-sm font-semibold">{CONTACTS.schedule}</p>
+                      <p className="font-semibold text-sm group-hover:text-accent transition-colors">Telegram</p>
+                      <p className="text-xs text-muted-foreground">Канал и чат</p>
                     </div>
-                  </div>
+                  </a>
+
+                  <a
+                    href={CONTACTS.vk}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-3 p-3 bg-card border border-border rounded-lg hover:border-accent hover:bg-accent/5 transition-all group"
+                  >
+                    <PremiumIconMark icon={Users} size="md" tone="accent" className="shrink-0" />
+                    <div>
+                      <p className="font-semibold text-sm group-hover:text-accent transition-colors">ВКонтакте</p>
+                      <p className="text-xs text-muted-foreground">Официальная страница MM05</p>
+                    </div>
+                  </a>
                 </div>
               </div>
             </div>
