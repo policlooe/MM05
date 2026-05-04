@@ -2,6 +2,7 @@ import { Response } from 'express';
 import { PrismaClient, Prisma } from '@prisma/client';
 import { z } from 'zod';
 import { AuthRequest } from '../middleware/auth.middleware.js';
+import { emailService } from '../services/email.service.js';
 
 const prisma = new PrismaClient();
 
@@ -201,6 +202,36 @@ export class OrderCreateController {
 
       // Логируем успешное создание заказа
       console.log(`✅ Order created: ${orderNumber}, Total: ${validatedData.totalPrice} ₽`);
+
+      // Отправляем email подтверждение (если email указан)
+      if (order!.customerEmail && emailService.isAvailable()) {
+        try {
+          await emailService.sendOrderConfirmation({
+            customerName: order!.customerName,
+            customerEmail: order!.customerEmail,
+            orderNumber: order!.orderNumber,
+            orderDate: order!.createdAt.toLocaleDateString('ru-RU', {
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric',
+            }),
+            items: order!.items.map(item => ({
+              name: item.productSnapshot ? (item.productSnapshot as any).name : item.product?.name || 'Товар',
+              quantity: item.quantity,
+              price: Number(item.price),
+              total: Number(item.total),
+            })),
+            subtotal: Number(order!.subtotal),
+            deliveryCost: Number(order!.deliveryCost),
+            total: Number(order!.total),
+            deliveryAddress: order!.deliveryAddress,
+            customerPhone: order!.customerPhone,
+          });
+        } catch (emailError) {
+          console.error('Failed to send order confirmation email:', emailError);
+          // Не прерываем процесс создания заказа из-за ошибки email
+        }
+      }
 
       res.status(201).json({
         success: true,

@@ -10,7 +10,7 @@ import { CartSidebar } from "@/components/CartSidebar";
 import { MobileNav } from "@/components/MobileNav";
 import { ChatLauncher } from "@/components/ChatLauncher";
 import { ProductReviews } from "@/components/ProductReviews";
-import { ImageLightbox } from "@/components/ImageLightbox";
+import ImageViewer from "@/components/ImageViewer";
 import { ProductConfigurator } from "@/components/ProductConfigurator";
 import { SelectedConfiguration, calculateConfiguredPrice } from "@/types/product-config";
 import { CONTACTS } from "@/lib/contacts";
@@ -26,9 +26,9 @@ export default function ProductPage() {
   // Состояние для выбранного изображения в галерее
   const [selectedImage, setSelectedImage] = useState<string>("");
   
-  // Состояние для lightbox
-  const [lightboxOpen, setLightboxOpen] = useState(false);
-  const [lightboxIndex, setLightboxIndex] = useState(0);
+  // Состояние для ImageViewer
+  const [viewerOpen, setViewerOpen] = useState(false);
+  const [currentImage, setCurrentImage] = useState(0);
   
   // Состояние для конфигурации товара
   const [selectedConfig, setSelectedConfig] = useState<SelectedConfiguration>({
@@ -75,11 +75,11 @@ export default function ProductPage() {
     window.scrollTo(0, 0);
   }, [slug]);
 
-  // Открытие lightbox
-  const openLightbox = (imageUrl: string) => {
+  // Открытие viewer
+  const openViewer = (imageUrl: string) => {
     const index = allImages.indexOf(imageUrl);
-    setLightboxIndex(index >= 0 ? index : 0);
-    setLightboxOpen(true);
+    setCurrentImage(index >= 0 ? index : 0);
+    setViewerOpen(true);
   };
 
   if (!product) {
@@ -114,7 +114,7 @@ export default function ProductPage() {
               className="bg-surface rounded-xl overflow-hidden border border-border aspect-square mb-3 cursor-pointer group relative"
               whileHover={{ scale: 1.02 }}
               transition={{ duration: 0.3 }}
-              onClick={() => openLightbox(selectedImage)}
+              onClick={() => openViewer(selectedImage)}
             >
               <img
                 src={selectedImage}
@@ -141,7 +141,10 @@ export default function ProductPage() {
                 {allImages.map((img, index) => (
                   <motion.button
                     key={index}
-                    onClick={() => setSelectedImage(img)}
+                    onClick={() => {
+                      setCurrentImage(index);
+                      setViewerOpen(true);
+                    }}
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                     className={cn(
@@ -258,14 +261,15 @@ export default function ProductPage() {
           </div>
         </div>
 
-        {/* Lightbox для полноэкранного просмотра */}
-        <ImageLightbox
-          images={allImages}
-          initialIndex={lightboxIndex}
-          isOpen={lightboxOpen}
-          onClose={() => setLightboxOpen(false)}
-          productName={product.name}
-        />
+        {/* ImageViewer для полноэкранного просмотра */}
+        {viewerOpen && (
+          <ImageViewer
+            images={allImages}
+            currentIndex={currentImage}
+            setIndex={setCurrentImage}
+            onClose={() => setViewerOpen(false)}
+          />
+        )}
 
         {/* Хлебные крошки после основного блока */}
         <div className="mt-8">

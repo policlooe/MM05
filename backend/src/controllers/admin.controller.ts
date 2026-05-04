@@ -367,10 +367,10 @@ export class AdminController {
         prisma.user.count(),
         prisma.order.count(),
         prisma.product.count(),
-        prisma.order.count({ where: { status: 'PENDING' } }),
+        prisma.order.count({ where: { status: 'NEW' } }),
         prisma.order.aggregate({
           _sum: { total: true },
-          where: { status: { in: ['CONFIRMED', 'PROCESSING', 'SHIPPED', 'DELIVERED'] } },
+          where: { status: { in: ['CONFIRMED', 'PROCESSING', 'SHIPPED', 'DELIVERED', 'COMPLETED'] } },
         }),
       ]);
 

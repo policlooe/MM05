@@ -125,10 +125,13 @@ export function ImageLightbox({
             {currentIndex + 1} / {images.length}
           </motion.div>
 
-          {/* Контейнер изображения */}
+          {/* Контейнер изображения - клик в пустую область закрывает viewer, клик по картинке - нет */}
           <div
             className="absolute inset-0 flex items-center justify-center p-4 md:p-8"
-            onClick={(e) => e.stopPropagation()}
+            onClick={(e) => {
+              // Закрываем только если клик пришёл на сам контейнер (фон), а не на дочерний элемент (картинку)
+              if (e.target === e.currentTarget) onClose();
+            }}
             onTouchStart={onTouchStart}
             onTouchMove={onTouchMove}
             onTouchEnd={onTouchEnd}
@@ -142,7 +145,8 @@ export function ImageLightbox({
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.9 }}
                 transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-                className="max-w-full max-h-full object-contain rounded-lg"
+                onClick={(e) => e.stopPropagation()}
+                className="max-w-full max-h-full object-contain rounded-lg cursor-default"
                 draggable={false}
               />
             </AnimatePresence>

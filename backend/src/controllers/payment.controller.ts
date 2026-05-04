@@ -53,7 +53,7 @@ export class PaymentController {
         orderNumber: order.orderNumber,
         items,
         total: Number(order.total),
-        customerEmail: order.customerEmail,
+        customerEmail: order.customerEmail || order.customerName,
       });
 
       res.json({

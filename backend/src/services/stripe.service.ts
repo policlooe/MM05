@@ -1,5 +1,6 @@
 import Stripe from 'stripe';
 import { PrismaClient } from '@prisma/client';
+import { emailService } from './email.service';
 
 const prisma = new PrismaClient();
 
@@ -119,7 +120,8 @@ export class StripeService {
       return;
     }
 
-    await prisma.order.update({
+    // Update order status
+    const order = await prisma.order.update({
       where: { id: orderId },
       data: {
         paymentStatus: 'SUCCEEDED',
@@ -127,11 +129,46 @@ export class StripeService {
         stripePaymentId: session.payment_intent as string,
         paidAt: new Date(),
       },
+      include: {
+        items: {
+          include: {
+            product: true,
+          },
+        },
+      },
     });
 
     console.log(`Order ${orderId} marked as PAID`);
 
-    // TODO: Send confirmation email
+    // Send confirmation email
+    if (order.customerEmail && emailService.isAvailable()) {
+      try {
+        await emailService.sendOrderConfirmation({
+          customerName: order.customerName,
+          customerEmail: order.customerEmail,
+          orderNumber: order.orderNumber,
+          orderDate: order.createdAt.toLocaleDateString('ru-RU', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+          }),
+          items: order.items.map(item => ({
+            name: item.productSnapshot ? (item.productSnapshot as any).name : item.product?.name || 'Товар',
+            quantity: item.quantity,
+            price: Number(item.price),
+            total: Number(item.total),
+          })),
+          subtotal: Number(order.subtotal),
+          deliveryCost: Number(order.deliveryCost),
+          total: Number(order.total),
+          deliveryAddress: order.deliveryAddress,
+          customerPhone: order.customerPhone,
+        });
+      } catch (error) {
+        console.error('Failed to send order confirmation email:', error);
+        // Don't throw - email failure shouldn't break the order process
+      }
+    }
   }
 
   /**

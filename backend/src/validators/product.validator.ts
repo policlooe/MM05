@@ -20,7 +20,7 @@ export const updateProductSchema = createProductSchema.partial();
 
 // Схема валидации для обновления статуса заказа
 export const updateOrderStatusSchema = z.object({
-  status: z.enum(['PENDING', 'CONFIRMED', 'PROCESSING', 'SHIPPED', 'DELIVERED', 'CANCELLED']),
+  status: z.enum(['NEW', 'RESERVED', 'CONFIRMED', 'PROCESSING', 'SHIPPED', 'DELIVERED', 'COMPLETED', 'CANCELLED']),
   adminNote: z.string().max(500, 'Примечание слишком длинное').optional().nullable(),
 });
 

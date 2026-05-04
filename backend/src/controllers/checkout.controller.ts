@@ -84,7 +84,7 @@ export class CheckoutController {
         data: {
           userId,
           orderNumber,
-          status: OrderStatus.PENDING,
+          status: OrderStatus.NEW,
           paymentStatus: PaymentStatus.PENDING,
           subtotal,
           deliveryCost,
@@ -93,7 +93,7 @@ export class CheckoutController {
           customerName: user.fullName || user.email,
           customerEmail: user.email,
           customerPhone: user.phone || '',
-          deliveryAddress: {},
+          deliveryAddress: 'Адрес не указан',
         },
       });
 

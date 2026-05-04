@@ -94,7 +94,7 @@ export class WebhookController {
       where: { id: orderId },
       data: {
         paymentStatus: PaymentStatus.SUCCEEDED,
-        status: OrderStatus.PAID,
+        status: OrderStatus.CONFIRMED,
         paidAt: new Date(),
         stripePaymentId: session.payment_intent as string,
       },
@@ -139,7 +139,7 @@ export class WebhookController {
       where: { id: orderId },
       data: {
         paymentStatus: PaymentStatus.SUCCEEDED,
-        status: OrderStatus.PAID,
+        status: OrderStatus.CONFIRMED,
         paidAt: new Date(),
       },
     });

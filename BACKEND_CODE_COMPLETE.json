@@ -9,6 +9,8 @@
     "Unique order number generation (MM05-YYYY-XXXX)",
     "HTML invoice generation (print-ready)",
     "WhatsApp notification URL generation",
+    "Email notifications (order confirmation, status updates)",
+    "Beautiful HTML email templates",
     "JWT authentication with refresh tokens",
     "Admin panel endpoints",
     "Rate limiting and security middleware",
@@ -35,7 +37,8 @@
     "src/services": {
       "auth.service.ts": "Authentication business logic",
       "token.service.ts": "JWT token generation and verification",
-      "stripe.service.ts": "Stripe payment integration"
+      "stripe.service.ts": "Stripe payment integration",
+      "email.service.ts": "Email notifications with HTML templates"
     },
     "src/routes": {
       "order.routes.ts": "Order endpoints",

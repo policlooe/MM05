@@ -17,6 +17,7 @@ import PaymentCancel from "./pages/PaymentCancel.tsx";
 import Login from "./pages/Login.tsx";
 import Register from "./pages/Register.tsx";
 import About from "./pages/About.tsx";
+import Contact from "./pages/Contact.tsx";
 import NotFound from "./pages/NotFound.tsx";
 import Dashboard from "./pages/admin/Dashboard.tsx";
 import Products from "./pages/admin/Products.tsx";
@@ -42,6 +43,7 @@ function AppRoutes() {
         <Route path="/payment/success" element={<PaymentSuccess />} />
         <Route path="/payment/cancel" element={<PaymentCancel />} />
         <Route path="/about" element={<About />} />
+        <Route path="/contact" element={<Contact />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         

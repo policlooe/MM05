@@ -2,6 +2,7 @@ import { Response } from 'express';
 import { PrismaClient, OrderStatus } from '@prisma/client';
 import { z } from 'zod';
 import { AuthRequest } from '../middleware/auth.middleware.js';
+import { emailService } from '../services/email.service.js';
 
 const prisma = new PrismaClient();
 
@@ -131,6 +132,33 @@ export class OrderController {
           items: true,
         },
       });
+
+      // Отправляем email уведомление об изменении статуса
+      if (order.customerEmail && emailService.isAvailable()) {
+        try {
+          const statusMessages: Record<string, string> = {
+            NEW: 'Новый заказ',
+            RESERVED: 'Товары зарезервированы',
+            CONFIRMED: 'Заказ подтвержден',
+            PROCESSING: 'Заказ в обработке',
+            SHIPPED: 'Заказ отправлен',
+            DELIVERED: 'Заказ доставлен',
+            COMPLETED: 'Заказ завершен',
+            CANCELLED: 'Заказ отменен',
+          };
+
+          await emailService.sendOrderStatusUpdate(
+            order.customerEmail,
+            order.customerName,
+            order.orderNumber,
+            status,
+            statusMessages[status] || status
+          );
+        } catch (emailError) {
+          console.error('Failed to send status update email:', emailError);
+          // Не прерываем процесс обновления статуса из-за ошибки email
+        }
+      }
 
       res.json({
         success: true,
