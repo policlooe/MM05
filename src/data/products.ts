@@ -6,7 +6,8 @@ import desk from "@/assets/p-desk.jpg";
 import rocking from "@/assets/p-rocking.jpg";
 import gazebo from "@/assets/p-gazebo.jpg";
 import nightstand from "@/assets/p-nightstand.jpg";
-import { ProductConfiguration } from "@/types/product-config";
+import { ProductConfiguration as OldProductConfiguration } from "@/types/product-config";
+import { ProductConfiguration } from "@/types/product-configuration";
 
 export type Category = "Кровати" | "Шкафы" | "Столы" | "Кресла" | "Беседки" | "Тумбы";
 
@@ -26,7 +27,8 @@ export type Product = {
   leadTime: string;
   inStock: boolean;
   assemblyPrice?: number; // Цена сборки (опционально, задается админом)
-  configuration?: ProductConfiguration; // Amazon-level конфигурация
+  configuration?: OldProductConfiguration; // Старая конфигурация (для совместимости)
+  advancedConfiguration?: ProductConfiguration; // Новая расширенная конфигурация с изображениями
 };
 
 export const products: Product[] = [
@@ -35,7 +37,7 @@ export const products: Product[] = [
     slug: "krovat-almak",
     name: "Кровать «Альмак»",
     category: "Кровати",
-    price: 48000,
+    price: 46500, // Базовая цена для размера 160x200
     oldPrice: 56000,
     image: bed1,
     gallery: [bed1, bed1, bed1, bed1], // Дополнительные фото товара
@@ -53,78 +55,125 @@ export const products: Product[] = [
     leadTime: "10–14 дней",
     inStock: true,
     assemblyPrice: 3500, // Цена сборки кровати
-    // Amazon-level конфигурация
-    configuration: {
-      variants: [
-        {
-          id: "size",
+    // НОВАЯ РАСШИРЕННАЯ КОНФИГУРАЦИЯ с изображениями для цветов
+    advancedConfiguration: {
+      variants: {
+        size: {
           label: "Размер спального места",
-          type: "size",
           required: true,
           options: [
-            { value: "140x200", label: "140×200 см (полуторная)", priceModifier: -5000 },
-            { value: "160x200", label: "160×200 см (двуспальная)", priceModifier: 0 },
-            { value: "180x200", label: "180×200 см (king size)", priceModifier: 8000 },
+            { 
+              value: "140x200", 
+              label: "140×200 см (полуторная)", 
+              priceModifier: -5000,
+              default: false
+            },
+            { 
+              value: "160x200", 
+              label: "160×200 см (двуспальная)", 
+              priceModifier: 0,
+              default: true // Базовый размер
+            },
+            { 
+              value: "180x200", 
+              label: "180×200 см (king size)", 
+              priceModifier: 8000 
+            },
           ],
         },
-        {
-          id: "color",
+        color: {
           label: "Цвет покрытия",
-          type: "color",
           required: true,
           options: [
-            { value: "natural", label: "Натуральный дуб", priceModifier: 0 },
-            { value: "dark", label: "Темный орех", priceModifier: 2000 },
-            { value: "white", label: "Белый", priceModifier: 3000 },
+            { 
+              value: "natural", 
+              label: "Натуральный дуб", 
+              priceModifier: 0,
+              image: bed1, // Изображение для натурального цвета
+              default: true
+            },
+            { 
+              value: "dark", 
+              label: "Темный орех", 
+              priceModifier: 2000,
+              image: bed1 // ЗАМЕНИТЬ на изображение темного цвета
+            },
+            { 
+              value: "white", 
+              label: "Белый", 
+              priceModifier: 3000,
+              image: bed1 // ЗАМЕНИТЬ на изображение белого цвета
+            },
           ],
         },
-        {
-          id: "headboard",
+      },
+      options: {
+        headboard: {
           label: "Изголовье",
-          type: "custom",
+          type: "select",
           required: true,
           options: [
-            { value: "standard", label: "Стандартное", priceModifier: 0 },
-            { value: "soft", label: "Мягкое (ткань)", priceModifier: 5000 },
-            { value: "leather", label: "Мягкое (кожа)", priceModifier: 12000 },
+            { 
+              value: "standard", 
+              label: "Стандартное", 
+              priceModifier: 0,
+              default: true
+            },
+            { 
+              value: "soft-fabric", 
+              label: "Мягкое (ткань)", 
+              priceModifier: 5000 
+            },
+            { 
+              value: "soft-leather", 
+              label: "Мягкое (кожа)", 
+              priceModifier: 12000 
+            },
           ],
         },
-      ],
-      options: [
-        {
-          id: "assembly",
+        assembly: {
           label: "Сборка мебели",
-          description: "Профессиональная сборка на дому",
           type: "toggle",
           price: 3500,
-          defaultValue: false,
-          dependencies: {
-            variant: { size: "180x200" },
-            priceModifier: 1500, // Для king size сборка дороже
-          },
+          description: "Профессиональная сборка на дому",
+          default: false,
         },
-        {
-          id: "mattress",
+        mattress: {
           label: "Добавить матрас",
-          description: "Ортопедический матрас",
           type: "toggle",
           price: 15000,
-          defaultValue: false,
+          description: "Ортопедический матрас",
+          default: false,
         },
-        {
-          id: "delivery",
+        delivery: {
           label: "Доставка и подъем",
-          description: "Выберите вариант доставки",
           type: "select",
-          values: [
-            { value: "pickup", label: "Самовывоз", price: 0 },
-            { value: "delivery", label: "Доставка по городу", price: 2000 },
-            { value: "floor_1_5", label: "Доставка + подъем до 5 этажа", price: 3500 },
-            { value: "floor_6_plus", label: "Доставка + подъем выше 5 этажа", price: 5000 },
+          required: true,
+          options: [
+            { 
+              value: "pickup", 
+              label: "Самовывоз", 
+              priceModifier: 0,
+              default: true
+            },
+            { 
+              value: "city", 
+              label: "Доставка по городу", 
+              priceModifier: 2000 
+            },
+            { 
+              value: "floor5", 
+              label: "Доставка + подъем до 5 этажа", 
+              priceModifier: 3500 
+            },
+            { 
+              value: "floor5plus", 
+              label: "Доставка + подъем выше 5 этажа", 
+              priceModifier: 5000 
+            },
           ],
-          defaultValue: "pickup",
         },
-      ],
+      },
     },
   },
   {

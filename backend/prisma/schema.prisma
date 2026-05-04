@@ -125,6 +125,60 @@ model Product {
   viewsCount       Int      @default(0) @map("views_count")
   salesCount       Int      @default(0) @map("sales_count")
   
+  // Расширенная конфигурация товара
+  // Структура JSON для configuration:
+  // {
+  //   "variants": {
+  //     "size": {
+  //       "label": "Размер спального места",
+  //       "required": true,
+  //       "options": [
+  //         { "value": "140x200", "label": "140×200 см (полуторная)", "priceModifier": -5000, "default": true },
+  //         { "value": "160x200", "label": "160×200 см (двуспальная)", "priceModifier": 0 },
+  //         { "value": "180x200", "label": "180×200 см (king size)", "priceModifier": 8000 }
+  //       ]
+  //     },
+  //     "color": {
+  //       "label": "Цвет покрытия",
+  //       "required": true,
+  //       "options": [
+  //         { "value": "natural", "label": "Натуральный дуб", "priceModifier": 0, "image": "/images/bed-natural.jpg", "default": true },
+  //         { "value": "dark", "label": "Темный орех", "priceModifier": 2000, "image": "/images/bed-dark.jpg" },
+  //         { "value": "white", "label": "Белый", "priceModifier": 3000, "image": "/images/bed-white.jpg" }
+  //       ]
+  //     }
+  //   },
+  //   "options": {
+  //     "headboard": {
+  //       "label": "Изголовье",
+  //       "type": "select",
+  //       "options": [
+  //         { "value": "standard", "label": "Стандартное", "priceModifier": 0, "default": true },
+  //         { "value": "soft-fabric", "label": "Мягкое (ткань)", "priceModifier": 5000 },
+  //         { "value": "soft-leather", "label": "Мягкое (кожа)", "priceModifier": 12000 }
+  //       ]
+  //     },
+  //     "mattress": {
+  //       "label": "Добавить матрас",
+  //       "type": "toggle",
+  //       "price": 15000,
+  //       "description": "Ортопедический матрас"
+  //     },
+  //     "delivery": {
+  //       "label": "Доставка и подъем",
+  //       "type": "select",
+  //       "required": true,
+  //       "options": [
+  //         { "value": "pickup", "label": "Самовывоз", "priceModifier": 0, "default": true },
+  //         { "value": "city", "label": "Доставка по городу", "priceModifier": 2000 },
+  //         { "value": "floor5", "label": "Доставка + подъем до 5 этажа", "priceModifier": 3500 },
+  //         { "value": "floor5plus", "label": "Доставка + подъем выше 5 этажа", "priceModifier": 5000 }
+  //       ]
+  //     }
+  //   }
+  // }
+  configuration    Json?    @default("{}") // Полная конфигурация товара (варианты + опции)
+  
   // Timestamps
   createdAt        DateTime @default(now()) @map("created_at")
   updatedAt        DateTime @updatedAt @map("updated_at")

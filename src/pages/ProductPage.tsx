@@ -11,10 +11,10 @@ import { MobileNav } from "@/components/MobileNav";
 import { ChatLauncher } from "@/components/ChatLauncher";
 import { ProductReviews } from "@/components/ProductReviews";
 import ImageViewer from "@/components/ImageViewer";
-import { ProductConfigurator } from "@/components/ProductConfigurator";
-import { ProductConfiguratorOzon } from "@/components/ProductConfiguratorOzon";
 import { ProductConfiguratorV2 } from "@/components/ProductConfiguratorV2";
+import { ProductConfiguratorAdvanced } from "@/components/ProductConfiguratorAdvanced";
 import { SelectedConfiguration, calculateConfiguredPrice } from "@/types/product-config";
+import { SelectedConfiguration as AdvancedSelectedConfiguration } from "@/types/product-configuration";
 import { CONTACTS } from "@/lib/contacts";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -32,11 +32,18 @@ export default function ProductPage() {
   const [viewerOpen, setViewerOpen] = useState(false);
   const [currentImage, setCurrentImage] = useState(0);
   
-  // Состояние для конфигурации товара
+  // Состояние для конфигурации товара (старая система)
   const [selectedConfig, setSelectedConfig] = useState<SelectedConfiguration>({
     variants: {},
     options: {},
   });
+  
+  // Состояние для расширенной конфигурации (новая система)
+  const [advancedConfig, setAdvancedConfig] = useState<AdvancedSelectedConfiguration>({
+    variants: {},
+    options: {},
+  });
+  
   const [finalPrice, setFinalPrice] = useState(0);
   
   // Состояние для сборки (отдельно от конфигуратора)
@@ -55,13 +62,24 @@ export default function ProductPage() {
     return [product.image, ...(product.gallery || [])];
   }, [product]);
 
-  // Обработчик изменения конфигурации
+  // Обработчик изменения конфигурации (старая система)
   const handleConfigChange = (config: SelectedConfiguration, price: number) => {
     setSelectedConfig(config);
     
     // Добавляем цену сборки к базовой цене конфигурации
     const assemblyPrice = assemblySelected && product?.assemblyPrice ? product.assemblyPrice : 0;
     setFinalPrice(price + assemblyPrice);
+  };
+
+  // Обработчик изменения расширенной конфигурации (новая система)
+  const handleAdvancedConfigChange = (config: AdvancedSelectedConfiguration, price: number) => {
+    setAdvancedConfig(config);
+    setFinalPrice(price);
+  };
+
+  // Обработчик изменения изображения при выборе цвета
+  const handleImageChange = (imageUrl: string) => {
+    setSelectedImage(imageUrl);
   };
 
   // Инициализация цены при загрузке товара
@@ -219,7 +237,7 @@ export default function ProductPage() {
 
             {/* Блок цены - Ozon style */}
             <div className="sticky top-4 bg-surface border border-border rounded-lg p-3 mb-3 shadow-sm">
-              <div className="flex items-baseline justify-between gap-2 mb-2">
+              <div className="flex items-baseline justify-between gap-2">
                 <span className="font-serif text-2xl md:text-3xl font-bold text-accent">
                   {formatPrice(finalPrice)}
                 </span>
@@ -230,9 +248,9 @@ export default function ProductPage() {
                 )}
               </div>
               
-              {/* Опция сборки - компактная */}
-              {product.assemblyPrice && product.assemblyPrice > 0 && (
-                <div className="pt-2 border-t border-border">
+              {/* Опция сборки - только для товаров БЕЗ расширенной конфигурации */}
+              {!product.advancedConfiguration && product.assemblyPrice && product.assemblyPrice > 0 && (
+                <div className="pt-2 border-t border-border mt-2">
                   <label className="flex items-center gap-2 cursor-pointer group">
                     <input
                       type="checkbox"
@@ -256,8 +274,20 @@ export default function ProductPage() {
               )}
             </div>
 
-            {/* Конфигуратор товара (если есть) - V2 с Design System */}
-            {product.configuration && (
+            {/* Конфигуратор товара */}
+            {product.advancedConfiguration ? (
+              // НОВЫЙ расширенный конфигуратор с изображениями для цветов
+              <div className="mb-3">
+                <ProductConfiguratorAdvanced
+                  basePrice={product.price}
+                  configuration={product.advancedConfiguration}
+                  defaultImage={product.image}
+                  onConfigChange={handleAdvancedConfigChange}
+                  onImageChange={handleImageChange}
+                />
+              </div>
+            ) : product.configuration ? (
+              // СТАРЫЙ конфигуратор (для совместимости)
               <div className="mb-3">
                 <ProductConfiguratorV2
                   basePrice={product.price}
@@ -265,7 +295,7 @@ export default function ProductPage() {
                   onConfigChange={handleConfigChange}
                 />
               </div>
-            )}
+            ) : null}
 
             <div className="flex flex-wrap gap-1.5 text-xs mb-4">
               <span className="inline-flex items-center gap-1 border border-border bg-secondary/80 text-foreground px-2 py-1 rounded-md font-medium">
@@ -279,13 +309,15 @@ export default function ProductPage() {
             <div className="flex flex-col gap-2 mb-6">
               <button
                 onClick={() => {
-                  // Создаем конфигурацию с учетом сборки
-                  const configWithAssembly: SelectedConfiguration = product.configuration 
-                    ? { ...selectedConfig, options: { ...selectedConfig.options, assembly: assemblySelected } }
-                    : { variants: {}, options: { assembly: assemblySelected } };
+                  // Используем расширенную конфигурацию если есть, иначе старую
+                  const configToUse = product.advancedConfiguration 
+                    ? advancedConfig
+                    : product.configuration 
+                      ? { ...selectedConfig, options: { ...selectedConfig.options, assembly: assemblySelected } }
+                      : { variants: {}, options: { assembly: assemblySelected } };
                   
                   // Передаем конфигурацию и финальную цену в корзину
-                  add(product, configWithAssembly, finalPrice);
+                  add(product, configToUse as any, finalPrice);
                   toast.success("Добавлено в корзину", { description: product.name });
                 }}
                 className="w-full inline-flex items-center justify-center gap-2 bg-accent hover:bg-accent-hover text-accent-foreground py-3 rounded-lg font-semibold text-sm transition-colors shadow-sm active:scale-[0.98]"
