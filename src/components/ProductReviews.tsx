@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
-import { Star, User as UserIcon } from "lucide-react";
+import { Star, User as UserIcon, Image as ImageIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { ReviewUploader, type ReviewData } from "./ReviewUploader";
 
 // Тип для отзыва
 interface Review {
@@ -10,6 +11,7 @@ interface Review {
   rating: number;
   text: string;
   date: string;
+  images?: string[]; // Base64 encoded images
 }
 
 // Тип для сортировки
@@ -232,83 +234,38 @@ export function ProductReviews({ productId, productName }: ProductReviewsProps) 
 
       {/* Форма добавления отзыва */}
       {showForm && (
-        <div className="bg-surface border border-border rounded-xl p-5 shadow-sm mb-6 animate-fade-in-up">
-          <h3 className="text-lg font-semibold mb-4">Ваш отзыв о товаре</h3>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {/* Имя пользователя */}
-            <div>
-              <label htmlFor={`userName-${productId}`} className="block text-sm font-medium mb-2">
-                Ваше имя <span className="text-destructive">*</span>
-              </label>
-              <input
-                id={`userName-${productId}`}
-                type="text"
-                value={userName}
-                onChange={(e) => setUserName(e.target.value)}
-                placeholder="Иван Иванов"
-                maxLength={50}
-                className="w-full px-4 py-2.5 rounded-lg border border-border bg-background focus:border-accent/35 focus:outline-none focus:ring-2 focus:ring-accent/18 transition-all text-sm"
-              />
-            </div>
+        <div className="mb-6 animate-fade-in-up">
+          <ReviewUploader
+            productId={productId}
+            productName={productName}
+            onSubmit={async (reviewData: ReviewData) => {
+              // Конвертируем изображения в base64
+              const imagePromises = reviewData.images.map((file) => {
+                return new Promise<string>((resolve) => {
+                  const reader = new FileReader();
+                  reader.onload = (e) => resolve(e.target?.result as string);
+                  reader.readAsDataURL(file);
+                });
+              });
 
-            {/* Оценка звездами */}
-            <div>
-              <label className="block text-sm font-medium mb-2">
-                Ваша оценка <span className="text-destructive">*</span>
-              </label>
-              <div className="flex gap-2">
-                {[1, 2, 3, 4, 5].map((star) => (
-                  <StarInput key={star} index={star} />
-                ))}
-              </div>
-              {rating > 0 && (
-                <p className="text-xs text-muted-foreground mt-2">
-                  Вы поставили оценку: {rating} из 5
-                </p>
-              )}
-            </div>
+              const images = await Promise.all(imagePromises);
 
-            {/* Текст отзыва */}
-            <div>
-              <label htmlFor={`reviewText-${productId}`} className="block text-sm font-medium mb-2">
-                Ваш отзыв <span className="text-destructive">*</span>
-              </label>
-              <textarea
-                id={`reviewText-${productId}`}
-                value={reviewText}
-                onChange={(e) => setReviewText(e.target.value)}
-                placeholder="Расскажите о вашем опыте покупки..."
-                rows={4}
-                maxLength={1000}
-                className="w-full px-4 py-2.5 rounded-lg border border-border bg-background focus:border-accent/35 focus:outline-none focus:ring-2 focus:ring-accent/18 transition-all resize-none text-sm"
-              />
-              <p className="text-xs text-muted-foreground mt-1">
-                {reviewText.length} / 1000 символов
-              </p>
-            </div>
+              // Создаем новый отзыв
+              const newReview: Review = {
+                id: Date.now().toString(),
+                productId,
+                userName: "Покупатель", // Можно добавить поле для имени
+                rating: reviewData.rating,
+                text: reviewData.text,
+                date: new Date().toISOString(),
+                images,
+              };
 
-            {/* Кнопки */}
-            <div className="flex gap-3 pt-2">
-              <button
-                type="submit"
-                className="px-5 py-2.5 bg-accent hover:bg-accent-hover text-accent-foreground rounded-lg font-semibold transition-colors text-sm"
-              >
-                Отправить отзыв
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setShowForm(false);
-                  setUserName("");
-                  setRating(0);
-                  setReviewText("");
-                }}
-                className="px-5 py-2.5 bg-secondary hover:bg-muted text-foreground rounded-lg font-medium transition-colors text-sm"
-              >
-                Отмена
-              </button>
-            </div>
-          </form>
+              // Добавляем в список
+              setAllReviews([newReview, ...allReviews]);
+              setShowForm(false);
+            }}
+          />
         </div>
       )}
 
@@ -358,7 +315,25 @@ export function ProductReviews({ productId, productName }: ProductReviewsProps) 
                 </div>
 
                 {/* Текст отзыва */}
-                <p className="text-sm text-foreground/90 leading-relaxed">{review.text}</p>
+                <p className="text-sm text-foreground/90 leading-relaxed mb-3">{review.text}</p>
+
+                {/* Фотографии отзыва */}
+                {review.images && review.images.length > 0 && (
+                  <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+                    {review.images.map((image, index) => (
+                      <div
+                        key={index}
+                        className="aspect-square rounded-lg overflow-hidden bg-muted border border-border cursor-pointer hover:opacity-80 transition-opacity"
+                      >
+                        <img
+                          src={image}
+                          alt={`Фото ${index + 1} к отзыву`}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                    ))}
+                  </div>
+                )}
               </article>
             ))}
           </div>

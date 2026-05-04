@@ -12,6 +12,7 @@ import { ChatLauncher } from "@/components/ChatLauncher";
 import { ProductReviews } from "@/components/ProductReviews";
 import ImageViewer from "@/components/ImageViewer";
 import { ProductConfigurator } from "@/components/ProductConfigurator";
+import { ProductConfiguratorOzon } from "@/components/ProductConfiguratorOzon";
 import { SelectedConfiguration, calculateConfiguredPrice } from "@/types/product-config";
 import { CONTACTS } from "@/lib/contacts";
 import { toast } from "sonner";
@@ -213,40 +214,37 @@ export default function ProductPage() {
               {product.shortDescription}
             </p>
 
-            {/* Блок цены */}
-            <div className="bg-surface border border-border rounded-xl p-4 mb-5">
-              <div className="flex items-baseline gap-3">
-                <span className="font-serif text-3xl md:text-4xl font-semibold text-accent">
+            {/* Блок цены - Ozon style */}
+            <div className="sticky top-4 bg-surface border border-border rounded-lg p-3 mb-3 shadow-sm">
+              <div className="flex items-baseline justify-between gap-2 mb-2">
+                <span className="font-serif text-2xl md:text-3xl font-bold text-accent">
                   {formatPrice(finalPrice)}
                 </span>
                 {product.oldPrice && finalPrice === product.price && (
-                  <span className="text-base text-muted-foreground line-through">
+                  <span className="text-sm text-muted-foreground line-through">
                     {formatPrice(product.oldPrice)}
                   </span>
                 )}
               </div>
               
-              {/* Опция сборки */}
+              {/* Опция сборки - компактная */}
               {product.assemblyPrice && product.assemblyPrice > 0 && (
-                <div className="mt-4 pt-4 border-t border-border">
-                  <label className="flex items-start gap-3 cursor-pointer group">
-                    <div className="relative flex items-center">
-                      <input
-                        type="checkbox"
-                        checked={assemblySelected}
-                        onChange={handleAssemblyToggle}
-                        className="sr-only peer"
-                      />
-                      <div className="w-11 h-6 bg-muted peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-accent/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-accent"></div>
-                    </div>
-                    <div className="flex-1">
-                      <div className="flex items-baseline gap-2">
-                        <span className="text-sm font-medium">Сборка мебели</span>
-                        <span className="text-sm text-accent font-semibold">
+                <div className="pt-2 border-t border-border">
+                  <label className="flex items-center gap-2 cursor-pointer group">
+                    <input
+                      type="checkbox"
+                      checked={assemblySelected}
+                      onChange={handleAssemblyToggle}
+                      className="w-4 h-4 rounded border-border text-accent focus:ring-2 focus:ring-accent/20 cursor-pointer"
+                    />
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="text-xs font-medium truncate">Сборка мебели</span>
+                        <span className="text-xs font-semibold text-accent shrink-0">
                           +{formatPrice(product.assemblyPrice)}
                         </span>
                       </div>
-                      <p className="text-xs text-muted-foreground mt-0.5">
+                      <p className="text-[10px] text-muted-foreground line-clamp-1">
                         Профессиональная сборка на дому
                       </p>
                     </div>
@@ -255,10 +253,10 @@ export default function ProductPage() {
               )}
             </div>
 
-            {/* Конфигуратор товара (если есть) */}
+            {/* Конфигуратор товара (если есть) - Ozon style */}
             {product.configuration && (
-              <div className="mb-5">
-                <ProductConfigurator
+              <div className="mb-3">
+                <ProductConfiguratorOzon
                   basePrice={product.price}
                   configuration={product.configuration}
                   onConfigChange={handleConfigChange}
@@ -266,17 +264,17 @@ export default function ProductPage() {
               </div>
             )}
 
-            <div className="flex flex-wrap gap-2 text-xs mb-6">
-              <span className="inline-flex items-center gap-1.5 border border-border bg-secondary/80 text-foreground px-3 py-1.5 rounded-md font-medium">
-                <Check className="w-3.5 h-3.5 stroke-[1.15] text-accent shrink-0" /> {product.inStock ? "В наличии" : "Под заказ"}
+            <div className="flex flex-wrap gap-1.5 text-xs mb-4">
+              <span className="inline-flex items-center gap-1 border border-border bg-secondary/80 text-foreground px-2 py-1 rounded-md font-medium">
+                <Check className="w-3 h-3 stroke-[1.15] text-accent shrink-0" /> {product.inStock ? "В наличии" : "Под заказ"}
               </span>
-              <span className="inline-flex items-center gap-1.5 border border-border bg-secondary/80 px-3 py-1.5 rounded-md text-muted-foreground">
-                <Clock className="w-3.5 h-3.5 stroke-[1.15] shrink-0" /> Срок: {product.leadTime}
+              <span className="inline-flex items-center gap-1 border border-border bg-secondary/80 px-2 py-1 rounded-md text-muted-foreground">
+                <Clock className="w-3 h-3 stroke-[1.15] shrink-0" /> {product.leadTime}
               </span>
             </div>
 
-            <div className="flex flex-col sm:flex-row gap-3 mb-8">
-              <motion.button
+            <div className="flex flex-col gap-2 mb-6">
+              <button
                 onClick={() => {
                   // Создаем конфигурацию с учетом сборки
                   const configWithAssembly: SelectedConfiguration = product.configuration 
@@ -287,38 +285,34 @@ export default function ProductPage() {
                   add(product, configWithAssembly, finalPrice);
                   toast.success("Добавлено в корзину", { description: product.name });
                 }}
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                className="flex-1 inline-flex items-center justify-center gap-2 bg-primary hover:bg-accent text-primary-foreground py-4 rounded-lg font-semibold text-sm transition-colors shadow-sm"
+                className="w-full inline-flex items-center justify-center gap-2 bg-accent hover:bg-accent-hover text-accent-foreground py-3 rounded-lg font-semibold text-sm transition-colors shadow-sm active:scale-[0.98]"
               >
                 <ShoppingBag className="w-4 h-4 stroke-[1.15]" /> В корзину
-              </motion.button>
-              <motion.a
+              </button>
+              <a
                 href={wa}
                 target="_blank"
                 rel="noopener noreferrer"
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                className="flex-1 inline-flex items-center justify-center gap-2 bg-secondary hover:bg-muted py-4 rounded-lg font-semibold text-sm transition-colors"
+                className="w-full inline-flex items-center justify-center gap-2 bg-secondary hover:bg-muted py-3 rounded-lg font-semibold text-sm transition-colors active:scale-[0.98]"
               >
                 <MessageCircle className="w-4 h-4 stroke-[1.15]" /> Написать в WhatsApp
-              </motion.a>
+              </a>
             </div>
 
-            {/* Описание */}
-            <section className="mb-6">
-              <h2 className="font-serif text-xl font-semibold mb-2">Описание</h2>
-              <p className="text-sm leading-relaxed text-foreground/85 whitespace-pre-line">
+            {/* Описание - компактное */}
+            <section className="mb-4">
+              <h2 className="text-base font-semibold mb-2">Описание</h2>
+              <p className="text-xs leading-relaxed text-foreground/85 whitespace-pre-line">
                 {product.description}
               </p>
             </section>
 
-            {/* Характеристики */}
-            <section className="mb-6">
-              <h2 className="font-serif text-xl font-semibold mb-3">Характеристики</h2>
-              <dl className="bg-surface border border-border rounded-xl divide-y divide-border">
+            {/* Характеристики - компактные */}
+            <section className="mb-4">
+              <h2 className="text-base font-semibold mb-2">Характеристики</h2>
+              <dl className="bg-surface border border-border rounded-lg divide-y divide-border">
                 {product.specs.map((s) => (
-                  <div key={s.label} className="flex justify-between gap-3 px-4 py-3 text-sm">
+                  <div key={s.label} className="flex justify-between gap-3 px-3 py-2 text-xs">
                     <dt className="text-muted-foreground">{s.label}</dt>
                     <dd className="font-medium text-right">{s.value}</dd>
                   </div>
