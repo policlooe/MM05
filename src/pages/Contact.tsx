@@ -174,55 +174,6 @@ const ContactPage = () => {
                   </div>
                 </div>
               </div>
-              
-              {/* Блок "Связь с нами" - ПОЛНОСТЬЮ СКРЫТ НА МОБИЛЬНЫХ */}
-              <div className="hidden lg:flex flex-col bg-surface border border-border rounded-xl p-6 shadow-sm">
-                <h2 className="font-serif text-xl font-semibold mb-2">Связь с нами</h2>
-                <p className="text-xs text-muted-foreground mb-4">
-                  Выберите удобный мессенджер — ответим в рабочее время, обычно до 10 минут.
-                </p>
-
-                <div className="space-y-3">
-                  <a
-                    href={CONTACTS.whatsapp}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-3 p-3 bg-card border border-border rounded-lg hover:border-accent hover:bg-accent/5 transition-all group"
-                  >
-                    <PremiumIconMark icon={MessageCircle} size="md" tone="accent" className="shrink-0" />
-                    <div>
-                      <p className="font-semibold text-sm group-hover:text-accent transition-colors">WhatsApp</p>
-                      <p className="text-xs text-muted-foreground">Написать в WhatsApp</p>
-                    </div>
-                  </a>
-
-                  <a
-                    href={CONTACTS.telegram}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-3 p-3 bg-card border border-border rounded-lg hover:border-accent hover:bg-accent/5 transition-all group"
-                  >
-                    <PremiumIconMark icon={Send} size="md" tone="accent" className="shrink-0" />
-                    <div>
-                      <p className="font-semibold text-sm group-hover:text-accent transition-colors">Telegram</p>
-                      <p className="text-xs text-muted-foreground">Канал и чат</p>
-                    </div>
-                  </a>
-
-                  <a
-                    href={CONTACTS.vk}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-3 p-3 bg-card border border-border rounded-lg hover:border-accent hover:bg-accent/5 transition-all group"
-                  >
-                    <PremiumIconMark icon={Users} size="md" tone="accent" className="shrink-0" />
-                    <div>
-                      <p className="font-semibold text-sm group-hover:text-accent transition-colors">ВКонтакте</p>
-                      <p className="text-xs text-muted-foreground">Официальная страница MM05</p>
-                    </div>
-                  </a>
-                </div>
-              </div>
             </div>
 
             {/* Правая колонка - Форма обратной связи */}

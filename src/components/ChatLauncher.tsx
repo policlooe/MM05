@@ -7,7 +7,8 @@ export function ChatLauncher() {
   const [open, setOpen] = useState(false);
 
   return (
-    <div className="fixed bottom-24 md:bottom-6 right-4 md:right-6 z-50 flex flex-col items-end gap-2">
+    // Скрываем весь компонент на мобильных (< 768px)
+    <div className="hidden md:flex fixed bottom-6 right-6 z-50 flex-col items-end gap-2">
       {open && (
         <div
           className="mb-3 bg-surface border border-border rounded-xl shadow-[0_16px_48px_-12px_rgba(15,35,25,0.15)] p-4 w-[17rem] animate-fade-in-up ring-1 ring-border/60"
