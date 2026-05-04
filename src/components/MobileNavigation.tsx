@@ -1,11 +1,11 @@
 import { Link, useLocation } from 'react-router-dom';
 import { Home, LayoutGrid, ShoppingBag, User, Heart } from 'lucide-react';
-import { useCart } from '@/context/CartContext';
+import { useCart } from '@/store/cart';
 
 export function MobileNavigation({ onOpenCatalog, onOpenCart }: { onOpenCatalog: () => void, onOpenCart: () => void }) {
   const location = useLocation();
-  const { state } = useCart();
-  const cartCount = state.items.reduce((sum, item) => sum + item.quantity, 0);
+  const { count } = useCart();
+  const cartCount = count;
 
   const navItems = [
     { label: 'Главная', icon: Home, path: '/', action: null },

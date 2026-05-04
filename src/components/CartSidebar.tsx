@@ -1,13 +1,11 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, ShoppingBag, Trash2, ChevronRight } from 'lucide-react';
-import { useCart } from '@/context/CartContext';
+import { useCart, formatPrice } from '@/store/cart';
 import { useScrollLock } from '@/hooks/useScrollLock';
 
 export function CartSidebar({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
-  const { state, dispatch } = useCart();
+  const { items, total, setQty, remove } = useCart();
   useScrollLock(isOpen);
-
-  const total = state.items.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
   return (
     <AnimatePresence>
@@ -41,7 +39,7 @@ export function CartSidebar({ isOpen, onClose }: { isOpen: boolean; onClose: () 
             </div>
 
             <div className="flex-1 overflow-y-auto p-6 space-y-4">
-              {state.items.length === 0 ? (
+              {items.length === 0 ? (
                 <div className="h-full flex flex-col items-center justify-center text-center space-y-4">
                   <div className="w-20 h-20 bg-muted rounded-full flex items-center justify-center">
                     <ShoppingBag className="w-10 h-10 text-muted-foreground" />
@@ -49,26 +47,26 @@ export function CartSidebar({ isOpen, onClose }: { isOpen: boolean; onClose: () 
                   <p className="text-muted-foreground">Ваша корзина пуста</p>
                 </div>
               ) : (
-                state.items.map((item) => (
+                items.map((item) => (
                   <div key={item.id} className="flex gap-4 p-3 bg-card rounded-xl border border-border">
                     <img src={item.image} alt={item.name} className="w-20 h-20 object-cover rounded-lg" />
                     <div className="flex-1">
                       <h4 className="font-medium text-sm line-clamp-1">{item.name}</h4>
-                      <p className="text-accent font-bold mt-1">{item.price.toLocaleString()} ₽</p>
+                      <p className="text-accent font-bold mt-1">{formatPrice(item.finalPrice)}</p>
                       <div className="flex items-center justify-between mt-2">
                         <div className="flex items-center border border-border rounded-lg bg-background">
                           <button 
                             className="px-2 py-1 hover:bg-muted" 
-                            onClick={() => dispatch({ type: 'UPDATE_QUANTITY', payload: { id: item.id, quantity: Math.max(1, item.quantity - 1) } })}
+                            onClick={() => setQty(item.id, Math.max(1, item.qty - 1))}
                           >-</button>
-                          <span className="px-2 text-xs font-bold">{item.quantity}</span>
+                          <span className="px-2 text-xs font-bold">{item.qty}</span>
                           <button 
                             className="px-2 py-1 hover:bg-muted" 
-                            onClick={() => dispatch({ type: 'UPDATE_QUANTITY', payload: { id: item.id, quantity: item.quantity + 1 } })}
+                            onClick={() => setQty(item.id, item.qty + 1)}
                           >+</button>
                         </div>
                         <button 
-                          onClick={() => dispatch({ type: 'REMOVE_ITEM', payload: item.id })}
+                          onClick={() => remove(item.id)}
                           className="text-destructive hover:bg-destructive/10 p-2 rounded-lg transition-colors"
                         >
                           <Trash2 className="w-4 h-4" />
@@ -80,11 +78,11 @@ export function CartSidebar({ isOpen, onClose }: { isOpen: boolean; onClose: () 
               )}
             </div>
 
-            {state.items.length > 0 && (
+            {items.length > 0 && (
               <div className="p-6 border-t border-border bg-surface">
                 <div className="flex justify-between mb-4">
                   <span className="text-muted-foreground">Итого:</span>
-                  <span className="text-2xl font-bold">{total.toLocaleString()} ₽</span>
+                  <span className="text-2xl font-bold">{formatPrice(total)}</span>
                 </div>
                 <button className="w-full bg-accent hover:bg-accent-hover text-white py-4 rounded-xl font-bold flex items-center justify-center gap-2 transition-all">
                   Оформить заказ

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Search, User, ShoppingBag, Menu } from 'lucide-react';
-import { useCart } from '@/context/CartContext';
+import { useCart } from '@/store/cart';
 
 interface HeaderProps {
   onOpenCart: () => void;
@@ -10,8 +10,8 @@ interface HeaderProps {
 
 export function Header({ onOpenCart, onOpenCatalog }: HeaderProps) {
   const [isScrolled, setIsScrolled] = useState(false);
-  const { state } = useCart();
-  const cartItemsCount = state.items.reduce((sum, item) => sum + item.quantity, 0);
+  const { count } = useCart();
+  const cartItemsCount = count;
 
   useEffect(() => {
     const handleScroll = () => {

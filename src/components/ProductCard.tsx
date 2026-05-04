@@ -2,28 +2,34 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ShoppingCart, ChevronRight } from 'lucide-react';
 import { Product, ProductVariant, ProductOption } from '@/types/product';
-import { useCart } from '@/context/CartContext';
+import { useCart } from '@/store/cart';
+import type { Product as StoreProduct } from '@/data/products';
 
 export function ProductCard({ product }: { product: Product }) {
   const [selectedVariant, setSelectedVariant] = useState<ProductVariant>(product.variants[0]);
   const [selectedOptions, setSelectedOptions] = useState<Record<string, ProductOption>>({});
   const [isConfigOpen, setIsConfigOpen] = useState(false);
-  const { dispatch } = useCart();
+  const { add } = useCart();
 
   const totalPrice = product.basePrice + Object.values(selectedOptions).reduce((acc, opt) => acc + opt.price, 0);
 
   const handleAddToCart = () => {
-    dispatch({
-      type: 'ADD_ITEM',
-      payload: {
-        id: `${product.id}-${selectedVariant.colorId}`,
-        name: `${product.name} (${selectedVariant.colorName})`,
-        price: totalPrice,
-        image: selectedVariant.image,
-        quantity: 1,
-        options: selectedOptions
-      }
-    });
+    // Адаптируем под существующий API корзины
+    const storeProduct: StoreProduct = {
+      id: `${product.id}-${selectedVariant.colorId}`,
+      slug: product.id,
+      name: `${product.name} (${selectedVariant.colorName})`,
+      category: 'Кровати' as any, // Временно
+      price: product.basePrice,
+      image: selectedVariant.image,
+      shortDescription: '',
+      description: '',
+      specs: [],
+      leadTime: '',
+      inStock: true,
+    };
+    
+    add(storeProduct, undefined, totalPrice);
   };
 
   return (
