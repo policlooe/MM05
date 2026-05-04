@@ -193,7 +193,7 @@ export default function Checkout() {
                   </AnimatePresence>
                 </div>
 
-                {/* Телефон */}
+                {/* Те��ефон */}
                 <div>
                   <label htmlFor="customerPhone" className="block text-sm font-medium mb-2">
                     Телефон <span className="text-destructive">*</span>
@@ -355,11 +355,15 @@ export default function Checkout() {
                         <p className="text-xs text-muted-foreground">
                           {item.qty} × {formatPrice(item.finalPrice)}
                         </p>
-                        {item.assemblySelected && (
-                          <p className="text-xs text-accent">+ Сборка</p>
-                        )}
+                        {item.assemblySelected && item.assemblyPrice ? (
+                          <p className="text-xs text-accent font-medium">
+                            + Сборка: {formatPrice(item.assemblyPrice)}
+                          </p>
+                        ) : null}
                       </div>
-                      <p className="font-semibold text-sm">{formatPrice(item.qty * item.finalPrice)}</p>
+                      <p className="font-semibold text-sm whitespace-nowrap">
+                        {formatPrice(item.qty * item.finalPrice)}
+                      </p>
                     </div>
                   ))}
                 </div>

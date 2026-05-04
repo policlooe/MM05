@@ -9,6 +9,7 @@ interface Product {
   slug: string;
   price: number;
   oldPrice?: number;
+  assemblyPrice?: number;
   stockQuantity: number;
   isActive: boolean;
   category?: {
@@ -116,6 +117,9 @@ export default function Products() {
                     Цена
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                    Сборка
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                     Остаток
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
@@ -148,6 +152,15 @@ export default function Products() {
                         <div className="text-sm text-muted-foreground line-through">
                           {(Number(product.oldPrice) / 100).toLocaleString('ru-RU')} ₽
                         </div>
+                      )}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-foreground">
+                      {product.assemblyPrice && product.assemblyPrice > 0 ? (
+                        <span className="text-accent font-medium">
+                          +{(Number(product.assemblyPrice) / 100).toLocaleString('ru-RU')} ₽
+                        </span>
+                      ) : (
+                        <span className="text-muted-foreground">—</span>
                       )}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-foreground">
