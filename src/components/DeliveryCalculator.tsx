@@ -2,7 +2,6 @@ import { useEffect, useMemo, useState, useRef } from "react";
 import { MapPin, Navigation } from "lucide-react";
 import { CONTACTS } from "@/lib/contacts";
 
-// Глобальная переменная для Yandex Maps
 declare global {
   interface Window {
     ymaps: any;
@@ -22,7 +21,7 @@ export function DeliveryCalculator() {
   const deliveryMarkerRef = useRef<any>(null);
   const routeLineRef = useRef<any>(null);
 
-  const STORE_COORDS = [43.0495, 47.626]; // Координаты склада в Шамхале
+  const STORE_COORDS = [43.0495, 47.626];
 
   const deliveryPrice = useMemo(() => {
     if (distanceKm === null) return 0;
@@ -38,35 +37,37 @@ export function DeliveryCalculator() {
     return 2;
   }, [distanceKm]);
 
-  // Загрузка Yandex Maps API
   useEffect(() => {
     if (window.ymaps) {
-      window.ymaps.ready(() => {
-        setMapLoaded(true);
-      });
+      window.ymaps.ready(() => setMapLoaded(true));
       return;
     }
 
-    const script = document.createElement('script');
-    script.src = 'https://api-maps.yandex.ru/2.1/?lang=ru_RU';
-    script.async = true;
+    const scriptId = 'yandex-maps-script';
+    let script = document.getElementById(scriptId) as HTMLScriptElement;
+
+    if (!script) {
+      script = document.createElement('script');
+      script.id = scriptId;
+      script.src = 'https://api-maps.yandex.ru/2.1/?lang=ru_RU';
+      script.async = true;
+      document.head.appendChild(script);
+    }
+
     script.onload = () => {
       if (window.ymaps) {
-        window.ymaps.ready(() => {
-          setMapLoaded(true);
-        });
+        window.ymaps.ready(() => setMapLoaded(true));
       }
     };
+
     script.onerror = () => {
       console.error('Не удалось загрузить Yandex Maps API');
       setError('Не удалось загрузить карту. Попробуйте обновить страницу.');
     };
-    document.head.appendChild(script);
   }, []);
 
-  // Инициализация карты
   useEffect(() => {
-    if (!mapLoaded || !mapRef.current || mapInstanceRef.current) return;
+    if (!mapLoaded || !mapRef.current) return;
 
     try {
       const map = new window.ymaps.Map(mapRef.current, {
@@ -77,7 +78,6 @@ export function DeliveryCalculator() {
         suppressMapOpenBlock: true
       });
 
-      // Добавляем маркер магазина
       const storeMarker = new window.ymaps.Placemark(STORE_COORDS, {
         balloonContent: `<b>Наш магазин</b><br>${CONTACTS.address}`
       }, {
@@ -87,18 +87,14 @@ export function DeliveryCalculator() {
       map.geoObjects.add(storeMarker);
       mapInstanceRef.current = map;
 
-      // Подсказки для адреса
       if (document.getElementById('delivery-address-input')) {
         const suggestView = new window.ymaps.SuggestView('delivery-address-input', {
-          provider: {
-            suggest: (req: string) => window.ymaps.suggest(req)
-          },
+          provider: { suggest: (req: string) => window.ymaps.suggest(req) },
           results: 5
         });
 
         suggestView.events.add('select', (e: any) => {
           setToAddress(e.get('item').value);
-          // Автоматически рассчитываем после выбора
           setTimeout(() => calculateRoute(), 300);
         });
       }
@@ -106,6 +102,13 @@ export function DeliveryCalculator() {
       console.error('Ошибка инициализации карты:', err);
       setError('Ошибка загрузки карты');
     }
+
+    return () => {
+      if (mapInstanceRef.current) {
+        mapInstanceRef.current.destroy();
+        mapInstanceRef.current = null;
+      }
+    };
   }, [mapLoaded]);
 
   const calculateRoute = async () => {
@@ -123,18 +126,14 @@ export function DeliveryCalculator() {
       setIsCalculating(true);
       setError(null);
 
-      // Геокодирование адреса доставки
       const geoResult = await window.ymaps.geocode(toAddress, { results: 1 });
       const geoObj = geoResult.geoObjects.get(0);
 
-      if (!geoObj) {
-        throw new Error('Адрес не найден. Уточните запрос.');
-      }
+      if (!geoObj) throw new Error('Адрес не найден. Уточните запрос.');
 
       const deliveryCoords = geoObj.geometry.getCoordinates();
       const deliveryAddress = geoObj.getAddressLine();
 
-      // Построение маршрута
       const routeResult = await window.ymaps.route([STORE_COORDS, deliveryCoords], {
         routingMode: 'auto'
       });
@@ -147,7 +146,6 @@ export function DeliveryCalculator() {
       setDistanceKm(Number(km.toFixed(1)));
       setDurationMinutes(Math.round(durationSec / 60));
 
-      // Обновляем карту
       updateMap(deliveryCoords, deliveryAddress, routeResult);
 
     } catch (err: any) {
@@ -163,15 +161,9 @@ export function DeliveryCalculator() {
   const updateMap = (deliveryCoords: number[], deliveryAddress: string, routeResult: any) => {
     if (!mapInstanceRef.current) return;
 
-    // Удаляем старые маркеры и маршруты
-    if (deliveryMarkerRef.current) {
-      mapInstanceRef.current.geoObjects.remove(deliveryMarkerRef.current);
-    }
-    if (routeLineRef.current) {
-      mapInstanceRef.current.geoObjects.remove(routeLineRef.current);
-    }
+    if (deliveryMarkerRef.current) mapInstanceRef.current.geoObjects.remove(deliveryMarkerRef.current);
+    if (routeLineRef.current) mapInstanceRef.current.geoObjects.remove(routeLineRef.current);
 
-    // Добавляем маркер доставки
     const deliveryMarker = new window.ymaps.Placemark(deliveryCoords, {
       balloonContent: `<b>Адрес доставки</b><br>${deliveryAddress}`
     }, {
@@ -181,33 +173,17 @@ export function DeliveryCalculator() {
     mapInstanceRef.current.geoObjects.add(deliveryMarker);
     deliveryMarkerRef.current = deliveryMarker;
 
-    // Стилизуем маршрут
     routeResult.getPaths().each((path: any) => {
-      path.options.set({
-        strokeColor: 'hsl(var(--accent))',
-        strokeWidth: 4,
-        strokeOpacity: 0.8
-      });
+      path.options.set({ strokeColor: 'hsl(var(--accent))', strokeWidth: 4, strokeOpacity: 0.8 });
     });
 
     mapInstanceRef.current.geoObjects.add(routeResult);
     routeLineRef.current = routeResult;
 
-    // Центрируем карту на маршруте
     mapInstanceRef.current.setBounds(
       mapInstanceRef.current.geoObjects.getBounds(),
       { checkZoomRange: true, zoomMargin: 40 }
     );
-  };
-
-  const handleCalculate = () => {
-    calculateRoute();
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
-      calculateRoute();
-    }
   };
 
   const routeUrl = distanceKm
@@ -251,14 +227,14 @@ export function DeliveryCalculator() {
                 type="text"
                 value={toAddress}
                 onChange={(e) => setToAddress(e.target.value)}
-                onKeyDown={handleKeyDown}
+                onKeyDown={(e) => e.key === 'Enter' && calculateRoute()}
                 placeholder="Например: ул. Ленина, 10, кв. 5"
                 className="w-full h-10 px-3 rounded-lg border-2 border-border bg-background text-xs outline-none transition-colors focus:border-accent focus:bg-white"
                 autoComplete="off"
               />
             </div>
             <button
-              onClick={handleCalculate}
+              onClick={() => calculateRoute()}
               disabled={isCalculating || !toAddress.trim() || !mapLoaded}
               className="h-10 px-4 bg-accent hover:bg-accent-hover text-white rounded-lg font-semibold text-xs transition-all disabled:bg-muted disabled:cursor-not-allowed flex items-center justify-center gap-2 whitespace-nowrap"
             >

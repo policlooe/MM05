@@ -13,11 +13,9 @@ export function AdminLayout({ children }: AdminLayoutProps) {
   const handleLogout = async () => {
     try {
       await api.post('/auth/logout');
-      localStorage.removeItem('accessToken');
-      localStorage.removeItem('user');
-      navigate('/login');
     } catch (error) {
       console.error('Logout error:', error);
+    } finally {
       localStorage.removeItem('accessToken');
       localStorage.removeItem('user');
       navigate('/login');
