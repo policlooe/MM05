@@ -61,9 +61,9 @@ const About = () => {
               <div className="w-12 h-12 bg-accent/10 rounded-lg flex items-center justify-center mb-4">
                 <TreePine className="w-6 h-6 text-accent" />
               </div>
-              <h3 className="font-semibold text-lg mb-2">Качественные материалы</h3>
+              <h3 className="font-semibold text-lg mb-2">Надёжные материалы</h3>
               <p className="text-sm text-muted-foreground">
-                ЛДСП и МДФ европейского качества, эксклюзивные кровати из массива бука
+                Используем проверенные ЛДСП и МДФ, а также эксклюзивные кровати из массива бука
               </p>
             </div>
 
