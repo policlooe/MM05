@@ -6,8 +6,8 @@ import desk from "@/assets/p-desk.jpg";
 import rocking from "@/assets/p-rocking.jpg";
 import gazebo from "@/assets/p-gazebo.jpg";
 import nightstand from "@/assets/p-nightstand.jpg";
-import { ProductConfiguration as LegacyProductConfiguration } from "@/types/product-config";
-import { ProductConfiguration as AdvancedProductConfiguration } from "@/types/product-configuration";
+import { ProductConfiguration as OldProductConfiguration } from "@/types/product-config";
+import { ProductConfiguration } from "@/types/product-configuration";
 
 export type Category = "Кровати" | "Шкафы" | "Столы" | "Кресла" | "Беседки" | "Тумбы";
 
@@ -27,8 +27,8 @@ export type Product = {
   leadTime: string;
   inStock: boolean;
   assemblyPrice?: number;
-  configuration?: LegacyProductConfiguration;
-  advancedConfiguration?: AdvancedProductConfiguration;
+  configuration?: OldProductConfiguration;
+  advancedConfiguration?: ProductConfiguration;
 };
 
 export const products: Product[] = [
@@ -61,48 +61,18 @@ export const products: Product[] = [
           label: "Размер спального места",
           required: true,
           options: [
-            {
-              value: "140x200",
-              label: "140×200 см (полуторная)",
-              priceModifier: -5000,
-              default: false,
-            },
-            {
-              value: "160x200",
-              label: "160×200 см (двуспальная)",
-              priceModifier: 0,
-              default: true,
-            },
-            {
-              value: "180x200",
-              label: "180×200 см (king size)",
-              priceModifier: 8000,
-            },
+            { value: "140x200", label: "140×200 см (полуторная)", priceModifier: -5000, default: false },
+            { value: "160x200", label: "160×200 см (двуспальная)", priceModifier: 0, default: true },
+            { value: "180x200", label: "180×200 см (king size)", priceModifier: 8000 },
           ],
         },
         color: {
           label: "Цвет покрытия",
           required: true,
           options: [
-            {
-              value: "natural",
-              label: "Натуральный дуб",
-              priceModifier: 0,
-              image: bed1,
-              default: true,
-            },
-            {
-              value: "dark",
-              label: "Темный орех",
-              priceModifier: 2000,
-              image: bed1,
-            },
-            {
-              value: "white",
-              label: "Белый",
-              priceModifier: 3000,
-              image: bed1,
-            },
+            { value: "natural", label: "Натуральный дуб", priceModifier: 0, image: bed1, default: true },
+            { value: "dark", label: "Темный орех", priceModifier: 2000, image: bed2 }, // Пример замены
+            { value: "white", label: "Белый", priceModifier: 3000, image: bed2 }, // Пример замены
           ],
         },
       },
@@ -112,22 +82,9 @@ export const products: Product[] = [
           type: "select",
           required: true,
           options: [
-            {
-              value: "standard",
-              label: "Стандартное",
-              priceModifier: 0,
-              default: true,
-            },
-            {
-              value: "soft-fabric",
-              label: "Мягкое (ткань)",
-              priceModifier: 5000,
-            },
-            {
-              value: "soft-leather",
-              label: "Мягкое (кожа)",
-              priceModifier: 12000,
-            },
+            { value: "standard", label: "Стандартное", priceModifier: 0, default: true },
+            { value: "soft-fabric", label: "Мягкое (ткань)", priceModifier: 5000 },
+            { value: "soft-leather", label: "Мягкое (кожа)", priceModifier: 12000 },
           ],
         },
         assembly: {
@@ -149,27 +106,10 @@ export const products: Product[] = [
           type: "select",
           required: true,
           options: [
-            {
-              value: "pickup",
-              label: "Самовывоз",
-              priceModifier: 0,
-              default: true,
-            },
-            {
-              value: "city",
-              label: "Доставка по городу",
-              priceModifier: 2000,
-            },
-            {
-              value: "floor5",
-              label: "Доставка + подъем до 5 этажа",
-              priceModifier: 3500,
-            },
-            {
-              value: "floor5plus",
-              label: "Доставка + подъем выше 5 этажа",
-              priceModifier: 5000,
-            },
+            { value: "pickup", label: "Самовывоз", priceModifier: 0, default: true },
+            { value: "city", label: "Доставка по городу", priceModifier: 2000 },
+            { value: "floor5", label: "Доставка + подъем до 5 этажа", priceModifier: 3500 },
+            { value: "floor5plus", label: "Доставка + подъем выше 5 этажа", priceModifier: 5000 },
           ],
         },
       },
@@ -185,8 +125,7 @@ export const products: Product[] = [
     assemblyPrice: 4500,
     gallery: [wardrobe, wardrobe, wardrobe],
     shortDescription: "Распашной шкаф с минималистичными фасадами и доводчиками.",
-    description:
-      "Распашной шкаф «Терек» — на 3 секции с штангой, полками и ящиками. Фасады без ручек, открытие push-to-open. Петли BLUM с доводчиками soft-close. Внутри LED-подсветка с датчиком движения.",
+    description: "Распашной шкаф «Терек» — на 3 секции с штангой, полками и ящиками. Фасады без ручек, открытие push-to-open. Петли BLUM с доводчиками soft-close. Внутри LED-подсветка с датчиком движения.",
     specs: [
       { label: "Размеры (Ш×В×Г)", value: "180×220×60 см" },
       { label: "Материал корпуса", value: "ЛДСП Egger 18 мм" },
@@ -207,8 +146,7 @@ export const products: Product[] = [
     gallery: [table, table, table, table],
     badge: "Новинка",
     shortDescription: "Обеденный стол на 6 персон из массива бука.",
-    description:
-      "Обеденный стол «Сулак» рассчитан на 6 персон. Цельная столешница толщиной 40 мм из массива бука с естественным рисунком. Ножки на стяжках — стол не шатается, легко собирается за 15 минут.",
+    description: "Обеденный стол «Сулак» рассчитан на 6 персон. Цельная столешница толщиной 40 мм из массива бука с естественным рисунком. Ножки на стяжках — стол не шатается, легко собирается за 15 минут.",
     specs: [
       { label: "Размер", value: "180×90 см, высота 75 см" },
       { label: "Материал", value: "Массив бука" },
@@ -229,8 +167,7 @@ export const products: Product[] = [
     image: rocking,
     gallery: [rocking, rocking, rocking],
     shortDescription: "Классическая качалка из ясеня с эргономичной спинкой.",
-    description:
-      "Кресло-качалка «Каспий» из массива ясеня. Полозья отшлифованы и покрыты лаком — мягкий ход без скрипа. Анатомическая спинка снижает нагрузку на поясницу. Выдерживает до 130 кг.",
+    description: "Кресло-качалка «Каспий» из массива ясеня. Полозья отшлифованы и покрыты лаком — мягкий ход без скрипа. Анатомическая спинка снижает нагрузку на поясницу. Выдерживает до 130 кг.",
     specs: [
       { label: "Размеры", value: "70×110×95 см" },
       { label: "Материал", value: "Массив ясеня" },
@@ -253,8 +190,7 @@ export const products: Product[] = [
     gallery: [gazebo, gazebo, gazebo, gazebo, gazebo],
     badge: "−12%",
     shortDescription: "Шестигранная беседка из лиственницы под ключ.",
-    description:
-      "Беседка «Хунзах» — шестигранная конструкция из массива сибирской лиственницы. Кровля из мягкой битумной черепицы. В стоимость включён монтаж на участке заказчика в радиусе 100 км от Махачкалы.",
+    description: "Беседка «Хунзах» — шестигранная конструкция из массива сибирской лиственницы. Кровля из мягкой битумной черепицы. В стоимость включён монтаж на участке заказчика в радиусе 100 км от Махачкалы.",
     specs: [
       { label: "Диаметр", value: "4 м" },
       { label: "Высота", value: "3,2 м" },
@@ -276,8 +212,7 @@ export const products: Product[] = [
     image: nightstand,
     gallery: [nightstand, nightstand, nightstand],
     shortDescription: "Прикроватная тумба с двумя ящиками.",
-    description:
-      "Прикроватная тумба «Гуниб» с двумя ящиками на скрытых направляющих с доводчиком. Тонкая столешница 18 мм из массива дуба. Идеально подходит к кровати «Альмак».",
+    description: "Прикроватная тумба «Гуниб» с двумя ящиками на скрытых направляющих с доводчиком. Тонкая столешница 18 мм из массива дуба. Идеально подходит к кровати «Альмак».",
     specs: [
       { label: "Размеры", value: "45×55×40 см" },
       { label: "Материал", value: "Массив дуба" },
@@ -298,8 +233,7 @@ export const products: Product[] = [
     image: bed2,
     gallery: [bed2, bed2, bed2],
     shortDescription: "Полутораспальная кровать из массива сосны.",
-    description:
-      "Полутораспальная кровать «Андийка» из массива сосны. Изголовье обтянуто рогожкой цвета «графит». Подходит для подростковой комнаты или гостевой спальни.",
+    description: "Полутораспальная кровать «Андийка» из массива сосны. Изголовье обтянуто рогожкой цвета «графит». Подходит для подростковой комнаты или гостевой спальни.",
     specs: [
       { label: "Спальное место", value: "140×200 см" },
       { label: "Материал", value: "Массив сосны" },
@@ -320,8 +254,7 @@ export const products: Product[] = [
     image: desk,
     gallery: [desk, desk, desk, desk],
     shortDescription: "Компактный рабочий стол с органайзером.",
-    description:
-      "Письменный стол «Ахты» — компактное решение для домашнего офиса. Встроенный органайзер с отделениями под мелочи и кабель-канал. Высота столешницы оптимальна для роста 170–185 см.",
+    description: "Письменный стол «Ахты» — компактное решение для домашнего офиса. Встроенный органайзер с отделениями под мелочи и кабель-канал. Высота столешницы оптимальна для роста 170–185 см.",
     specs: [
       { label: "Размеры", value: "120×60×75 см" },
       { label: "Материал", value: "ЛДСП + массив сосны" },
@@ -347,11 +280,8 @@ export const categories = [
 export const allCategories: Category[] = ["Кровати", "Шкафы", "Столы", "Кресла", "Беседки", "Тумбы"];
 
 export function getProductBySlug(slug: string): Product | undefined {
-  const normalizedSlug = slug.toLowerCase().trim();
-
-  if (!/^[a-z0-9-]+$/.test(normalizedSlug)) {
+  if (!/^[a-z0-9-]+$/i.test(slug)) {
     return undefined;
   }
-
-  return products.find((p) => p.slug === normalizedSlug);
+  return products.find((p) => p.slug === slug);
 }
