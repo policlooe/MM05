@@ -1,6 +1,3 @@
-// Toggle - переключатель для доп услуг (сборка, матрас и т.д.)
-// Ozon style с ценой справа
-
 import { cn } from "@/lib/utils";
 
 interface ToggleProps {
