@@ -13,6 +13,7 @@ import { ProductReviews } from "@/components/ProductReviews";
 import ImageViewer from "@/components/ImageViewer";
 import { ProductConfigurator } from "@/components/ProductConfigurator";
 import { ProductConfiguratorOzon } from "@/components/ProductConfiguratorOzon";
+import { ProductConfiguratorV2 } from "@/components/ProductConfiguratorV2";
 import { SelectedConfiguration, calculateConfiguredPrice } from "@/types/product-config";
 import { CONTACTS } from "@/lib/contacts";
 import { toast } from "sonner";
@@ -141,7 +142,9 @@ export default function ProductPage() {
     <div className="min-h-screen bg-background">
       <Navbar />
       <main className="container-x py-4 pb-24 md:pb-10">
-        <div className="grid md:grid-cols-2 gap-6 lg:gap-10">
+        {/* Mobile-first layout с max-width */}
+        <div className="max-w-6xl mx-auto">
+          <div className="grid md:grid-cols-2 gap-4 lg:gap-6">
           {/* Фото с галереей */}
           <div>
             {/* Основное фото - кликабельное для lightbox */}
@@ -253,10 +256,10 @@ export default function ProductPage() {
               )}
             </div>
 
-            {/* Конфигуратор товара (если есть) - Ozon style */}
+            {/* Конфигуратор товара (если есть) - V2 с Design System */}
             {product.configuration && (
               <div className="mb-3">
-                <ProductConfiguratorOzon
+                <ProductConfiguratorV2
                   basePrice={product.price}
                   configuration={product.configuration}
                   onConfigChange={handleConfigChange}
@@ -343,9 +346,10 @@ export default function ProductPage() {
         </div>
 
         {/* Блок отзывов */}
-        <div className="mt-8">
+        <div className="mt-8 max-w-6xl mx-auto">
           <ProductReviews productId={product.id} productName={product.name} />
         </div>
+      </div>
       </main>
       <Footer />
       <CartSidebar />

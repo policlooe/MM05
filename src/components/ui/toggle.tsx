@@ -1,37 +1,58 @@
-import * as React from "react";
-import * as TogglePrimitive from "@radix-ui/react-toggle";
-import { cva, type VariantProps } from "class-variance-authority";
+// Toggle - переключатель для доп услуг (сборка, матрас и т.д.)
+// Ozon style с ценой справа
 
 import { cn } from "@/lib/utils";
 
-const toggleVariants = cva(
-  "inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors hover:bg-muted hover:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=on]:bg-accent data-[state=on]:text-accent-foreground",
-  {
-    variants: {
-      variant: {
-        default: "bg-transparent",
-        outline: "border border-input bg-transparent hover:bg-accent hover:text-accent-foreground",
-      },
-      size: {
-        default: "h-10 px-3",
-        sm: "h-9 px-2.5",
-        lg: "h-11 px-5",
-      },
-    },
-    defaultVariants: {
-      variant: "default",
-      size: "default",
-    },
-  },
-);
+interface ToggleProps {
+  label: string;
+  price: string;
+  description?: string;
+  checked: boolean;
+  onChange: (checked: boolean) => void;
+  disabled?: boolean;
+  className?: string;
+}
 
-const Toggle = React.forwardRef<
-  React.ElementRef<typeof TogglePrimitive.Root>,
-  React.ComponentPropsWithoutRef<typeof TogglePrimitive.Root> & VariantProps<typeof toggleVariants>
->(({ className, variant, size, ...props }, ref) => (
-  <TogglePrimitive.Root ref={ref} className={cn(toggleVariants({ variant, size, className }))} {...props} />
-));
+export function Toggle({
+  label,
+  price,
+  description,
+  checked,
+  onChange,
+  disabled = false,
+  className,
+}: ToggleProps) {
+  return (
+    <div
+      className={cn(
+        "flex items-start justify-between p-3 rounded-lg border transition-all",
+        checked ? "border-primary/30 bg-primary/5" : "border-border",
+        disabled && "opacity-50 cursor-not-allowed",
+        className
+      )}
+    >
+      <div className="flex-1 min-w-0 pr-3">
+        <div className="flex justify-between items-center gap-2 mb-1">
+          <span className="text-sm font-medium truncate">{label}</span>
+          <span className="text-sm font-semibold text-primary shrink-0">
+            {price}
+          </span>
+        </div>
 
-Toggle.displayName = TogglePrimitive.Root.displayName;
+        {description && (
+          <p className="text-xs text-muted-foreground line-clamp-1">
+            {description}
+          </p>
+        )}
+      </div>
 
-export { Toggle, toggleVariants };
+      <input
+        type="checkbox"
+        checked={checked}
+        onChange={(e) => !disabled && onChange(e.target.checked)}
+        disabled={disabled}
+        className="w-4 h-4 accent-primary cursor-pointer shrink-0 mt-0.5"
+      />
+    </div>
+  );
+}
