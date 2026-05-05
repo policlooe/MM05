@@ -7,6 +7,7 @@ import { formatPrice } from "@/store/cart";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { CartSidebar } from "@/components/CartSidebar";
+import { CatalogSidebar } from "@/components/CatalogSidebar";
 import { MobileNav } from "@/components/MobileNav";
 import { ChatLauncher } from "@/components/ChatLauncher";
 
@@ -230,6 +231,7 @@ export default function Catalog() {
       </main>
       <Footer />
       <CartSidebar />
+      <CatalogSidebar />
       <MobileNav />
       <ChatLauncher />
     </div>

@@ -1,6 +1,6 @@
 import { ShoppingBag, Search, User } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import { useCart } from "@/store/cart";
 import { useCatalog } from "@/hooks/use-catalog";
@@ -15,6 +15,7 @@ export function Navbar() {
   const [q, setQ] = useState("");
   const [user, setUser] = useState<{ fullName?: string; email: string } | null>(null);
   const [scrolled, setScrolled] = useState(false);
+  const headerRef = useRef<HTMLElement>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -32,6 +33,26 @@ export function Navbar() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  // Add dynamic padding to body based on header height
+  useEffect(() => {
+    const updateBodyPadding = () => {
+      if (headerRef.current) {
+        const headerHeight = headerRef.current.offsetHeight;
+        document.body.style.paddingTop = `${headerHeight}px`;
+      }
+    };
+
+    // Update on mount and when window resizes
+    updateBodyPadding();
+    window.addEventListener('resize', updateBodyPadding);
+
+    // Cleanup
+    return () => {
+      window.removeEventListener('resize', updateBodyPadding);
+      document.body.style.paddingTop = '0';
+    };
+  }, []);
+
   const handleLogout = () => {
     localStorage.removeItem('user');
     setUser(null);
@@ -46,12 +67,10 @@ export function Navbar() {
   };
 
   return (
-    <motion.header 
-      initial={{ y: -100, opacity: 0 }}
-      animate={{ y: 0, opacity: 1 }}
-      transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+    <header 
+      ref={headerRef}
       className={cn(
-        "sticky top-0 left-0 right-0 z-50 w-full backdrop-blur-2xl transition-all duration-500 border-b",
+        "fixed top-0 left-0 right-0 z-50 w-full backdrop-blur-2xl transition-all duration-500 border-b",
         scrolled ? 'bg-surface/70 border-border shadow-lg' : 'bg-surface/90 border-border/50'
       )}
     >
@@ -152,6 +171,6 @@ export function Navbar() {
           </div>
         </div>
       </div>
-    </motion.header>
+    </header>
   );
 }

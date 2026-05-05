@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { CartSidebar } from "@/components/CartSidebar";
+import { CatalogSidebar } from "@/components/CatalogSidebar";
 import { MobileNav } from "@/components/MobileNav";
 import { ChatLauncher } from "@/components/ChatLauncher";
 import { MapPin, Phone, MessageCircle, Send, Users, Clock, Loader2, CheckCircle2 } from "lucide-react";
@@ -62,22 +63,8 @@ const ContactPage = () => {
           </p>
 
           <div className="grid lg:grid-cols-2 gap-6">
-            {/* Левая колонка - Карта */}
+            {/* Левая колонка - Контактная информация */}
             <div className="flex flex-col gap-6">
-              {/* Google Maps */}
-              <div className="bg-surface border border-border rounded-xl overflow-hidden shadow-sm h-[400px]">
-                <iframe
-                  src={googleMapsEmbedUrl}
-                  width="100%"
-                  height="100%"
-                  style={{ border: 0 }}
-                  allowFullScreen
-                  loading="lazy"
-                  referrerPolicy="no-referrer-when-downgrade"
-                  title="Местоположение склада MM05"
-                />
-              </div>
-
               {/* Контактная информация */}
               <div className="bg-surface border border-border rounded-xl p-6 shadow-sm">
                 <h2 className="font-serif text-xl font-semibold mb-4">Контактная информация</h2>
@@ -174,6 +161,20 @@ const ContactPage = () => {
                   </div>
                 </div>
               </div>
+
+              {/* Google Maps */}
+              <div className="bg-surface border border-border rounded-xl overflow-hidden shadow-sm h-[400px]">
+                <iframe
+                  src={googleMapsEmbedUrl}
+                  width="100%"
+                  height="100%"
+                  style={{ border: 0 }}
+                  allowFullScreen
+                  loading="lazy"
+                  referrerPolicy="no-referrer-when-downgrade"
+                  title="Местоположение склада MM05"
+                />
+              </div>
             </div>
 
             {/* Правая колонка - Форма обратной связи */}
@@ -266,6 +267,7 @@ const ContactPage = () => {
       </main>
       <Footer />
       <CartSidebar />
+      <CatalogSidebar />
       <MobileNav />
       <ChatLauncher />
     </div>

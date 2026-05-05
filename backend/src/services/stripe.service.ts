@@ -1,6 +1,7 @@
 import Stripe from 'stripe';
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, PaymentStatus, OrderStatus } from '@prisma/client';
 import { emailService } from './email.service';
+import { captureError, captureMessage } from '../lib/sentry';
 
 const prisma = new PrismaClient();
 
@@ -8,8 +9,10 @@ if (!process.env.STRIPE_SECRET_KEY) {
   throw new Error('STRIPE_SECRET_KEY is not defined');
 }
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
+// Единый инстанс Stripe для всего приложения
+export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
   apiVersion: '2024-11-20.acacia' as any,
+  typescript: true,
 });
 
 interface CreateCheckoutSessionData {
@@ -26,197 +29,159 @@ interface CreateCheckoutSessionData {
 
 export class StripeService {
   /**
-   * Create Stripe Checkout Session
+   * Генерация сессии оплаты
    */
-  async createCheckoutSession(data: CreateCheckoutSessionData): Promise<any> {
-    const session = await stripe.checkout.sessions.create({
-      payment_method_types: ['card'],
-      line_items: data.items.map(item => ({
-        price_data: {
-          currency: 'rub',
-          product_data: {
-            name: item.name,
-          },
-          unit_amount: Math.round(item.price * 100), // Convert to kopecks
-        },
-        quantity: item.quantity,
-      })),
-      mode: 'payment',
-      success_url: `${process.env.FRONTEND_URL}/payment/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${process.env.FRONTEND_URL}/payment/cancel?order_id=${data.orderId}`,
-      customer_email: data.customerEmail,
-      metadata: {
-        orderId: data.orderId,
-        orderNumber: data.orderNumber,
-      },
-      expires_at: Math.floor(Date.now() / 1000) + (30 * 60), // 30 minutes
-    });
-
-    // Save session ID to order
-    await prisma.order.update({
-      where: { id: data.orderId },
-      data: { stripeSessionId: session.id },
-    });
-
-    return session;
-  }
-
-  /**
-   * Handle Stripe Webhook
-   */
-  async handleWebhook(signature: string, body: Buffer): Promise<{ received: boolean }> {
-    if (!process.env.STRIPE_WEBHOOK_SECRET) {
-      throw new Error('STRIPE_WEBHOOK_SECRET is not defined');
-    }
-
-    let event: any;
-
+  async createCheckoutSession(data: CreateCheckoutSessionData): Promise<Stripe.Checkout.Session> {
     try {
-      event = stripe.webhooks.constructEvent(
-        body,
-        signature,
-        process.env.STRIPE_WEBHOOK_SECRET
+      const session = await stripe.checkout.sessions.create({
+        payment_method_types: ['card'],
+        line_items: data.items.map(item => ({
+          price_data: {
+            currency: 'rub',
+            product_data: { name: item.name },
+            unit_amount: Math.round(item.price * 100), // kopecks
+          },
+          quantity: item.quantity,
+        })),
+        mode: 'payment',
+        success_url: `${process.env.FRONTEND_URL}/payment/success?session_id={CHECKOUT_SESSION_ID}`,
+        cancel_url: `${process.env.FRONTEND_URL}/payment/cancel?order_id=${data.orderId}`,
+        customer_email: data.customerEmail,
+        metadata: {
+          orderId: data.orderId,
+          orderNumber: data.orderNumber,
+        },
+        expires_at: Math.floor(Date.now() / 1000) + (30 * 60), // 30 min TTL
+      });
+
+      await prisma.order.update({
+        where: { id: data.orderId },
+        data: { stripeSessionId: session.id },
+      });
+
+      return session;
+    } catch (error) {
+      captureError(
+        error instanceof Error ? error : new Error('Failed to create checkout session'),
+        { data }
       );
-    } catch (err) {
-      const error = err as Error;
-      throw new Error(`Webhook signature verification failed: ${error.message}`);
+      throw error;
     }
-
-    // Handle the event
-    switch (event.type) {
-      case 'checkout.session.completed': {
-        const session = event.data.object as any;
-        await this.handleCheckoutSessionCompleted(session);
-        break;
-      }
-
-      case 'payment_intent.succeeded': {
-        const paymentIntent = event.data.object as any;
-        await this.handlePaymentIntentSucceeded(paymentIntent);
-        break;
-      }
-
-      case 'payment_intent.payment_failed': {
-        const paymentIntent = event.data.object as any;
-        await this.handlePaymentIntentFailed(paymentIntent);
-        break;
-      }
-
-      default:
-        console.log(`Unhandled event type: ${event.type}`);
-    }
-
-    return { received: true };
   }
 
   /**
-   * Handle successful checkout session
+   * Бизнес-логика успешной оплаты (ACID Транзакция)
    */
-  private async handleCheckoutSessionCompleted(session: any): Promise<void> {
+  async processCheckoutCompleted(session: Stripe.Checkout.Session): Promise<void> {
     const orderId = session.metadata?.orderId;
-
     if (!orderId) {
-      console.error('No orderId in session metadata');
+      const msg = 'Stripe webhook missing orderId in metadata';
+      captureMessage(msg, 'warning');
       return;
     }
 
-    // Update order status
-    const order = await prisma.order.update({
-      where: { id: orderId },
-      data: {
-        paymentStatus: 'SUCCEEDED',
-        status: 'CONFIRMED',
-        stripePaymentId: session.payment_intent as string,
-        paidAt: new Date(),
-      },
-      include: {
-        items: {
-          include: {
-            product: true,
+    try {
+      // Используем Prisma Transaction для гарантированной консистентности (ACID)
+      const order = await prisma.$transaction(async (tx) => {
+        const updatedOrder = await tx.order.update({
+          where: { id: orderId },
+          data: {
+            paymentStatus: PaymentStatus.SUCCEEDED,
+            status: OrderStatus.CONFIRMED,
+            stripePaymentId: session.payment_intent as string,
+            paidAt: new Date(),
           },
-        },
-      },
-    });
-
-    console.log(`Order ${orderId} marked as PAID`);
-
-    // Send confirmation email
-    if (order.customerEmail && emailService.isAvailable()) {
-      try {
-        await emailService.sendOrderConfirmation({
-          customerName: order.customerName,
-          customerEmail: order.customerEmail,
-          orderNumber: order.orderNumber,
-          orderDate: order.createdAt.toLocaleDateString('ru-RU', {
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric',
-          }),
-          items: order.items.map(item => ({
-            name: item.productSnapshot ? (item.productSnapshot as any).name : item.product?.name || 'Товар',
-            quantity: item.quantity,
-            price: Number(item.price),
-            total: Number(item.total),
-          })),
-          subtotal: Number(order.subtotal),
-          deliveryCost: Number(order.deliveryCost),
-          total: Number(order.total),
-          deliveryAddress: order.deliveryAddress,
-          customerPhone: order.customerPhone,
+          include: { items: { include: { product: true } } },
         });
-      } catch (error) {
-        console.error('Failed to send order confirmation email:', error);
-        // Don't throw - email failure shouldn't break the order process
-      }
+
+        // Безопасное списание остатков товаров в рамках той же транзакции
+        for (const item of updatedOrder.items) {
+          if (item.productId) {
+            await tx.product.update({
+              where: { id: item.productId },
+              data: {
+                stockQuantity: { decrement: item.quantity },
+                salesCount: { increment: item.quantity },
+              },
+            });
+          }
+        }
+
+        return updatedOrder;
+      });
+
+      captureMessage(`Order ${orderId} successfully marked as PAID`, 'info');
+
+      // Асинхронная отправка email (не блокируем ответ вебхука)
+      this.sendConfirmationEmailSafe(order);
+    } catch (error) {
+      captureError(
+        error instanceof Error ? error : new Error('Transaction failed for order fulfillment'),
+        { orderId }
+      );
+      throw error;
     }
   }
 
-  /**
-   * Handle successful payment intent
-   */
-  private async handlePaymentIntentSucceeded(paymentIntent: any): Promise<void> {
-    console.log(`PaymentIntent ${paymentIntent.id} succeeded`);
-    // Additional logic if needed
-  }
+  async processPaymentFailed(session: Stripe.Checkout.Session | Stripe.PaymentIntent): Promise<void> {
+    const orderId = session.metadata?.orderId;
+    if (!orderId) return;
 
-  /**
-   * Handle failed payment intent
-   */
-  private async handlePaymentIntentFailed(paymentIntent: any): Promise<void> {
-    console.log(`PaymentIntent ${paymentIntent.id} failed`);
-
-    // Find order by payment intent ID
-    const order = await prisma.order.findFirst({
-      where: { stripePaymentId: paymentIntent.id },
+    await prisma.order.update({
+      where: { id: orderId },
+      data: {
+        paymentStatus: PaymentStatus.FAILED,
+        status: OrderStatus.CANCELLED,
+        cancelledAt: new Date(),
+      },
     });
 
-    if (order) {
-      await prisma.order.update({
-        where: { id: order.id },
-        data: {
-          paymentStatus: 'FAILED',
-        },
+    captureMessage(`Order ${orderId} payment failed and cancelled`, 'info');
+  }
+
+  private async sendConfirmationEmailSafe(order: any): Promise<void> {
+    if (!order.customerEmail || !emailService.isAvailable()) return;
+
+    try {
+      await emailService.sendOrderConfirmation({
+        customerName: order.customerName,
+        customerEmail: order.customerEmail,
+        orderNumber: order.orderNumber,
+        orderDate: order.createdAt.toLocaleDateString('ru-RU', {
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric',
+        }),
+        items: order.items.map((item: any) => ({
+          name: item.productSnapshot?.name || item.product?.name || 'Товар',
+          quantity: item.quantity,
+          price: Number(item.price),
+          total: Number(item.total),
+        })),
+        subtotal: Number(order.subtotal),
+        deliveryCost: Number(order.deliveryCost),
+        total: Number(order.total),
+        deliveryAddress: order.deliveryAddress,
+        customerPhone: order.customerPhone,
+      });
+    } catch (error) {
+      // Изолируем сбой отправки email от бизнес-процесса заказа
+      captureError(error as Error, {
+        context: 'sendConfirmationEmailSafe',
+        orderId: order.id,
       });
     }
   }
 
-  /**
-   * Retrieve checkout session
-   */
-  async getCheckoutSession(sessionId: string): Promise<any> {
+  async getCheckoutSession(sessionId: string): Promise<Stripe.Checkout.Session> {
     return stripe.checkout.sessions.retrieve(sessionId);
   }
 
-  /**
-   * Create refund
-   */
-  async createRefund(paymentIntentId: string, amount?: number): Promise<any> {
-    const refund = await stripe.refunds.create({
+  async createRefund(paymentIntentId: string, amount?: number): Promise<Stripe.Refund> {
+    return stripe.refunds.create({
       payment_intent: paymentIntentId,
-      amount: amount ? Math.round(amount * 100) : undefined, // Full refund if amount not specified
+      amount: amount ? Math.round(amount * 100) : undefined,
     });
-
-    return refund;
   }
 }
 

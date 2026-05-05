@@ -6,16 +6,13 @@ import { products, allCategories, type Category } from "@/data/products";
 import { formatPrice, useCart } from "@/store/cart";
 import { PremiumIconMark } from "@/components/PremiumIcon";
 import { toast } from "sonner";
+import { useCatalog } from "@/hooks/use-catalog";
 
 const filters = ["Все", ...allCategories] as const;
 type Sort = "popular" | "price_asc" | "price_desc";
 
-interface CatalogSidebarProps {
-  isOpen: boolean;
-  onClose: () => void;
-}
-
-export function CatalogSidebar({ isOpen, onClose }: CatalogSidebarProps) {
+export function CatalogSidebar() {
+  const { isOpen, close } = useCatalog();
   const { add } = useCart();
   const [active, setActive] = useState<Category | "Все">("Все");
   const [query, setQuery] = useState("");
@@ -80,7 +77,7 @@ export function CatalogSidebar({ isOpen, onClose }: CatalogSidebarProps) {
         className={`fixed inset-0 bg-black/40 backdrop-blur-sm z-[60] transition-opacity ${
           isOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
         }`}
-        onClick={onClose}
+        onClick={close}
         aria-hidden
       />
 
@@ -98,7 +95,7 @@ export function CatalogSidebar({ isOpen, onClose }: CatalogSidebarProps) {
             <h2 className="text-lg font-semibold">Каталог товаров</h2>
           </div>
           <button
-            onClick={onClose}
+            onClick={close}
             className="p-2 hover:bg-muted rounded-lg transition-colors"
             aria-label="Закрыть каталог"
           >
@@ -246,7 +243,7 @@ export function CatalogSidebar({ isOpen, onClose }: CatalogSidebarProps) {
                   >
                     <Link
                       to={`/product/${p.slug}`}
-                      onClick={onClose}
+                      onClick={close}
                       className="block"
                     >
                       <div className="relative aspect-square bg-secondary overflow-hidden">
@@ -293,7 +290,7 @@ export function CatalogSidebar({ isOpen, onClose }: CatalogSidebarProps) {
         <div className="px-6 py-4 border-t border-border bg-muted/30">
           <Link
             to="/catalog"
-            onClick={onClose}
+            onClick={close}
             className="block w-full text-center px-4 py-2.5 bg-accent hover:bg-accent-hover text-accent-foreground rounded-lg font-medium text-sm transition-colors"
           >
             Смотреть весь каталог →

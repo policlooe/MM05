@@ -2,6 +2,7 @@ import { createContext, useContext, useState, ReactNode, useCallback, useEffect 
 import type { Product } from "@/data/products";
 import { SelectedConfiguration } from "@/types/product-config";
 import { toast } from "sonner";
+import { ecommerce } from "@/lib/web-vitals";
 
 // Расширенный тип для товара в корзине с конфигурацией
 export type CartItem = {
@@ -114,6 +115,14 @@ export function CartProvider({ children }: { children: ReactNode }) {
       return [...prev, newItem];
     });
 
+    // Track add to cart event
+    ecommerce.addToCart({
+      id: p.id,
+      name: p.name,
+      price: finalPrice,
+      quantity: 1,
+    });
+
     toast.success("Товар добавлен в корзину", {
       description: p.name,
       duration: 2000,
@@ -121,17 +130,28 @@ export function CartProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const remove = useCallback((id: string) => {
-    setItems((prev) => prev.filter((i) => i.id !== id));
+    setItems((prev) => {
+      const filtered = prev.filter((i) => i.id !== id);
+      return filtered;
+    });
     toast.success("Товар удален из корзины");
   }, []);
 
   const setQty = useCallback((id: string, qty: number) => {
-    if (qty <= 0) return remove(id);
+    if (qty <= 0) {
+      setItems((prev) => {
+        const filtered = prev.filter((i) => i.id !== id);
+        return filtered;
+      });
+      toast.success("Товар удален из корзины");
+      return;
+    }
     
-    setItems((prev) =>
-      prev.map((i) => (i.id === id ? { ...i, qty: Math.min(qty, 99) } : i))
-    );
-  }, [remove]);
+    setItems((prev) => {
+      const updated = prev.map((i) => (i.id === id ? { ...i, qty: Math.min(qty, 99) } : i));
+      return updated;
+    });
+  }, []);
 
   const clear = useCallback(() => {
     setItems([]);

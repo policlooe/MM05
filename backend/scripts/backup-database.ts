@@ -14,7 +14,8 @@ const execAsync = promisify(exec);
 
 // Конфигурация
 const BACKUP_DIR = path.join(process.cwd(), 'backups');
-const MAX_BACKUPS = 7; // Хранить последние 7 бэкапов
+const MAX_BACKUPS = 30; // Хранить последние 30 бэкапов (1 месяц при ежедневном бэкапе)
+const COMPRESS_BACKUPS = true; // Сжимать бэкапы для экономии места
 
 /**
  * Парсинг DATABASE_URL
@@ -57,26 +58,30 @@ async function createBackup() {
   }
 
   const db = parseDatabaseUrl(databaseUrl);
-  const timestamp = new Date().toISOString().replace(/[:.]/g, '-').split('T')[0];
+  const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
   const backupFile = path.join(BACKUP_DIR, `mm05_backup_${timestamp}.sql`);
+  const compressedFile = `${backupFile}.gz`;
 
   console.log('🔄 Создание бэкапа базы данных...');
   console.log(`📦 База: ${db.database}`);
   console.log(`🏠 Хост: ${db.host}`);
 
-  // Команда pg_dump
-  const command = `PGPASSWORD="${db.password}" pg_dump -h ${db.host} -p ${db.port} -U ${db.user} -d ${db.database} -F p -f "${backupFile}"`;
+  // Команда pg_dump с сжатием
+  const command = COMPRESS_BACKUPS
+    ? `PGPASSWORD="${db.password}" pg_dump -h ${db.host} -p ${db.port} -U ${db.user} -d ${db.database} -F p | gzip > "${compressedFile}"`
+    : `PGPASSWORD="${db.password}" pg_dump -h ${db.host} -p ${db.port} -U ${db.user} -d ${db.database} -F p -f "${backupFile}"`;
 
   try {
     await execAsync(command);
-    console.log(`✅ Бэкап создан: ${backupFile}`);
+    const finalFile = COMPRESS_BACKUPS ? compressedFile : backupFile;
+    console.log(`✅ Бэкап создан: ${finalFile}`);
     
     // Получаем размер файла
-    const stats = fs.statSync(backupFile);
+    const stats = fs.statSync(finalFile);
     const fileSizeMB = (stats.size / (1024 * 1024)).toFixed(2);
     console.log(`📊 Размер: ${fileSizeMB} MB`);
 
-    return backupFile;
+    return finalFile;
   } catch (error: any) {
     console.error('❌ Ошибка создания бэкапа:', error.message);
     throw error;
@@ -88,7 +93,7 @@ async function createBackup() {
  */
 function cleanOldBackups() {
   const files = fs.readdirSync(BACKUP_DIR)
-    .filter(file => file.startsWith('mm05_backup_') && file.endsWith('.sql'))
+    .filter(file => file.startsWith('mm05_backup_') && (file.endsWith('.sql') || file.endsWith('.sql.gz')))
     .map(file => ({
       name: file,
       path: path.join(BACKUP_DIR, file),

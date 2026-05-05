@@ -1,169 +1,68 @@
 import { Request, Response } from 'express';
-import { PrismaClient, PaymentStatus, OrderStatus } from '@prisma/client';
-import Stripe from 'stripe';
-
-const prisma = new PrismaClient();
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2026-04-22.dahlia',
-});
+import { stripe, stripeService } from '../services/stripe.service';
+import { captureError } from '../lib/sentry';
 
 export class WebhookController {
+  /**
+   * HTTP Handler для Stripe Webhook
+   * ВАЖНО: Маршрут в express должен использовать express.raw({ type: 'application/json' })
+   */
   static async handleStripeWebhook(req: Request, res: Response): Promise<void> {
-    const sig = req.headers['stripe-signature'];
+    const signature = req.headers['stripe-signature'];
+    const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
 
-    if (!sig) {
-      res.status(400).json({
-        success: false,
-        error: 'Missing stripe-signature header',
-      });
+    if (!signature || !webhookSecret) {
+      res.status(400).json({ success: false, error: 'Missing signature or secret' });
       return;
     }
 
-    let event: any;
+    let event;
 
+    // 1. Криптографическая валидация
     try {
       event = stripe.webhooks.constructEvent(
-        req.body,
-        sig,
-        process.env.STRIPE_WEBHOOK_SECRET!
+        req.body, // Buffer expected here
+        signature,
+        webhookSecret
       );
     } catch (error: unknown) {
-      console.error('Webhook signature verification failed:', error);
-      res.status(400).json({
-        success: false,
-        error: error instanceof Error ? error.message : 'Webhook signature verification failed',
-      });
+      const errMessage = error instanceof Error ? error.message : 'Unknown signature error';
+      captureError(new Error(`Webhook signature verification failed: ${errMessage}`));
+      res.status(400).json({ success: false, error: errMessage });
       return;
     }
 
+    // 2. Делегирование бизнес-логики сервису
     try {
       switch (event.type) {
-        case 'checkout.session.completed': {
-          const session = event.data.object as any;
-          await WebhookController.handleCheckoutCompleted(session);
+        case 'checkout.session.completed':
+        case 'checkout.session.async_payment_succeeded':
+          await stripeService.processCheckoutCompleted(event.data.object as any);
           break;
-        }
 
-        case 'checkout.session.async_payment_succeeded': {
-          const session = event.data.object as any;
-          await WebhookController.handlePaymentSucceeded(session);
+        case 'checkout.session.async_payment_failed':
+        case 'payment_intent.payment_failed':
+          await stripeService.processPaymentFailed(event.data.object as any);
           break;
-        }
 
-        case 'checkout.session.async_payment_failed': {
-          const session = event.data.object as any;
-          await WebhookController.handlePaymentFailed(session);
+        case 'payment_intent.succeeded':
+          // Логируем, но основную работу делаем в checkout.session.completed
+          console.log(`PaymentIntent succeeded: ${(event.data.object as any).id}`);
           break;
-        }
-
-        case 'payment_intent.succeeded': {
-          const paymentIntent = event.data.object as any;
-          console.log('PaymentIntent succeeded:', paymentIntent.id);
-          break;
-        }
-
-        case 'payment_intent.payment_failed': {
-          const paymentIntent = event.data.object as any;
-          console.log('PaymentIntent failed:', paymentIntent.id);
-          break;
-        }
 
         default:
-          console.log(`Unhandled event type: ${event.type}`);
+          console.log(`Unhandled Stripe event type: ${event.type}`);
       }
 
-      res.json({ received: true });
+      // 3. Возврат 200 OK в Stripe (критично для предотвращения ретраев)
+      res.status(200).json({ received: true });
     } catch (error: unknown) {
-      console.error('Webhook handler error:', error);
-      res.status(500).json({
-        success: false,
-        error: error instanceof Error ? error.message : 'Webhook handler failed',
-      });
-    }
-  }
-
-  private static async handleCheckoutCompleted(session: any): Promise<void> {
-    const orderId = session.metadata?.orderId;
-
-    if (!orderId) {
-      console.error('No orderId in session metadata');
-      return;
-    }
-
-    await prisma.order.update({
-      where: { id: orderId },
-      data: {
-        paymentStatus: PaymentStatus.SUCCEEDED,
-        status: OrderStatus.CONFIRMED,
-        paidAt: new Date(),
-        stripePaymentId: session.payment_intent as string,
-      },
-    });
-
-    // Update product stock
-    const order = await prisma.order.findUnique({
-      where: { id: orderId },
-      include: { items: true },
-    });
-
-    if (order) {
-      await Promise.all(
-        order.items.map((item) =>
-          prisma.product.update({
-            where: { id: item.productId! },
-            data: {
-              stockQuantity: {
-                decrement: item.quantity,
-              },
-              salesCount: {
-                increment: item.quantity,
-              },
-            },
-          })
-        )
+      captureError(
+        error instanceof Error ? error : new Error('Webhook processing failure'),
+        { eventType: event.type }
       );
+      // Возвращаем 500 только в случае критического сбоя БД, чтобы Stripe повторил отправку вебхука
+      res.status(500).json({ success: false, error: 'Internal server error processing webhook' });
     }
-
-    console.log(`Order ${orderId} marked as PAID`);
-  }
-
-  private static async handlePaymentSucceeded(session: any): Promise<void> {
-    const orderId = session.metadata?.orderId;
-
-    if (!orderId) {
-      console.error('No orderId in session metadata');
-      return;
-    }
-
-    await prisma.order.update({
-      where: { id: orderId },
-      data: {
-        paymentStatus: PaymentStatus.SUCCEEDED,
-        status: OrderStatus.CONFIRMED,
-        paidAt: new Date(),
-      },
-    });
-
-    console.log(`Order ${orderId} payment succeeded`);
-  }
-
-  private static async handlePaymentFailed(session: any): Promise<void> {
-    const orderId = session.metadata?.orderId;
-
-    if (!orderId) {
-      console.error('No orderId in session metadata');
-      return;
-    }
-
-    await prisma.order.update({
-      where: { id: orderId },
-      data: {
-        paymentStatus: PaymentStatus.FAILED,
-        status: OrderStatus.CANCELLED,
-        cancelledAt: new Date(),
-      },
-    });
-
-    console.log(`Order ${orderId} payment failed`);
   }
 }

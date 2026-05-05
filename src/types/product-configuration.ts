@@ -74,6 +74,77 @@ export interface PriceCalculation {
 }
 
 /**
+ * Инициализирует конфигурацию с дефолтными значениями
+ * @param configuration - конфигурация товара
+ * @returns начальная выбранная конфигурация
+ */
+export function initializeConfiguration(
+  configuration: ProductConfiguration
+): SelectedConfiguration {
+  const selected: SelectedConfiguration = {
+    variants: {},
+    options: {},
+  };
+
+  // Инициализация вариантов (variants)
+  if (configuration.variants) {
+    Object.entries(configuration.variants).forEach(([key, group]) => {
+      const defaultOption = group.options.find(opt => opt.default);
+      const firstAvailable = group.options.find(opt => !opt.disabled);
+      
+      if (defaultOption && !defaultOption.disabled) {
+        selected.variants[key] = defaultOption.value;
+      } else if (firstAvailable) {
+        selected.variants[key] = firstAvailable.value;
+      }
+    });
+  }
+
+  // Инициализация опций (options)
+  if (configuration.options) {
+    Object.entries(configuration.options).forEach(([key, option]) => {
+      if (option.type === 'toggle') {
+        selected.options[key] = option.default || false;
+      } else if (option.type === 'select') {
+        const defaultOption = option.options.find(opt => opt.default);
+        const firstAvailable = option.options.find(opt => !opt.disabled);
+        
+        if (defaultOption && !defaultOption.disabled) {
+          selected.options[key] = defaultOption.value;
+        } else if (firstAvailable) {
+          selected.options[key] = firstAvailable.value;
+        }
+      }
+    });
+  }
+
+  return selected;
+}
+
+/**
+ * Получает изображение для выбранного цвета
+ * @param configuration - конфигурация товара
+ * @param colorValue - значение выбранного цвета
+ * @param defaultImage - изображение по умолчанию
+ * @returns URL изображения
+ */
+export function getImageForColor(
+  configuration: ProductConfiguration,
+  colorValue: string,
+  defaultImage: string
+): string {
+  if (!configuration.variants?.color) {
+    return defaultImage;
+  }
+
+  const colorOption = configuration.variants.color.options.find(
+    opt => opt.value === colorValue
+  );
+
+  return colorOption?.image || defaultImage;
+}
+
+/**
  * Рассчитывает финальную цену на основе выбранной конфигурации
  * @param basePrice - базовая цена товара
  * @param configuration - конфигурация товара

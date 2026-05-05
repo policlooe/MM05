@@ -21,15 +21,37 @@ export default defineConfig(({ mode }) => ({
   },
   build: {
     // Оптимизация production сборки
-    minify: "esbuild", // Используем esbuild вместо terser (быстрее и не требует установки)
+    minify: "esbuild", // Используем esbuild вместо terser (быстрее)
+    target: "es2015", // Поддержка современных браузеров для меньшего размера
     rollupOptions: {
       output: {
         // Разделение кода для оптимизации загрузки
-        manualChunks: {
-          "react-vendor": ["react", "react-dom", "react-router-dom"],
-          "ui-vendor": ["lucide-react", "@radix-ui/react-dialog", "@radix-ui/react-toast"],
-          "query-vendor": ["@tanstack/react-query"],
+        manualChunks: (id) => {
+          // React и основные библиотеки
+          if (id.includes("node_modules")) {
+            if (id.includes("react") || id.includes("react-dom") || id.includes("react-router")) {
+              return "react-vendor";
+            }
+            // Radix UI компоненты
+            if (id.includes("@radix-ui")) {
+              return "ui-vendor";
+            }
+            // Framer Motion для анимаций
+            if (id.includes("framer-motion")) {
+              return "animation-vendor";
+            }
+            // React Query
+            if (id.includes("@tanstack/react-query")) {
+              return "query-vendor";
+            }
+            // Остальные зависимости
+            return "vendor";
+          }
         },
+        // Оптимизация имен файлов для кеширования
+        entryFileNames: "assets/[name]-[hash].js",
+        chunkFileNames: "assets/[name]-[hash].js",
+        assetFileNames: "assets/[name]-[hash].[ext]",
       },
     },
     // Увеличиваем лимит для предупреждений о размере чанков
@@ -38,6 +60,8 @@ export default defineConfig(({ mode }) => ({
     cssCodeSplit: true,
     // Source maps только для production debugging
     sourcemap: mode === "production" ? false : true,
+    // Оптимизация для production
+    reportCompressedSize: false, // Ускоряет сборку
   },
   // Оптимизация зависимостей
   optimizeDeps: {

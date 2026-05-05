@@ -6,6 +6,7 @@ import { apiLimiter } from './middleware/rateLimiter.middleware.js';
 import { errorHandler } from './middleware/error.middleware.js';
 import { validateEnv } from './utils/validateEnv.js';
 import { initSentry, captureError } from './lib/sentry.js';
+import { HealthController } from './controllers/health.controller.js';
 import authRoutes from './routes/auth.routes.js';
 import adminRoutes from './routes/admin.routes.js';
 import productRoutes from './routes/product.routes.js';
@@ -14,7 +15,8 @@ import orderRoutes from './routes/order.routes.js';
 import checkoutRoutes from './routes/checkout.routes.js';
 import webhookRoutes from './routes/webhook.routes.js';
 
-validateEnv();
+// Validate environment variables before starting
+const env = validateEnv();
 
 const app: Express = express();
 
@@ -44,6 +46,17 @@ app.use(cors({
 
 app.use(cookieParser());
 
+// Request logging (skip health checks to reduce noise)
+if (process.env.NODE_ENV !== 'test') {
+  const morgan = require('morgan');
+  app.use(morgan('combined', {
+    skip: (req: Request) => req.url.startsWith('/health'),
+    stream: {
+      write: (message: string) => console.log(message.trim()),
+    },
+  }));
+}
+
 // CRITICAL: Webhook route MUST use raw body BEFORE json parser
 app.use('/api/webhook', express.raw({ type: 'application/json' }), webhookRoutes);
 
@@ -62,15 +75,10 @@ app.use('/api/cart', cartRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/checkout', checkoutRoutes);
 
-// Health check
-app.get('/health', (_req: Request, res: Response) => {
-  res.json({ 
-    status: 'ok', 
-    timestamp: new Date().toISOString(),
-    version: '2.1.0',
-    environment: process.env.NODE_ENV || 'development',
-  });
-});
+// Health check endpoints
+app.get('/health', HealthController.check);
+app.get('/health/ready', HealthController.ready);
+app.get('/health/live', HealthController.live);
 
 // 404 handler
 app.use((_req: Request, res: Response) => {

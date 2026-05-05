@@ -7,6 +7,7 @@ import { MobileNav } from "@/components/MobileNav";
 import { ChatLauncher } from "@/components/ChatLauncher";
 import { formatPrice } from "@/store/cart";
 import { motion } from "framer-motion";
+import { ecommerce } from "@/lib/web-vitals";
 
 export default function CheckoutSuccess() {
   const location = useLocation();
@@ -15,6 +16,20 @@ export default function CheckoutSuccess() {
 
   useEffect(() => {
     window.scrollTo(0, 0);
+    
+    // Track purchase event
+    if (order) {
+      ecommerce.purchase(
+        order.orderNumber,
+        order.items.map((item: any) => ({
+          id: item.product?.id || item.productId,
+          name: item.product?.name || 'Товар',
+          price: Number(item.price),
+          quantity: item.quantity,
+        })),
+        Number(order.total)
+      );
+    }
   }, []);
 
   // Redirect if no order data

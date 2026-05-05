@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { Eye, EyeOff } from 'lucide-react';
 import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
 import api from '@/services/api';
@@ -12,6 +13,8 @@ export default function Register() {
     password: '',
     confirmPassword: ''
   });
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -61,7 +64,7 @@ export default function Register() {
         const axiosError = err as { response?: { data?: { error?: string } } };
         setError(axiosError.response?.data?.error || 'Ошибка регистрации. Попробуйте другой email.');
       } else {
-        setError('Ошибка регистрации. Попробуйте другой email.');
+        setError('Не удалось подключиться к серверу. Проверьте, что бэкенд запущен.');
       }
     } finally {
       setLoading(false);
@@ -98,6 +101,7 @@ export default function Register() {
                   value={formData.fullName}
                   onChange={handleChange}
                   placeholder="Иван Иванов"
+                  autoComplete="name"
                   required
                   className="w-full px-4 py-3 rounded-lg border border-border bg-background focus:border-accent focus:outline-none transition-colors"
                 />
@@ -114,6 +118,7 @@ export default function Register() {
                   value={formData.email}
                   onChange={handleChange}
                   placeholder="your@email.com"
+                  autoComplete="email"
                   required
                   className="w-full px-4 py-3 rounded-lg border border-border bg-background focus:border-accent focus:outline-none transition-colors"
                 />
@@ -123,17 +128,32 @@ export default function Register() {
                 <label htmlFor="password" className="block text-sm font-medium mb-2">
                   Пароль
                 </label>
-                <input
-                  id="password"
-                  name="password"
-                  type="password"
-                  value={formData.password}
-                  onChange={handleChange}
-                  placeholder="••••••••"
-                  required
-                  minLength={8}
-                  className="w-full px-4 py-3 rounded-lg border border-border bg-background focus:border-accent focus:outline-none transition-colors"
-                />
+                <div className="relative">
+                  <input
+                    id="password"
+                    name="password"
+                    type={showPassword ? "text" : "password"}
+                    value={formData.password}
+                    onChange={handleChange}
+                    placeholder="••••••••"
+                    autoComplete="new-password"
+                    required
+                    minLength={8}
+                    className="w-full px-4 py-3 pr-12 rounded-lg border border-border bg-background focus:border-accent focus:outline-none transition-colors"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                    aria-label={showPassword ? "Скрыть пароль" : "Показать пароль"}
+                  >
+                    {showPassword ? (
+                      <EyeOff className="w-5 h-5" />
+                    ) : (
+                      <Eye className="w-5 h-5" />
+                    )}
+                  </button>
+                </div>
                 <p className="text-xs text-muted-foreground mt-1">
                   Минимум 8 символов
                 </p>
@@ -143,17 +163,32 @@ export default function Register() {
                 <label htmlFor="confirmPassword" className="block text-sm font-medium mb-2">
                   Подтвердите пароль
                 </label>
-                <input
-                  id="confirmPassword"
-                  name="confirmPassword"
-                  type="password"
-                  value={formData.confirmPassword}
-                  onChange={handleChange}
-                  placeholder="••••••••"
-                  required
-                  minLength={8}
-                  className="w-full px-4 py-3 rounded-lg border border-border bg-background focus:border-accent focus:outline-none transition-colors"
-                />
+                <div className="relative">
+                  <input
+                    id="confirmPassword"
+                    name="confirmPassword"
+                    type={showConfirmPassword ? "text" : "password"}
+                    value={formData.confirmPassword}
+                    onChange={handleChange}
+                    placeholder="••••••••"
+                    autoComplete="new-password"
+                    required
+                    minLength={8}
+                    className="w-full px-4 py-3 pr-12 rounded-lg border border-border bg-background focus:border-accent focus:outline-none transition-colors"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                    aria-label={showConfirmPassword ? "Скрыть пароль" : "Показать пароль"}
+                  >
+                    {showConfirmPassword ? (
+                      <EyeOff className="w-5 h-5" />
+                    ) : (
+                      <Eye className="w-5 h-5" />
+                    )}
+                  </button>
+                </div>
               </div>
 
               <button

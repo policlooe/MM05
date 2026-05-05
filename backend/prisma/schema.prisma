@@ -190,6 +190,8 @@ model Product {
   reviews          Review[]
   
   @@index([categoryId])
+  @@index([categoryId, isActive, isFeatured])
+  @@index([price, isActive])
   @@index([slug])
   @@index([isActive])
   @@map("products")
@@ -237,6 +239,9 @@ model Order {
   items           OrderItem[]
   
   @@index([userId])
+  @@index([userId, status])
+  @@index([createdAt, status])
+  @@index([customerPhone, status])
   @@index([orderNumber])
   @@index([status])
   @@index([stripeSessionId])

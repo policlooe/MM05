@@ -2,10 +2,17 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X, ShoppingBag, Trash2, ChevronRight } from 'lucide-react';
 import { useCart, formatPrice } from '@/store/cart';
 import { useScrollLock } from '@/hooks/useScrollLock';
+import { useNavigate } from 'react-router-dom';
 
-export function CartSidebar({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
-  const { items, total, setQty, remove } = useCart();
+export function CartSidebar() {
+  const { items, total, setQty, remove, isOpen, close } = useCart();
+  const navigate = useNavigate();
   useScrollLock(isOpen);
+
+  const handleCheckout = () => {
+    close();
+    navigate('/checkout');
+  };
 
   return (
     <AnimatePresence>
@@ -15,7 +22,7 @@ export function CartSidebar({ isOpen, onClose }: { isOpen: boolean; onClose: () 
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            onClick={onClose}
+            onClick={close}
             className="fixed inset-0 bg-black/40 backdrop-blur-[2px] z-[60]"
           />
           <motion.aside
@@ -30,10 +37,10 @@ export function CartSidebar({ isOpen, onClose }: { isOpen: boolean; onClose: () 
                 <ShoppingBag className="w-6 h-6 text-accent" />
                 <h2 className="text-xl font-bold">Корзина</h2>
                 <span className="bg-accent/10 text-accent text-xs font-bold px-2 py-0.5 rounded-full">
-                  {state.items.length}
+                  {items.length}
                 </span>
               </div>
-              <button onClick={onClose} className="p-2 hover:bg-muted rounded-full transition-colors">
+              <button onClick={close} className="p-2 hover:bg-muted rounded-full transition-colors">
                 <X className="w-6 h-6" />
               </button>
             </div>
@@ -84,7 +91,10 @@ export function CartSidebar({ isOpen, onClose }: { isOpen: boolean; onClose: () 
                   <span className="text-muted-foreground">Итого:</span>
                   <span className="text-2xl font-bold">{formatPrice(total)}</span>
                 </div>
-                <button className="w-full bg-accent hover:bg-accent-hover text-white py-4 rounded-xl font-bold flex items-center justify-center gap-2 transition-all">
+                <button 
+                  onClick={handleCheckout}
+                  className="w-full bg-accent hover:bg-accent-hover text-white py-4 rounded-xl font-bold flex items-center justify-center gap-2 transition-all"
+                >
                   Оформить заказ
                   <ChevronRight className="w-5 h-5" />
                 </button>

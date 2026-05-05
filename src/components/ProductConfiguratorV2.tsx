@@ -1,16 +1,92 @@
-// Product Configurator V2 - с использованием Design System
-// Полностью на базе UI компонентов
-
+// Product Configurator V2 - упрощенная версия
 import { useState, useEffect, useMemo } from "react";
 import { formatPrice } from "@/store/cart";
 import {
   ProductConfiguration,
   SelectedConfiguration,
   calculateConfiguredPrice,
-  checkDependencies,
 } from "@/types/product-config";
-import { getRussianLabel, formatConfigValue } from "@/lib/product-labels";
-import { OptionButton, OptionGroup, Toggle, DeliveryOption } from "./ui";
+import {
+  OptionButton,
+  OptionGroup,
+  ToggleOption,
+  DeliveryOption,
+} from "@/components/ui";
+
+// Helper функции для русификации и форматирования
+const RUSSIAN_LABELS: Record<string, string> = {
+  // Варианты
+  color: "Цвет",
+  size: "Размер",
+  material: "Материал",
+  storage: "Память",
+  ram: "Оперативная память",
+  
+  // Опции
+  assembly: "Сборка",
+  delivery: "Доставка",
+  warranty: "Гарантия",
+  insurance: "Страховка",
+  
+  // Значения цветов
+  black: "Черный",
+  white: "Белый",
+  blue: "Синий",
+  red: "Красный",
+  green: "Зеленый",
+  silver: "Серебристый",
+  gold: "Золотой",
+  
+  // Значения размеров
+  small: "Маленький",
+  medium: "Средний",
+  large: "Большой",
+  xs: "XS",
+  s: "S",
+  m: "M",
+  l: "L",
+  xl: "XL",
+  
+  // Значения доставки
+  pickup: "Самовывоз",
+  courier: "Курьер",
+  express: "Экспресс",
+  standard: "Стандартная",
+};
+
+function getRussianLabel(key: string): string {
+  return RUSSIAN_LABELS[key.toLowerCase()] || key;
+}
+
+function formatConfigValue(variantId: string, value: string): string {
+  // Если это числовое значение (например, память или RAM)
+  if (/^\d+$/.test(value)) {
+    if (variantId === "storage") {
+      return `${value} ГБ`;
+    }
+    if (variantId === "ram") {
+      return `${value} ГБ`;
+    }
+    return value;
+  }
+  
+  // Иначе используем русификацию
+  return getRussianLabel(value);
+}
+
+function checkDependencies(
+  option: any,
+  selected: SelectedConfiguration
+): boolean {
+  if (!option.dependencies?.variant) {
+    return true;
+  }
+
+  // Проверяем, что все зависимости выполнены
+  return Object.entries(option.dependencies.variant).every(
+    ([variantId, requiredValue]) => selected.variants[variantId] === requiredValue
+  );
+}
 
 interface ProductConfiguratorV2Props {
   basePrice: number;
@@ -164,7 +240,7 @@ export function ProductConfiguratorV2({
             }
 
             return (
-              <Toggle
+              <ToggleOption
                 key={option.id}
                 label={russianLabel}
                 price={`+${formatPrice(displayPrice)}`}

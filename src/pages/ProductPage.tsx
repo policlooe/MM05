@@ -7,17 +7,19 @@ import { formatPrice, useCart } from "@/store/cart";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { CartSidebar } from "@/components/CartSidebar";
+import { CatalogSidebar } from "@/components/CatalogSidebar";
 import { MobileNav } from "@/components/MobileNav";
 import { ChatLauncher } from "@/components/ChatLauncher";
 import { ProductReviews } from "@/components/ProductReviews";
 import ImageViewer from "@/components/ImageViewer";
 import { ProductConfiguratorV2 } from "@/components/ProductConfiguratorV2";
-import { ProductConfiguratorAdvanced } from "@/components/ProductConfiguratorAdvanced";
+import { ProductConfiguratorCollapsible } from "@/components/ProductConfiguratorCollapsible";
 import { SelectedConfiguration, calculateConfiguredPrice } from "@/types/product-config";
 import { SelectedConfiguration as AdvancedSelectedConfiguration } from "@/types/product-configuration";
 import { CONTACTS } from "@/lib/contacts";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { ecommerce } from "@/lib/web-vitals";
 
 export default function ProductPage() {
   const { slug = "" } = useParams();
@@ -103,6 +105,14 @@ export default function ProductPage() {
   useEffect(() => {
     if (product) {
       setSelectedImage(product.image);
+      
+      // Track product view
+      ecommerce.viewItem({
+        id: product.id,
+        name: product.name,
+        price: product.price,
+        category: product.category,
+      });
     }
   }, [product]);
 
@@ -252,7 +262,7 @@ export default function ProductPage() {
 
               {product.advancedConfiguration ? (
                 <div className="mb-3">
-                  <ProductConfiguratorAdvanced
+                  <ProductConfiguratorCollapsible
                     basePrice={product.price}
                     configuration={product.advancedConfiguration}
                     defaultImage={product.image}
@@ -350,6 +360,7 @@ export default function ProductPage() {
       </main>
       <Footer />
       <CartSidebar />
+      <CatalogSidebar />
       <MobileNav />
       <ChatLauncher />
     </div>

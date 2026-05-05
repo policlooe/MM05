@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { CartSidebar } from "@/components/CartSidebar";
+import { CatalogSidebar } from "@/components/CatalogSidebar";
 import { MobileNav } from "@/components/MobileNav";
 import { ChatLauncher } from "@/components/ChatLauncher";
 import { Award, Heart, Hammer, TreePine, Users, TrendingUp } from "lucide-react";
@@ -184,6 +185,7 @@ const About = () => {
       </main>
       <Footer />
       <CartSidebar />
+      <CatalogSidebar />
       <MobileNav />
       <ChatLauncher />
     </div>

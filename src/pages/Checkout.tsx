@@ -10,6 +10,7 @@ import { useCart, formatPrice } from "@/store/cart";
 import { orderService } from "@/services/order";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
+import { ecommerce } from "@/lib/web-vitals";
 
 // Схема валидации формы
 const checkoutSchema = z.object({
@@ -39,6 +40,19 @@ export default function Checkout() {
   // Прокрутка вверх при открытии страницы
   useEffect(() => {
     window.scrollTo(0, 0);
+    
+    // Track begin checkout
+    if (items.length > 0) {
+      ecommerce.beginCheckout(
+        items.map(item => ({
+          id: item.id,
+          name: item.name,
+          price: item.finalPrice,
+          quantity: item.qty,
+        })),
+        total
+      );
+    }
   }, []);
 
   // Redirect if cart is empty
