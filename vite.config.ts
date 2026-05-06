@@ -19,25 +19,8 @@ export default defineConfig(({ mode }) => ({
     target: "es2015",
     rollupOptions: {
       output: {
-        // Оптимизированное разделение кода
-        manualChunks: (id) => {
-          // React и связанные библиотеки
-          if (id.includes('node_modules/react') || id.includes('node_modules/react-dom') || id.includes('node_modules/react-router')) {
-            return 'react-vendor';
-          }
-          // Framer Motion
-          if (id.includes('node_modules/framer-motion')) {
-            return 'animation-vendor';
-          }
-          // UI библиотеки
-          if (id.includes('node_modules/@radix-ui') || id.includes('node_modules/lucide-react')) {
-            return 'ui-vendor';
-          }
-          // Остальные node_modules
-          if (id.includes('node_modules')) {
-            return 'vendor';
-          }
-        },
+        // Упрощенное разделение кода - убираем сложную логику
+        manualChunks: undefined,
         // Оптимизация имен файлов для кеширования
         entryFileNames: "assets/[name]-[hash].js",
         chunkFileNames: "assets/[name]-[hash].js",
