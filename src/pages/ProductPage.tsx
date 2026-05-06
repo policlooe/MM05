@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { getProductBySlug } from "@/data/products";
 import { formatPrice, useCart } from "@/store/cart";
 import { Navbar } from "@/components/Navbar";
+import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { Footer } from "@/components/Footer";
 import { CartSidebar } from "@/components/CartSidebar";
 import { CatalogSidebar } from "@/components/CatalogSidebar";
@@ -151,6 +152,7 @@ export default function ProductPage() {
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
+      <Breadcrumbs />
       <main className="container-x py-4 pb-24 md:pb-10">
         <div className="max-w-6xl mx-auto">
           <div className="grid md:grid-cols-2 gap-4 lg:gap-6">

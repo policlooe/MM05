@@ -1,7 +1,8 @@
-import { memo, useCallback, useState } from 'react';
+import { memo, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { useCart, formatPrice } from '@/store/cart';
+import { useFavorites } from '@/store/favorites';
 import { toast } from 'sonner';
 import { Heart, ShoppingCart } from 'lucide-react';
 import type { Product } from '@/data/products';
@@ -15,7 +16,8 @@ export const OptimizedProductCard = memo(({
   index: number;
 }) => {
   const { add } = useCart();
-  const [isFavorite, setIsFavorite] = useState(false);
+  const { add: addToFavorites, remove: removeFromFavorites, isFavorite } = useFavorites();
+  const isInFavorites = isFavorite(product.id);
 
   const handleAddToCart = useCallback(() => {
     add(product);
@@ -28,11 +30,21 @@ export const OptimizedProductCard = memo(({
   const toggleFavorite = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    setIsFavorite(!isFavorite);
-    toast.success(isFavorite ? "Удалено из избранного" : "Добавлено в избранное", {
-      duration: 1500
-    });
-  }, [isFavorite]);
+    
+    if (isInFavorites) {
+      removeFromFavorites(product.id);
+      toast.success("Удалено из избранного", {
+        description: product.name,
+        duration: 1500
+      });
+    } else {
+      addToFavorites(product);
+      toast.success("Добавлено в избранное", {
+        description: product.name,
+        duration: 1500
+      });
+    }
+  }, [isInFavorites, product, addToFavorites, removeFromFavorites]);
 
   return (
     <motion.article
@@ -101,7 +113,7 @@ export const OptimizedProductCard = memo(({
             className="absolute top-2 right-2 w-9 h-9 bg-background/95 backdrop-blur-sm border border-border rounded-full flex items-center justify-center shadow-md hover:bg-accent hover:border-accent hover:text-white transition-all duration-300 z-10"
           >
             <Heart 
-              className={`w-4 h-4 transition-all ${isFavorite ? 'fill-current text-red-500' : ''}`} 
+              className={`w-4 h-4 transition-all ${isInFavorites ? 'fill-current text-red-500' : ''}`} 
             />
           </motion.button>
         </div>

@@ -1,8 +1,9 @@
-import { ShoppingBag, Search, User } from "lucide-react";
+import { ShoppingBag, Search, User, Heart } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import { useCart } from "@/store/cart";
+import { useFavorites } from "@/store/favorites";
 import { useCatalog } from "@/hooks/use-catalog";
 import { AddressLink } from "@/components/AddressLink";
 import { CONTACTS } from "@/lib/contacts";
@@ -11,6 +12,7 @@ import { cn } from "@/lib/utils";
 
 export function Navbar() {
   const { count, open } = useCart();
+  const { favorites } = useFavorites();
   const { open: openCatalog } = useCatalog();
   const [q, setQ] = useState("");
   const [user, setUser] = useState<{ fullName?: string; email: string } | null>(null);
@@ -144,6 +146,22 @@ export function Navbar() {
                   <User className="w-5 h-5 text-white" />
                 </Link>
               )}
+
+              <Link
+                to="/favorites"
+                className="relative inline-flex items-center justify-center h-[42px] w-[42px] rounded-xl text-foreground hover:bg-muted/80 transition-colors border border-transparent hover:border-border"
+              >
+                <Heart className={`w-5 h-5 ${favorites.length > 0 ? 'fill-current text-red-500' : ''}`} />
+                {favorites.length > 0 && (
+                  <motion.span
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    className="absolute -top-0.5 -right-0.5 bg-red-500 text-white text-[10px] font-semibold min-w-[18px] h-[18px] px-0.5 rounded-full flex items-center justify-center shadow-sm"
+                  >
+                    {favorites.length}
+                  </motion.span>
+                )}
+              </Link>
 
               <motion.button
                 type="button"
