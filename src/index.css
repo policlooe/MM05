@@ -13,6 +13,7 @@
     --foreground: 0 0% 11.4%;        /* #1D1D1F */
 
     --surface: 0 0% 100%;            /* #FFFFFF */
+    --surface-alt: 0 0% 98%;         /* #FAFAFA - Альтернативный фон для секций */
 
     --card: 0 0% 100%;
     --card-foreground: 0 0% 11.4%;
@@ -20,8 +21,8 @@
     --popover: 0 0% 100%;
     --popover-foreground: 0 0% 11.4%;
 
-    /* Primary green: #16A34A */
-    --primary: 142 76% 36%;
+    /* Primary green: Более органичный оливковый оттенок для мебели */
+    --primary: 142 45% 38%;          /* #3D8B5C - Приглушенный лесной зеленый */
     --primary-foreground: 0 0% 100%;
 
     /* Light gray backgrounds */
@@ -29,12 +30,12 @@
     --secondary-foreground: 0 0% 11.4%;
 
     --muted: 0 0% 96%;
-    --muted-foreground: 0 0% 40%;    /* #666666 - улучшенный контраст (было 43% #6E6E73) */
+    --muted-foreground: 0 0% 35%;    /* #595959 - Улучшенный контраст для читаемости */
 
-    /* CTA green: #22C55E */
-    --accent: 142 71% 45%;
+    /* CTA green: Более органичный оттенок */
+    --accent: 142 50% 42%;           /* #358B5A - Приглушенный зеленый для мебели */
     --accent-foreground: 0 0% 100%;
-    --accent-hover: 142 76% 36%;     /* Darker on hover */
+    --accent-hover: 142 55% 35%;     /* Darker on hover */
 
     /* Error red: #EF4444 */
     --destructive: 0 84% 60%;
@@ -43,15 +44,16 @@
     /* Borders: #E5E5E5 */
     --border: 0 0% 90%;
     --input: 0 0% 90%;
-    --ring: 142 71% 45%;
+    --ring: 142 50% 42%;
 
     --radius: 0.75rem;               /* 12px base radius */
 
-    /* Apple-style shadows */
+    /* Apple-style shadows - усиленные для карточек */
     --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.04);
-    --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.06);
-    --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.08);
-    --shadow-accent: 0 4px 16px rgba(34, 197, 94, 0.15);
+    --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.08);
+    --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.12);
+    --shadow-accent: 0 4px 20px rgba(53, 139, 90, 0.2);
+    --shadow-hover: 0 12px 40px rgba(0, 0, 0, 0.15);
 
     --transition-base: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
@@ -62,7 +64,7 @@
     --sidebar-accent: 0 0% 96%;
     --sidebar-accent-foreground: 0 0% 10%;
     --sidebar-border: 0 0% 90%;
-    --sidebar-ring: 142 71% 45%;
+    --sidebar-ring: 142 50% 42%;
   }
 }
 
@@ -98,6 +100,8 @@
     -moz-osx-font-smoothing: grayscale;
     min-height: 100vh;
     position: relative;
+    font-size: 16px; /* КРИТИЧНО: Базовый размер 16px для читаемости */
+    line-height: 1.6;
   }
 
   /* Предотвращение сдвига при скрытии скроллбара */

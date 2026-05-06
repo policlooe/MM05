@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
+import { ChevronRight } from "lucide-react";
 import heroBanner from "@/assets/hero-banner.jpg";
 
 export function Hero() {
@@ -12,7 +13,7 @@ export function Hero() {
       >
         <Link
           to="/catalog"
-          className="relative block rounded-xl md:rounded-2xl overflow-hidden bg-secondary aspect-[16/11] md:aspect-[21/8] group ring-1 ring-border/60 hover:ring-accent/30 transition-all"
+          className="relative block rounded-2xl md:rounded-3xl overflow-hidden bg-secondary aspect-[16/11] md:aspect-[21/8] group ring-1 ring-border/60 hover:ring-accent/50 transition-all shadow-lg hover:shadow-2xl"
           aria-label="Перейти в каталог"
         >
         <img
@@ -20,22 +21,53 @@ export function Hero() {
           alt="Мебель из массива дерева ручной работы — MM05"
           width={1200}
           height={900}
-          className="absolute inset-0 w-full h-full object-cover scale-[1.01] transition-[transform,opacity] duration-700 ease-out group-hover:scale-[1.05] group-hover:-translate-y-1 group-active:scale-100 group-active:opacity-90"
+          className="absolute inset-0 w-full h-full object-cover scale-[1.01] transition-[transform,opacity] duration-1000 ease-out group-hover:scale-[1.08] group-hover:-translate-y-2 group-active:scale-100 group-active:opacity-90"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/35 to-transparent md:bg-gradient-to-r md:from-black/65 md:via-black/30 md:to-transparent transition-opacity duration-500 group-hover:opacity-90 group-active:opacity-100" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent md:bg-gradient-to-r md:from-black/75 md:via-black/35 md:to-transparent transition-opacity duration-700 group-hover:opacity-95 group-active:opacity-100" />
 
-        <div className="relative z-10 h-full flex flex-col justify-end md:justify-center p-5 md:p-10 max-w-lg">
-          <p className="text-[10px] md:text-xs font-medium tracking-wide text-white/75 mb-1.5 opacity-0 translate-y-2 animate-[fade-in-up_0.55s_ease_forwards] [animation-delay:0.2s]">
+        <div className="relative z-10 h-full flex flex-col justify-end md:justify-center p-6 md:p-12 lg:p-16 max-w-2xl">
+          <motion.p 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3, duration: 0.6 }}
+            className="text-xs md:text-sm font-semibold tracking-wider uppercase text-white/80 mb-3 md:mb-4"
+          >
             Каталог 2026
-          </p>
-          <h1 className="font-serif text-2xl md:text-4xl lg:text-5xl font-semibold leading-[1.08] text-white">
+          </motion.p>
+          
+          <motion.h1 
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4, duration: 0.7 }}
+            className="font-serif text-3xl md:text-5xl lg:text-6xl xl:text-7xl font-bold leading-[1.1] text-white mb-4 md:mb-6"
+          >
             Мебель из массива
             <br />
-            <span className="text-white/95">с доставкой по Дагестану</span>
-          </h1>
-          <p className="mt-2 text-xs md:text-sm text-white/80 max-w-sm opacity-0 translate-y-2 animate-[fade-in-up_0.6s_ease_forwards] [animation-delay:0.35s]">
+            <span className="text-white/95 bg-gradient-to-r from-white to-white/80 bg-clip-text text-transparent">
+              с доставкой по Дагестану
+            </span>
+          </motion.h1>
+          
+          <motion.p 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5, duration: 0.6 }}
+            className="text-sm md:text-lg text-white/90 max-w-xl mb-6 md:mb-8 leading-relaxed"
+          >
             Качественная мебель в Махачкале. Сборка и доставка от 30 000 ₽ — бесплатно.
-          </p>
+          </motion.p>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.6, duration: 0.6 }}
+            className="inline-flex"
+          >
+            <span className="inline-flex items-center gap-2 bg-white hover:bg-accent text-foreground hover:text-white px-6 md:px-8 py-3 md:py-4 rounded-xl font-semibold text-sm md:text-base shadow-xl hover:shadow-2xl transition-all duration-300 group-hover:scale-105">
+              Смотреть каталог
+              <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+            </span>
+          </motion.div>
         </div>
       </Link>
       </motion.div>

@@ -71,110 +71,112 @@ const getDaysLeft = (endDate: string): number => {
 
 export function Promotions() {
   return (
-    <section id="promotions" className="container-x py-6 md:py-8">
-      {/* Заголовок секции */}
-      <div className="flex items-center justify-between mb-5 md:mb-6">
-        <div>
-          <h2 className="font-serif text-xl md:text-2xl font-semibold mb-1">
-            🔥 Акции и скидки
-          </h2>
-          <p className="text-xs md:text-sm text-muted-foreground">
-            Специальные предложения на популярные товары
-          </p>
+    <section id="promotions" className="py-8 md:py-12">
+      <div className="container-x">
+        {/* Заголовок секции */}
+        <div className="flex items-center justify-between mb-6 md:mb-8">
+          <div>
+            <h2 className="font-serif text-2xl md:text-3xl lg:text-4xl font-bold mb-2">
+              🔥 Акции и скидки
+            </h2>
+            <p className="text-sm md:text-base text-muted-foreground">
+              Специальные предложения на популярные товары
+            </p>
+          </div>
+          <Link
+            to="/catalog"
+            className="hidden md:inline-flex items-center gap-1 text-sm text-accent hover:text-accent-hover font-semibold transition-colors"
+          >
+            Все товары →
+          </Link>
         </div>
-        <Link
-          to="/catalog"
-          className="hidden md:inline-flex items-center gap-1 text-sm text-accent hover:text-accent-hover font-medium transition-colors"
-        >
-          Все товары →
-        </Link>
-      </div>
 
-      {/* Сетка карточек акций */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
-        {promotionProducts.map((product) => {
-          const daysLeft = product.endsAt ? getDaysLeft(product.endsAt) : null;
+        {/* Сетка карточек акций */}
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-5">
+          {promotionProducts.map((product) => {
+            const daysLeft = product.endsAt ? getDaysLeft(product.endsAt) : null;
 
-          return (
-            <Link
-              key={product.id}
-              to={`/product/${product.slug}`}
-              className="group bg-surface border border-border rounded-xl md:rounded-2xl overflow-hidden hover:border-accent/15 hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
-            >
-              {/* Изображение товара */}
-              <div className="relative aspect-square bg-secondary overflow-hidden">
-                <img
-                  src={product.image}
-                  alt={product.name}
-                  loading="lazy"
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                />
+            return (
+              <Link
+                key={product.id}
+                to={`/product/${product.slug}`}
+                className="group bg-surface border border-border rounded-xl md:rounded-2xl overflow-hidden hover:border-accent/40 hover:shadow-[var(--shadow-hover)] transition-all duration-400 hover:-translate-y-2"
+              >
+                {/* Изображение товара */}
+                <div className="relative aspect-square bg-secondary overflow-hidden">
+                  <img
+                    src={product.image}
+                    alt={product.name}
+                    loading="lazy"
+                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                  />
 
-                {/* Бейдж скидки */}
-                <div className="absolute top-2 left-2 bg-destructive text-white text-xs md:text-sm font-bold px-2 md:px-3 py-1 md:py-1.5 rounded-full shadow-lg">
-                  −{product.discount}%
-                </div>
-
-                {/* Таймер акции (если есть) */}
-                {daysLeft !== null && daysLeft > 0 && daysLeft <= 7 && (
-                  <div className="absolute top-2 right-2 bg-accent text-accent-foreground text-[10px] md:text-xs font-semibold px-2 py-1 rounded-full shadow-lg flex items-center gap-1">
-                    <Clock className="w-3 h-3" />
-                    {daysLeft}д
+                  {/* Бейдж скидки */}
+                  <div className="absolute top-2 left-2 bg-destructive text-white text-xs md:text-sm font-bold px-3 md:px-4 py-1.5 md:py-2 rounded-full shadow-lg">
+                    −{product.discount}%
                   </div>
-                )}
 
-                {/* Кнопка "В корзину" при hover */}
-                <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/60 to-transparent p-3 translate-y-full group-hover:translate-y-0 transition-transform duration-300">
-                  <button className="w-full bg-accent hover:bg-accent-hover text-accent-foreground py-2 rounded-lg text-xs md:text-sm font-semibold flex items-center justify-center gap-1.5 transition-colors">
-                    <ShoppingBag className="w-3.5 h-3.5 md:w-4 md:h-4" />
-                    В корзину
-                  </button>
+                  {/* Таймер акции (если есть) */}
+                  {daysLeft !== null && daysLeft > 0 && daysLeft <= 7 && (
+                    <div className="absolute top-2 right-2 bg-accent text-white text-[10px] md:text-xs font-semibold px-2.5 py-1.5 rounded-full shadow-lg flex items-center gap-1">
+                      <Clock className="w-3 h-3" />
+                      {daysLeft}д
+                    </div>
+                  )}
+
+                  {/* Кнопка "В корзину" при hover */}
+                  <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent p-3 translate-y-full group-hover:translate-y-0 transition-transform duration-300">
+                    <button className="w-full bg-accent hover:bg-accent-hover text-white py-2.5 rounded-lg text-xs md:text-sm font-semibold flex items-center justify-center gap-2 transition-colors shadow-lg">
+                      <ShoppingBag className="w-4 h-4" />
+                      В корзину
+                    </button>
+                  </div>
                 </div>
-              </div>
 
-              {/* Информация о товаре */}
-              <div className="p-3 md:p-4">
-                {/* Категория */}
-                <p className="text-[10px] md:text-xs text-muted-foreground mb-1">
-                  {product.category}
-                </p>
-
-                {/* Название */}
-                <h3 className="text-xs md:text-sm font-semibold mb-2 md:mb-3 line-clamp-2 leading-tight min-h-[2.5rem] md:min-h-[2.8rem]">
-                  {product.name}
-                </h3>
-
-                {/* Цены */}
-                <div className="space-y-1">
-                  {/* Старая цена */}
-                  <p className="text-xs md:text-sm text-muted-foreground line-through">
-                    {formatPrice(product.oldPrice)}
+                {/* Информация о товаре */}
+                <div className="p-3.5 md:p-4">
+                  {/* Категория */}
+                  <p className="text-xs text-muted-foreground mb-1.5">
+                    {product.category}
                   </p>
 
-                  {/* Новая цена */}
-                  <div className="flex items-baseline gap-2">
-                    <p className="text-base md:text-xl font-bold text-accent">
-                      {formatPrice(product.newPrice)}
+                  {/* Название */}
+                  <h3 className="text-sm md:text-base font-semibold mb-3 line-clamp-2 leading-snug min-h-[2.8rem] md:min-h-[3rem]">
+                    {product.name}
+                  </h3>
+
+                  {/* Цены */}
+                  <div className="space-y-1.5">
+                    {/* Старая цена */}
+                    <p className="text-sm text-muted-foreground line-through">
+                      {formatPrice(product.oldPrice)}
                     </p>
-                    <p className="text-[10px] md:text-xs text-accent font-medium">
-                      Экономия {formatPrice(product.oldPrice - product.newPrice)}
-                    </p>
+
+                    {/* Новая цена */}
+                    <div className="flex items-baseline gap-2">
+                      <p className="text-lg md:text-xl font-bold text-accent">
+                        {formatPrice(product.newPrice)}
+                      </p>
+                      <p className="text-xs text-accent font-semibold">
+                        −{formatPrice(product.oldPrice - product.newPrice)}
+                      </p>
+                    </div>
                   </div>
                 </div>
-              </div>
-            </Link>
-          );
-        })}
-      </div>
+              </Link>
+            );
+          })}
+        </div>
 
-      {/* Кнопка "Все товары" для мобильных */}
-      <div className="mt-5 md:hidden">
-        <Link
-          to="/catalog"
-          className="block w-full text-center py-3 bg-secondary hover:bg-muted rounded-lg text-sm font-semibold transition-colors"
-        >
-          Посмотреть все товары
-        </Link>
+        {/* Кнопка "Все товары" для мобильных */}
+        <div className="mt-6 md:hidden">
+          <Link
+            to="/catalog"
+            className="block w-full text-center py-3.5 bg-secondary hover:bg-muted rounded-xl text-sm font-semibold transition-colors"
+          >
+            Посмотреть все товары
+          </Link>
+        </div>
       </div>
     </section>
   );

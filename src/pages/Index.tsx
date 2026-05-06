@@ -15,10 +15,17 @@ export default function Index() {
     <div className="min-h-screen bg-background">
       <Navbar />
       <main>
-        <Hero />
-        <Promotions />
+        <div className="bg-background">
+          <Hero />
+        </div>
+        <div className="bg-surface">
+          <Promotions />
+        </div>
+        {/* Products has its own bg-surface-alt */}
         <Products />
-        <ContactUs />
+        <div className="bg-surface">
+          <ContactUs />
+        </div>
       </main>
       <Footer />
       <CartSidebar />
