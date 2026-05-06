@@ -71,13 +71,17 @@ export function Hero() {
   const currentBanner = banners[currentIndex];
 
   return (
-    <section className="container-x pt-2 md:pt-3">
+    <section className="container-x pt-2 md:pt-3" aria-label="Главный баннер">
       <motion.div
         initial={{ opacity: 0, y: 40, scale: 0.95 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
         transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
         className="relative"
       >
+        <div className="sr-only" role="status" aria-live="polite" aria-atomic="true">
+          Баннер {currentIndex + 1} из {banners.length}: {currentBanner.title}
+        </div>
+        
         <Link
           to={currentBanner.link}
           className="relative block rounded-2xl md:rounded-3xl overflow-hidden bg-secondary aspect-[16/11] md:aspect-[21/8] group transition-all shadow-lg hover:shadow-2xl"
@@ -115,7 +119,7 @@ export function Hero() {
                   {currentBanner.badge}
                 </p>
                 
-                <h1 className="font-serif text-2xl md:text-3xl lg:text-4xl font-bold leading-[1.15] text-white mb-3 md:mb-4">
+                <h1 className="font-serif text-2xl md:text-3xl lg:text-4xl font-bold leading-[1.15] text-white mb-2 md:mb-4">
                   {currentBanner.title}
                   <br />
                   <span className="text-white/95">
@@ -123,14 +127,14 @@ export function Hero() {
                   </span>
                 </h1>
                 
-                <p className="text-sm md:text-base text-white/90 max-w-xl mb-5 md:mb-6 leading-relaxed">
+                <p className="text-sm md:text-base text-white/90 max-w-xl mb-4 md:mb-6 leading-relaxed">
                   {currentBanner.description}
                 </p>
 
-                <div className="inline-flex">
+                <div className="hidden md:inline-flex">
                   <span className="inline-flex items-center gap-2 bg-white hover:bg-accent text-foreground hover:text-white px-5 md:px-7 py-2.5 md:py-3 rounded-xl font-semibold text-sm shadow-xl hover:shadow-2xl transition-all duration-300 group-hover:scale-105">
                     {currentBanner.cta}
-                    <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                    <ChevronRight className="w-4 h-4 stroke-2 group-hover:translate-x-1 transition-transform" />
                   </span>
                 </div>
               </motion.div>
@@ -138,7 +142,7 @@ export function Hero() {
           </div>
         </Link>
 
-        {/* Navigation Arrows - Only show if more than 1 banner */}
+        {/* Navigation Arrows - Hidden on mobile, visible on desktop */}
         {banners.length > 1 && (
           <>
             <button
@@ -146,10 +150,10 @@ export function Hero() {
                 e.preventDefault();
                 goToPrev();
               }}
-              className="absolute left-4 top-1/2 -translate-y-1/2 z-20 w-10 h-10 md:w-12 md:h-12 bg-white/90 hover:bg-white rounded-full flex items-center justify-center shadow-lg transition-all hover:scale-110 active:scale-95"
+              className="hidden md:flex absolute left-4 top-1/2 -translate-y-1/2 z-20 w-10 h-10 md:w-12 md:h-12 bg-white/90 hover:bg-white rounded-full items-center justify-center shadow-lg transition-all hover:scale-110 active:scale-95"
               aria-label="Previous banner"
             >
-              <ChevronLeft className="w-5 h-5 md:w-6 md:h-6 text-foreground" />
+              <ChevronLeft className="w-6 h-6 stroke-[1.5] text-foreground" />
             </button>
 
             <button
@@ -157,18 +161,18 @@ export function Hero() {
                 e.preventDefault();
                 goToNext();
               }}
-              className="absolute right-4 top-1/2 -translate-y-1/2 z-20 w-10 h-10 md:w-12 md:h-12 bg-white/90 hover:bg-white rounded-full flex items-center justify-center shadow-lg transition-all hover:scale-110 active:scale-95"
+              className="hidden md:flex absolute right-4 top-1/2 -translate-y-1/2 z-20 w-10 h-10 md:w-12 md:h-12 bg-white/90 hover:bg-white rounded-full items-center justify-center shadow-lg transition-all hover:scale-110 active:scale-95"
               aria-label="Next banner"
             >
-              <ChevronRight className="w-5 h-5 md:w-6 md:h-6 text-foreground" />
+              <ChevronRight className="w-6 h-6 stroke-[1.5] text-foreground" />
             </button>
           </>
         )}
 
         {/* Dots Indicator - Only show if more than 1 banner */}
         {banners.length > 1 && (
-          <div className="absolute bottom-4 md:bottom-6 left-1/2 -translate-x-1/2 z-20 flex items-center gap-2">
-            {banners.map((_, index) => (
+          <div className="absolute bottom-4 md:bottom-6 left-1/2 -translate-x-1/2 z-20 flex items-center gap-2" role="group" aria-label="Навигация по баннерам">
+            {banners.map((banner, index) => (
               <button
                 key={index}
                 onClick={(e) => {
@@ -180,7 +184,8 @@ export function Hero() {
                     ? "w-8 h-2 bg-white"
                     : "w-2 h-2 bg-white/50 hover:bg-white/75"
                 } rounded-full`}
-                aria-label={`Go to banner ${index + 1}`}
+                aria-label={`Перейти к баннеру: ${banner.title}`}
+                aria-current={index === currentIndex ? "true" : "false"}
               />
             ))}
           </div>

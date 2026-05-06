@@ -15,10 +15,10 @@ export function MobileNav() {
 
   return (
     <nav
-      className="md:hidden fixed bottom-0 inset-x-0 z-40 bg-surface/95 backdrop-blur-md border-t border-border shadow-[0_-4px_24px_rgba(15,35,25,0.06)]"
+      className="md:hidden fixed bottom-0 inset-x-0 z-40 bg-surface/95 backdrop-blur-md border-t border-border shadow-[0_-4px_24px_rgba(15,35,25,0.06)] h-14"
       aria-label="Нижняя навигация"
     >
-      <div className="grid grid-cols-4 gap-1 px-2 pt-2 pb-[calc(0.75rem+env(safe-area-inset-bottom))]">
+      <div className="grid grid-cols-4 gap-1 px-2 py-1.5 h-full">
         <NavLink to="/" className={linkClass} end>
           {({ isActive }) => (
             <>

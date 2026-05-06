@@ -190,6 +190,28 @@
   .lucide.h-8 {
     stroke-width: 1.5;
   }
+
+  /* Анти-мерцание при скролле */
+  * {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .card,
+  [class*="card"],
+  [class*="Card"] {
+    will-change: transform;
+    transform: translateZ(0);
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+  }
+
+  /* Оптимизация для изображений */
+  img {
+    will-change: transform;
+    transform: translateZ(0);
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+  }
 }
 
 @layer utilities {

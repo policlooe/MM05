@@ -80,15 +80,15 @@ export function Navbar() {
         scrolled ? 'bg-surface/70 border-border shadow-lg' : 'bg-surface/90 border-border/50'
       )}
     >
-      {/* Локация */}
-      <div className="w-full overflow-hidden">
+      {/* Локация - скрыта на мобильных */}
+      <div className="w-full overflow-hidden hidden md:block">
         <div className="container-x">
           <div className="flex items-center justify-between py-2 gap-2">
             <AddressLink variant="inline" className="text-foreground truncate flex-1 min-w-0" />
             <div className="flex items-center gap-3 shrink-0">
               <a
                 href={`tel:${CONTACTS.phoneTel}`}
-                className="hidden sm:inline-block text-sm font-medium text-foreground hover:text-accent transition-colors whitespace-nowrap"
+                className="text-sm font-medium text-foreground hover:text-accent transition-colors whitespace-nowrap"
               >
                 {CONTACTS.phone}
               </a>
@@ -130,7 +130,7 @@ export function Navbar() {
               {user ? (
                 <div className="flex items-center gap-2">
                   <div className="hidden lg:flex items-center gap-2 px-3 py-2 rounded-xl border border-border bg-secondary/50 max-w-[150px]">
-                    <User className="w-4 h-4 text-muted-foreground shrink-0" />
+                    <User className="w-5 h-5 stroke-[1.5] text-muted-foreground shrink-0" />
                     <span className="text-xs font-medium text-foreground truncate">
                       {user.fullName || user.email}
                     </span>
@@ -147,7 +147,7 @@ export function Navbar() {
                   to="/login"
                   className="inline-flex items-center justify-center h-[42px] w-[42px] rounded-xl bg-accent hover:bg-accent-hover transition-colors shadow-sm"
                 >
-                  <User className="w-5 h-5 stroke-[1.5] text-white" />
+                  <User className="w-5 h-5 stroke-[1.5] text-white" aria-hidden="true" />
                 </Link>
               )}
 
@@ -155,7 +155,7 @@ export function Navbar() {
                 to="/favorites"
                 className="relative inline-flex items-center justify-center h-[42px] w-[42px] rounded-xl text-foreground hover:bg-muted/80 transition-colors border border-transparent hover:border-border"
               >
-                <Heart className={`w-5 h-5 stroke-[1.5] ${favorites.length > 0 ? 'fill-current text-red-500' : ''}`} />
+                <Heart className={`w-5 h-5 stroke-[1.5] ${favorites.length > 0 ? 'fill-current text-red-500' : ''}`} aria-hidden="true" />
                 {favorites.length > 0 && (
                   <motion.span
                     initial={{ scale: 0 }}
@@ -174,7 +174,7 @@ export function Navbar() {
                 whileTap={{ scale: 0.95 }}
                 className="relative inline-flex items-center justify-center h-[42px] w-[42px] rounded-xl text-foreground hover:bg-muted/80 transition-colors border border-transparent hover:border-border"
               >
-                <ShoppingBag className={`w-5 h-5 stroke-[1.5] ${count > 0 ? 'text-accent' : 'text-foreground'}`} />
+                <ShoppingBag className={`w-5 h-5 stroke-[1.5] ${count > 0 ? 'text-accent' : 'text-foreground'}`} aria-hidden="true" />
                 {count > 0 && (
                   <motion.span
                     initial={{ scale: 0 }}

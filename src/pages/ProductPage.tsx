@@ -162,11 +162,11 @@ export default function ProductPage() {
       <Navbar />
       <Breadcrumbs />
       <main className="container-x py-4 pb-24 md:pb-10">
-        <div className="max-w-6xl mx-auto">
+        <div className="max-w-6xl mx-auto px-4">
           <div className="grid md:grid-cols-2 gap-4 lg:gap-6">
-            <div>
+            <div className="flex flex-col items-center">
               <motion.div 
-                className="bg-surface rounded-xl overflow-hidden border border-border aspect-square mb-3 cursor-pointer group relative"
+                className="bg-surface rounded-xl overflow-hidden border border-border aspect-square mb-3 cursor-pointer group relative w-full max-w-md md:max-w-none"
                 whileHover={{ scale: 1.02 }}
                 transition={{ duration: 0.3 }}
                 onClick={() => openViewer(selectedImage)}
@@ -190,7 +190,7 @@ export default function ProductPage() {
               </motion.div>
 
               {allImages.length > 1 && (
-                <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-muted scrollbar-track-transparent">
+                <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-muted scrollbar-track-transparent w-full max-w-md md:max-w-none justify-center md:justify-start">
                   {allImages.map((img, index) => (
                     <motion.button
                       key={index}
@@ -221,19 +221,19 @@ export default function ProductPage() {
               )}
             </div>
 
-            <div>
+            <div className="flex flex-col items-center md:items-start text-center md:text-left px-4 md:px-0">
               {product.badge && (
                 <span className="inline-block border border-border bg-muted/50 text-muted-foreground text-xs font-medium px-2 py-0.5 rounded-md mb-3">
                   {product.badge}
                 </span>
               )}
               <p className="text-xs text-muted-foreground font-medium mb-2">{product.category}</p>
-              <h1 className="font-serif text-4xl md:text-5xl font-bold tracking-tight mb-3">{product.name}</h1>
+              <h1 className="font-serif text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight mb-3">{product.name}</h1>
               <p className="text-muted-foreground text-base leading-relaxed mb-5 max-w-2xl">
                 {product.shortDescription}
               </p>
 
-              <div className="sticky top-4 bg-surface border border-border rounded-lg p-3 mb-3 shadow-sm">
+              <div className="sticky top-4 bg-surface border border-border rounded-lg p-3 mb-3 shadow-sm w-full max-w-md md:max-w-none">
                 <div className="flex items-baseline justify-between gap-2">
                   <span className="font-serif text-3xl font-bold text-accent">
                     {formatPrice(finalPrice)}
@@ -292,14 +292,14 @@ export default function ProductPage() {
 
               <div className="flex flex-wrap gap-1.5 text-xs mb-4">
                 <span className="inline-flex items-center gap-1 border border-border bg-secondary/80 text-foreground px-2 py-1 rounded-md font-medium">
-                  <Check className="w-3 h-3 stroke-[1.15] text-accent shrink-0" /> {product.inStock ? "В наличии" : "Под заказ"}
+                  <Check className="w-3 h-3 stroke-2 text-accent shrink-0" /> {product.inStock ? "В наличии" : "Под заказ"}
                 </span>
                 <span className="inline-flex items-center gap-1 border border-border bg-secondary/80 px-2 py-1 rounded-md text-muted-foreground">
-                  <Clock className="w-3 h-3 stroke-[1.15] shrink-0" /> {product.leadTime}
+                  <Clock className="w-3 h-3 stroke-2 shrink-0" /> {product.leadTime}
                 </span>
               </div>
 
-              <div className="flex flex-col gap-2 mb-6">
+              <div className="flex flex-col gap-2 mb-6 w-full max-w-md md:max-w-none">
                 <button
                   onClick={() => {
                     const configToUse = product.advancedConfiguration 
@@ -312,7 +312,7 @@ export default function ProductPage() {
                   }}
                   className="w-full inline-flex items-center justify-center gap-2 bg-accent hover:bg-accent-hover text-accent-foreground py-3 rounded-lg font-semibold text-sm transition-colors shadow-sm active:scale-[0.98]"
                 >
-                  <ShoppingBag className="w-4 h-4 stroke-[1.15]" /> В корзину
+                  <ShoppingBag className="w-4 h-4 stroke-2" aria-hidden="true" /> В корзину
                 </button>
                 <a
                   href={wa}
@@ -320,7 +320,7 @@ export default function ProductPage() {
                   rel="noopener noreferrer"
                   className="w-full inline-flex items-center justify-center gap-2 bg-secondary hover:bg-muted py-3 rounded-lg font-semibold text-sm transition-colors active:scale-[0.98]"
                 >
-                  <MessageCircle className="w-4 h-4 stroke-[1.15]" /> Написать в WhatsApp
+                  <MessageCircle className="w-4 h-4 stroke-2" aria-hidden="true" /> Написать в WhatsApp
                 </a>
               </div>
 
@@ -359,7 +359,7 @@ export default function ProductPage() {
               to="/catalog"
               className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-accent"
             >
-              <ChevronLeft className="w-4 h-4 stroke-[1.15]" /> Вернуться в каталог
+              <ChevronLeft className="w-4 h-4 stroke-2" /> Вернуться в каталог
             </Link>
           </div>
 
