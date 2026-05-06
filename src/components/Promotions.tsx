@@ -85,7 +85,7 @@ export function Promotions() {
           </div>
           <Link
             to="/catalog"
-            className="hidden md:inline-flex items-center gap-1 text-sm text-accent hover:text-accent-hover font-semibold transition-colors"
+            className="hidden md:inline-flex items-center gap-2 px-4 py-2 bg-accent/10 hover:bg-accent hover:text-white text-accent border border-accent/30 hover:border-accent rounded-lg text-sm font-semibold transition-all shadow-sm hover:shadow-md"
           >
             Все товары →
           </Link>
@@ -172,7 +172,7 @@ export function Promotions() {
         <div className="mt-6 md:hidden">
           <Link
             to="/catalog"
-            className="block w-full text-center py-3.5 bg-secondary hover:bg-muted rounded-xl text-sm font-semibold transition-colors"
+            className="block w-full text-center py-3.5 bg-accent/10 hover:bg-accent hover:text-white text-accent border border-accent/30 hover:border-accent rounded-xl text-sm font-semibold transition-all"
           >
             Посмотреть все товары
           </Link>

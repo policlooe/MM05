@@ -30,7 +30,7 @@ export function Hero() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3, duration: 0.6 }}
-            className="text-xs md:text-sm font-semibold tracking-wider uppercase text-white/80 mb-3 md:mb-4"
+            className="text-xs md:text-sm font-semibold tracking-wider uppercase text-white/80 mb-2 md:mb-3"
           >
             Каталог 2026
           </motion.p>
@@ -39,11 +39,11 @@ export function Hero() {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4, duration: 0.7 }}
-            className="font-serif text-3xl md:text-5xl lg:text-6xl xl:text-7xl font-bold leading-[1.1] text-white mb-4 md:mb-6"
+            className="font-serif text-2xl md:text-4xl lg:text-5xl font-bold leading-[1.15] text-white mb-3 md:mb-5"
           >
             Мебель из массива
             <br />
-            <span className="text-white/95 bg-gradient-to-r from-white to-white/80 bg-clip-text text-transparent">
+            <span className="text-white/95">
               с доставкой по Дагестану
             </span>
           </motion.h1>
@@ -52,7 +52,7 @@ export function Hero() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.5, duration: 0.6 }}
-            className="text-sm md:text-lg text-white/90 max-w-xl mb-6 md:mb-8 leading-relaxed"
+            className="text-sm md:text-base text-white/90 max-w-xl mb-5 md:mb-6 leading-relaxed"
           >
             Качественная мебель в Махачкале. Сборка и доставка от 30 000 ₽ — бесплатно.
           </motion.p>
@@ -63,9 +63,9 @@ export function Hero() {
             transition={{ delay: 0.6, duration: 0.6 }}
             className="inline-flex"
           >
-            <span className="inline-flex items-center gap-2 bg-white hover:bg-accent text-foreground hover:text-white px-6 md:px-8 py-3 md:py-4 rounded-xl font-semibold text-sm md:text-base shadow-xl hover:shadow-2xl transition-all duration-300 group-hover:scale-105">
+            <span className="inline-flex items-center gap-2 bg-white hover:bg-accent text-foreground hover:text-white px-5 md:px-7 py-2.5 md:py-3 rounded-xl font-semibold text-sm shadow-xl hover:shadow-2xl transition-all duration-300 group-hover:scale-105">
               Смотреть каталог
-              <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+              <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
             </span>
           </motion.div>
         </div>
