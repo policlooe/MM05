@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { ChevronLeft, CreditCard, Loader2, ShoppingCart } from "lucide-react";
+import { ChevronLeft, CreditCard, Loader2, ShoppingCart, Shield } from "lucide-react";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { ChatLauncher } from "@/components/ChatLauncher";
@@ -83,10 +83,10 @@ export default function Payment() {
                 <div className="flex-1">
                   <p className="font-medium text-sm">{item.name}</p>
                   <p className="text-xs text-muted-foreground">
-                    {item.qty} × {formatPrice(item.price)}
+                    {item.qty} × {formatPrice(item.finalPrice)}
                   </p>
                 </div>
-                <p className="font-semibold">{formatPrice(item.qty * item.price)}</p>
+                <p className="font-semibold">{formatPrice(item.qty * item.finalPrice)}</p>
               </div>
             ))}
           </div>
@@ -110,12 +110,15 @@ export default function Payment() {
 
         {/* Безопасность */}
         <div className="bg-accent/5 border border-accent/20 rounded-xl p-5 mb-5">
-          <div className="text-sm">
-            <p className="font-semibold mb-2">🔒 Безопасная оплата</p>
-            <p className="text-muted-foreground leading-relaxed">
-              Оплата проходит через защищённый сервис Stripe. Мы не храним данные вашей карты.
-              Все транзакции защищены по стандарту PCI DSS.
-            </p>
+          <div className="flex items-start gap-3 text-sm">
+            <Shield className="w-5 h-5 text-accent shrink-0 mt-0.5" />
+            <div>
+              <p className="font-semibold mb-2">Безопасная оплата</p>
+              <p className="text-muted-foreground leading-relaxed">
+                Оплата проходит через защищённый сервис Stripe. Мы не храним данные вашей карты.
+                Все транзакции защищены по стандарту PCI DSS.
+              </p>
+            </div>
           </div>
         </div>
 
