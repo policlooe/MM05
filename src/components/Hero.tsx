@@ -71,7 +71,7 @@ export function Hero() {
   const currentBanner = banners[currentIndex];
 
   return (
-    <section className="container-x pt-2 md:pt-3" aria-label="Главный баннер">
+    <section className="container-x pt-2 md:pt-3 px-3 md:px-0" aria-label="Главный баннер">
       <motion.div
         initial={{ opacity: 0, y: 40, scale: 0.95 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -84,7 +84,7 @@ export function Hero() {
         
         <Link
           to={currentBanner.link}
-          className="relative block rounded-2xl md:rounded-3xl overflow-hidden bg-secondary aspect-[16/11] md:aspect-[21/8] group transition-all shadow-lg hover:shadow-2xl"
+          className="relative block rounded-xl md:rounded-3xl overflow-hidden bg-secondary aspect-[16/11] md:aspect-[21/8] group transition-all shadow-sm hover:shadow-lg"
           aria-label={currentBanner.cta}
         >
           {/* Banner Images with AnimatePresence */}
@@ -106,7 +106,7 @@ export function Hero() {
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent md:bg-gradient-to-r md:from-black/75 md:via-black/35 md:to-transparent transition-opacity duration-700 group-hover:opacity-95 group-active:opacity-100" />
 
           {/* Content */}
-          <div className="relative z-10 h-full flex flex-col justify-end md:justify-center p-6 md:p-12 lg:p-16 max-w-2xl">
+          <div className="relative z-10 h-full flex flex-col justify-end md:justify-center p-4 md:p-12 lg:p-16 max-w-2xl">
             <AnimatePresence mode="wait">
               <motion.div
                 key={currentBanner.id}
@@ -115,19 +115,19 @@ export function Hero() {
                 exit={{ opacity: 0, y: -20 }}
                 transition={{ duration: 0.5 }}
               >
-                <p className="text-xs md:text-sm font-semibold tracking-wider uppercase text-white/80 mb-2 md:mb-3">
+                <p className="text-xs md:text-sm font-semibold tracking-wider uppercase text-white/80 mb-1.5 md:mb-3">
                   {currentBanner.badge}
                 </p>
                 
-                <h1 className="font-serif text-2xl md:text-3xl lg:text-4xl font-bold leading-[1.15] text-white mb-2 md:mb-4">
+                <h1 className="font-serif text-xl md:text-3xl lg:text-4xl font-semibold leading-[1.2] text-white mb-1.5 md:mb-4">
                   {currentBanner.title}
                   <br />
-                  <span className="text-white/95">
+                  <span className="text-white/90">
                     {currentBanner.subtitle}
                   </span>
                 </h1>
                 
-                <p className="text-sm md:text-base text-white/90 max-w-xl mb-4 md:mb-6 leading-relaxed">
+                <p className="text-sm md:text-base text-white/80 max-w-xl mb-3 md:mb-6 leading-relaxed">
                   {currentBanner.description}
                 </p>
 

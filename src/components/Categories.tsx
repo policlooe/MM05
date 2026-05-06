@@ -93,7 +93,7 @@ export function Categories() {
               <p className="text-xs md:text-sm font-medium leading-tight text-foreground">
                 {c.name}
               </p>
-              <p className="text-[10px] md:text-xs text-muted-foreground mt-0.5">
+              <p className="text-xs text-muted-foreground mt-0.5">
                 {c.count} моделей
               </p>
             </Link>

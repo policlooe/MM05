@@ -220,7 +220,7 @@ export function ReviewUploader({ productId, productName, onSubmit, className }: 
                 className="aspect-square rounded-lg border-2 border-dashed border-border hover:bg-accent/5 bg-muted/30 flex flex-col items-center justify-center gap-1 transition-all group"
               >
                 <Plus className="w-5 h-5 text-muted-foreground group-hover:text-accent transition-colors" />
-                <span className="text-[10px] text-muted-foreground group-hover:text-accent transition-colors">
+                <span className="text-xs text-muted-foreground group-hover:text-accent transition-colors">
                   Добавить
                 </span>
               </button>

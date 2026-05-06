@@ -206,7 +206,7 @@ export function DeliveryCalculator() {
             <MapPin className="w-4 h-4 text-white" />
           </div>
           <div>
-            <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-0.5">
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-0.5">
               Магазин / точка отправки
             </p>
             <p className="text-xs font-medium leading-tight">
@@ -217,7 +217,7 @@ export function DeliveryCalculator() {
 
         {/* Ввод адреса */}
         <div className="bg-card border border-border rounded-xl p-4 mb-3 shadow-sm">
-          <label htmlFor="delivery-address-input" className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-2 block">
+          <label htmlFor="delivery-address-input" className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 block">
             Адрес доставки
           </label>
           <div className="flex gap-2 flex-col sm:flex-row">
@@ -251,7 +251,7 @@ export function DeliveryCalculator() {
               )}
             </button>
           </div>
-          <p className="text-[10px] text-muted-foreground mt-1.5 min-h-[14px]">
+          <p className="text-xs text-muted-foreground mt-1.5">
             {error ? (
               <span className="text-destructive">{error}</span>
             ) : isCalculating ? (
@@ -273,7 +273,7 @@ export function DeliveryCalculator() {
         {/* Результаты */}
         <div className="grid md:grid-cols-2 gap-2 mb-3">
           <div className="bg-card border border-border rounded-xl p-3.5 shadow-sm">
-            <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1">
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
               📍 Расстояние
             </p>
             <p className="text-lg font-bold">
@@ -288,7 +288,7 @@ export function DeliveryCalculator() {
           </div>
 
           <div className="bg-card border border-border rounded-xl p-3.5 shadow-sm">
-            <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1">
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
               ⏱ Примерное время
             </p>
             <p className="text-lg font-bold">
@@ -305,7 +305,7 @@ export function DeliveryCalculator() {
           </div>
 
           <div className="md:col-span-2 bg-accent/10 border-2 border-accent/30 rounded-xl p-3.5 shadow-sm">
-            <p className="text-[10px] font-semibold text-accent uppercase tracking-wider mb-1">
+            <p className="text-xs font-semibold text-accent uppercase tracking-wider mb-1">
               💳 Стоимость доставки
             </p>
             <p className="text-2xl font-bold text-accent">
@@ -319,7 +319,7 @@ export function DeliveryCalculator() {
                 `${deliveryPrice.toLocaleString('ru-RU')} ₽`
               )}
             </p>
-            <p className="text-[10px] text-muted-foreground mt-0.5">
+            <p className="text-xs text-muted-foreground mt-0.5">
               {distanceKm === null ? 'Введите адрес для расчёта' : deliveryPrice === 0 ? '🎉 Бесплатная доставка!' : `Расстояние: ${distanceKm} км`}
             </p>
           </div>
@@ -327,13 +327,13 @@ export function DeliveryCalculator() {
 
         {/* Тарифы */}
         <div className="bg-card border border-border rounded-xl p-4 mb-3 shadow-sm">
-          <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">
+          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
             Тарифы доставки
           </p>
           <div className="space-y-1.5">
             <div className={`flex items-center justify-between py-1.5 border-b border-border ${tariffIndex === 0 ? 'text-accent font-semibold' : ''}`}>
               <span className="text-xs">{tariffIndex === 0 && '▶ '}До 5 км</span>
-              <span className="bg-success/10 text-success text-[10px] font-bold px-2 py-0.5 rounded-full">
+              <span className="bg-success/10 text-success text-xs font-bold px-2 py-0.5 rounded-full">
                 БЕСПЛАТНО
               </span>
             </div>

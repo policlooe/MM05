@@ -254,7 +254,7 @@ export function CatalogSidebar() {
                           className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                         />
                         {p.badge && (
-                          <span className="absolute top-1.5 left-1.5 bg-background/90 backdrop-blur-sm border border-border text-muted-foreground text-[10px] font-medium px-1.5 py-0.5 rounded-md">
+                          <span className="absolute top-1.5 left-1.5 bg-background/90 backdrop-blur-sm border border-border text-muted-foreground text-xs font-medium px-1.5 py-0.5 rounded-md">
                             {p.badge}
                           </span>
                         )}
@@ -262,11 +262,11 @@ export function CatalogSidebar() {
                       <div className="p-2.5">
                         <p className="font-semibold text-sm mb-0.5">{formatPrice(p.price)}</p>
                         {p.oldPrice && (
-                          <p className="text-[10px] text-muted-foreground line-through mb-1">
+                          <p className="text-xs text-muted-foreground line-through mb-1">
                             {formatPrice(p.oldPrice)}
                           </p>
                         )}
-                        <h3 className="text-[11px] text-foreground/80 leading-tight line-clamp-2 mb-2">
+                        <h3 className="text-xs text-foreground/80 leading-tight line-clamp-2 mb-2">
                           {p.name}
                         </h3>
                       </div>
@@ -274,7 +274,7 @@ export function CatalogSidebar() {
                     <div className="px-2.5 pb-2.5">
                       <button
                         onClick={() => handleAddToCart(p)}
-                        className="w-full bg-secondary hover:bg-accent hover:text-accent-foreground text-foreground text-[11px] font-medium py-1.5 rounded-lg transition-colors"
+                        className="w-full bg-secondary hover:bg-accent hover:text-accent-foreground text-foreground text-xs font-medium py-1.5 rounded-lg transition-colors"
                       >
                         В корзину
                       </button>

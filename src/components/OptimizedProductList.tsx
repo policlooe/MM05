@@ -57,15 +57,14 @@ export const OptimizedProductCard = memo(({
         ease: [0.22, 1, 0.36, 1]
       }}
       whileHover={{ 
-        y: -8,
-        scale: 1.02,
+        y: -4,
         transition: { duration: 0.15, ease: [0.22, 1, 0.36, 1] }
       }}
-      className="group bg-surface rounded-xl overflow-hidden border border-border hover:shadow-[var(--shadow-hover)] transition-all duration-150 flex flex-col relative"
+      className="group bg-surface rounded-xl overflow-hidden border border-border hover:shadow-md transition-all duration-150 flex flex-col relative"
     >
       <Link to={`/product/${product.slug}`} className="block">
         <div className="relative aspect-square bg-secondary overflow-hidden">
-          <motion.img
+          <img
             src={product.image}
             alt={product.name}
             loading="lazy"
@@ -117,30 +116,30 @@ export const OptimizedProductCard = memo(({
         </div>
       </Link>
       
-      <div className="p-3.5 flex flex-col flex-1">
-        <div className="flex items-baseline gap-2 mb-1">
-          <p className="font-bold text-base">{formatPrice(product.price)}</p>
+      <div className="p-2.5 flex flex-col flex-1">
+        <div className="flex items-baseline gap-2 mb-1.5">
+          <p className="font-semibold text-base">{formatPrice(product.price)}</p>
           {product.oldPrice && (
-            <p className="text-sm text-muted-foreground line-through">
+            <p className="text-xs text-muted-foreground line-through">
               {formatPrice(product.oldPrice)}
             </p>
           )}
         </div>
         
-        <Link to={`/product/${product.slug}`} className="block mb-3">
-          <h3 className="text-sm text-foreground leading-snug line-clamp-2 hover:text-accent transition-colors font-medium">
+        <Link to={`/product/${product.slug}`} className="block mb-2.5">
+          <h3 className="text-sm text-foreground leading-[1.3] line-clamp-2 hover:text-accent transition-colors font-normal">
             {product.name}
           </h3>
         </Link>
         
         <motion.button
           onClick={handleAddToCart}
-          whileHover={{ scale: 1.03 }}
-          whileTap={{ scale: 0.97 }}
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
           transition={{ duration: 0.15, type: "spring", stiffness: 400 }}
-          className="mt-auto w-full bg-accent hover:bg-accent-hover text-white text-sm font-medium py-2.5 rounded-lg transition-all shadow-sm hover:shadow-accent flex items-center justify-center gap-2"
+          className="mt-auto w-full bg-accent hover:bg-accent-hover text-white text-sm font-medium py-2 rounded-lg transition-all flex items-center justify-center gap-1.5"
         >
-          <ShoppingCart className="w-4 h-4" />
+          <ShoppingCart className="w-4 h-4 stroke-2" />
           В корзину
         </motion.button>
       </div>

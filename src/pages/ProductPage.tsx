@@ -161,8 +161,8 @@ export default function ProductPage() {
     <div className="min-h-screen bg-background">
       <Navbar />
       <Breadcrumbs />
-      <main className="container-x py-4 pb-24 md:pb-10">
-        <div className="max-w-6xl mx-auto px-4">
+      <main className="container-x py-3 pb-20 md:pb-10">
+        <div className="max-w-6xl mx-auto px-3 md:px-4">
           <div className="grid md:grid-cols-2 gap-4 lg:gap-6">
             <div className="flex flex-col items-center">
               <motion.div 
@@ -221,21 +221,21 @@ export default function ProductPage() {
               )}
             </div>
 
-            <div className="flex flex-col items-center md:items-start text-center md:text-left px-4 md:px-0">
+            <div className="flex flex-col items-center md:items-start text-center md:text-left px-0 md:px-0">
               {product.badge && (
-                <span className="inline-block border border-border bg-muted/50 text-muted-foreground text-xs font-medium px-2 py-0.5 rounded-md mb-3">
+                <span className="inline-block border border-border bg-muted/50 text-muted-foreground text-xs font-medium px-2 py-0.5 rounded-md mb-2">
                   {product.badge}
                 </span>
               )}
-              <p className="text-xs text-muted-foreground font-medium mb-2">{product.category}</p>
-              <h1 className="font-serif text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight mb-3">{product.name}</h1>
-              <p className="text-muted-foreground text-base leading-relaxed mb-5 max-w-2xl">
+              <p className="text-xs text-muted-foreground font-medium mb-1.5">{product.category}</p>
+              <h1 className="font-serif text-2xl md:text-4xl lg:text-5xl font-bold tracking-tight mb-2.5">{product.name}</h1>
+              <p className="text-muted-foreground text-sm md:text-base leading-relaxed mb-4 max-w-2xl">
                 {product.shortDescription}
               </p>
 
-              <div className="sticky top-4 bg-surface border border-border rounded-lg p-3 mb-3 shadow-sm w-full max-w-md md:max-w-none">
-                <div className="flex items-baseline justify-between gap-2">
-                  <span className="font-serif text-3xl font-bold text-accent">
+              <div className="sticky top-4 bg-surface border border-border rounded-xl p-3 mb-3 shadow-sm w-full max-w-md md:max-w-none">
+                <div className="flex items-baseline justify-center md:justify-between gap-2">
+                  <span className="font-serif text-2xl md:text-3xl font-bold text-accent">
                     {formatPrice(finalPrice)}
                   </span>
                   {product.oldPrice && finalPrice === product.price && (

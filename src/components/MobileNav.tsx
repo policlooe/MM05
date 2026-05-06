@@ -6,48 +6,52 @@ import { cn } from "@/lib/utils";
 export function MobileNav() {
   const linkClass = ({ isActive }: { isActive: boolean }) =>
     cn(
-      "flex flex-col items-center gap-1 py-1.5 px-1 rounded-xl min-w-0 flex-1 max-w-[88px]",
-      "transition-all duration-200 active:scale-95 hover:text-accent",
+      "flex flex-col items-center justify-center gap-1 py-2 px-2 rounded-lg min-w-0 flex-1 min-h-[44px]",
+      "transition-all duration-150 active:scale-95",
       isActive
-        ? "text-accent bg-muted/70"
-        : "text-muted-foreground hover:bg-muted/45"
+        ? "text-accent"
+        : "text-muted-foreground"
     );
 
   return (
     <nav
-      className="md:hidden fixed bottom-0 inset-x-0 z-40 bg-surface/95 backdrop-blur-md border-t border-border shadow-[0_-4px_24px_rgba(15,35,25,0.06)] h-14"
+      className="md:hidden fixed bottom-0 inset-x-0 z-40 bg-surface border-t border-border/60"
+      style={{ 
+        minHeight: '60px',
+        paddingBottom: 'env(safe-area-inset-bottom)'
+      }}
       aria-label="Нижняя навигация"
     >
-      <div className="grid grid-cols-4 gap-1 px-2 py-1.5 h-full">
+      <div className="grid grid-cols-4 gap-1 px-2 py-1 h-full">
         <NavLink to="/" className={linkClass} end>
           {({ isActive }) => (
             <>
-              <PremiumIconMark icon={Home} size="sm" tone={isActive ? "accent" : "neutral"} />
-              <span className={cn("text-xs font-medium", isActive && "font-semibold")}>Главная</span>
+              <Home className="w-5 h-5 stroke-[1.5]" />
+              <span className="text-xs font-medium">Главная</span>
             </>
           )}
         </NavLink>
         <NavLink to="/catalog" className={linkClass}>
           {({ isActive }) => (
             <>
-              <PremiumIconMark icon={LayoutGrid} size="sm" tone={isActive ? "accent" : "neutral"} />
-              <span className={cn("text-xs font-medium", isActive && "font-semibold")}>Каталог</span>
+              <LayoutGrid className="w-5 h-5 stroke-[1.5]" />
+              <span className="text-xs font-medium">Каталог</span>
             </>
           )}
         </NavLink>
         <NavLink to="/about" className={linkClass}>
           {({ isActive }) => (
             <>
-              <PremiumIconMark icon={Info} size="sm" tone={isActive ? "accent" : "neutral"} />
-              <span className={cn("text-xs font-medium", isActive && "font-semibold")}>О нас</span>
+              <Info className="w-5 h-5 stroke-[1.5]" />
+              <span className="text-xs font-medium">О нас</span>
             </>
           )}
         </NavLink>
         <NavLink to="/contact" className={linkClass}>
           {({ isActive }) => (
             <>
-              <PremiumIconMark icon={Phone} size="sm" tone={isActive ? "accent" : "neutral"} />
-              <span className={cn("text-xs font-medium", isActive && "font-semibold")}>Контакты</span>
+              <Phone className="w-5 h-5 stroke-[1.5]" />
+              <span className="text-xs font-medium">Контакты</span>
             </>
           )}
         </NavLink>
