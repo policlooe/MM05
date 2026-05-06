@@ -5,6 +5,7 @@ import { CartSidebar } from "@/components/CartSidebar";
 import { CatalogSidebar } from "@/components/CatalogSidebar";
 import { MobileNav } from "@/components/MobileNav";
 import { ChatLauncher } from "@/components/ChatLauncher";
+import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { MapPin, Phone, MessageCircle, Send, Users, Clock, Loader2, CheckCircle2 } from "lucide-react";
 import { CONTACTS } from "@/lib/contacts";
 import { PremiumIconMark } from "@/components/PremiumIcon";
@@ -57,6 +58,7 @@ const ContactPage = () => {
       <Navbar />
       <main className="pb-24 md:pb-10">
         <div className="container-x pt-6">
+          <Breadcrumbs />
           <h1 className="font-serif text-3xl md:text-4xl font-bold mb-2">Контакты</h1>
           <p className="text-muted-foreground max-w-2xl mb-8">
             Свяжитесь с нами любым удобным способом — ответим в рабочее время

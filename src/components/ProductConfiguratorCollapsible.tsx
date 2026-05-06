@@ -118,7 +118,7 @@ export function ProductConfiguratorCollapsible({
   return (
     <div className={cn("space-y-3", className)}>
       {/* МАСТЕР-БЛОК: Дополнительные опции */}
-      <div className="bg-white border border-border/60 rounded-xl overflow-hidden hover:border-accent/30 transition-colors shadow-sm">
+      <div className="bg-white border border-border/60 rounded-xl overflow-hidden hover:shadow-sm transition-all shadow-sm">
         {/* Заголовок мастер-блока */}
         <button
           onClick={() => setIsMasterExpanded(!isMasterExpanded)}
@@ -160,7 +160,7 @@ export function ProductConfiguratorCollapsible({
         const selectedOption = group.options.find(opt => opt.value === selectedValue);
 
         return (
-          <div key={key} className="bg-white border border-border/60 rounded-lg overflow-hidden hover:border-accent/30 transition-colors">
+          <div key={key} className="bg-white border border-border/60 rounded-lg overflow-hidden hover:shadow-sm transition-colors">
             {/* Заголовок секции */}
             <button
               onClick={() => toggleSection(sectionKey)}
@@ -215,7 +215,7 @@ export function ProductConfiguratorCollapsible({
                                 ? "border-accent bg-accent/10 text-accent shadow-sm"
                                 : isDisabled
                                 ? "border-border/50 bg-muted/20 text-muted-foreground cursor-not-allowed opacity-50"
-                                : "border-border/60 bg-white hover:border-accent/50 hover:bg-accent/5"
+                                : "border-border/60 bg-white hover:bg-accent/5"
                             )}
                           >
                             <span className="font-medium text-sm leading-tight break-words">{option.label}</span>
@@ -274,7 +274,7 @@ export function ProductConfiguratorCollapsible({
           const isDisabled = option.disabled;
 
           return (
-            <div key={key} className="bg-white border border-border/60 rounded-lg overflow-hidden hover:border-accent/30 transition-colors">
+            <div key={key} className="bg-white border border-border/60 rounded-lg overflow-hidden hover:shadow-sm transition-colors">
               {/* Заголовок секции */}
               <button
                 onClick={() => toggleSection(sectionKey)}
@@ -318,7 +318,7 @@ export function ProductConfiguratorCollapsible({
                             ? "border-accent bg-accent/10 shadow-sm"
                             : isDisabled
                             ? "border-border/50 bg-muted/20 cursor-not-allowed opacity-50"
-                            : "border-border/60 hover:border-accent/50 hover:bg-accent/5"
+                            : "border-border/60 hover:bg-accent/5"
                         )}
                       >
                         <div className="flex-1 min-w-0">
@@ -360,7 +360,7 @@ export function ProductConfiguratorCollapsible({
           const selectedOption = option.options.find(opt => opt.value === selectedValue);
 
           return (
-            <div key={key} className="bg-white border border-border/60 rounded-lg overflow-hidden hover:border-accent/30 transition-colors">
+            <div key={key} className="bg-white border border-border/60 rounded-lg overflow-hidden hover:shadow-sm transition-colors">
               {/* Заголовок секции */}
               <button
                 onClick={() => toggleSection(sectionKey)}
@@ -413,7 +413,7 @@ export function ProductConfiguratorCollapsible({
                                 ? "border-accent bg-accent/10 shadow-sm"
                                 : isDisabled
                                 ? "border-border/50 bg-muted/20 cursor-not-allowed opacity-50"
-                                : "border-border/60 hover:border-accent/50 hover:bg-accent/5"
+                                : "border-border/60 hover:bg-accent/5"
                             )}
                           >
                             <span className={cn(

@@ -65,7 +65,11 @@ export function Navbar() {
     e.preventDefault();
     const v = q.trim();
     if (v.length > 100) return;
-    navigate(v ? `/catalog?q=${encodeURIComponent(v)}` : "/catalog");
+    if (v) {
+      navigate(`/catalog?search=${encodeURIComponent(v)}`);
+    } else {
+      navigate("/catalog");
+    }
   };
 
   return (
@@ -79,12 +83,12 @@ export function Navbar() {
       {/* Локация */}
       <div className="w-full overflow-hidden">
         <div className="container-x">
-          <div className="flex items-center justify-between py-2 text-xs gap-2">
-            <AddressLink variant="inline" className="text-muted-foreground truncate flex-1 min-w-0" />
+          <div className="flex items-center justify-between py-2 gap-2">
+            <AddressLink variant="inline" className="text-foreground truncate flex-1 min-w-0" />
             <div className="flex items-center gap-3 shrink-0">
               <a
                 href={`tel:${CONTACTS.phoneTel}`}
-                className="hidden sm:inline-block text-base text-foreground hover:text-accent transition-colors whitespace-nowrap"
+                className="hidden sm:inline-block text-sm font-medium text-foreground hover:text-accent transition-colors whitespace-nowrap"
               >
                 {CONTACTS.phone}
               </a>
@@ -111,14 +115,14 @@ export function Navbar() {
             </motion.button>
 
             <form onSubmit={submit} className="flex-1 min-w-0 relative">
-              <Search className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 stroke-[1.15] text-muted-foreground/90 z-10" />
+              <Search className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 stroke-2 text-muted-foreground/90 z-10" />
               <input
                 type="search"
                 value={q}
                 onChange={(e) => setQ(e.target.value)}
                 placeholder="Найти мебель..."
                 maxLength={100}
-                className="w-full bg-secondary border border-border/60 focus:border-accent/35 rounded-lg pl-11 pr-4 py-3 md:py-2.5 text-sm outline-none focus:ring-2 focus:ring-accent/10 transition-all"
+                className="w-full bg-secondary border border-border/60 focus:!border-border rounded-lg pl-11 pr-4 py-3 md:py-2.5 text-sm outline-none focus:!ring-0 focus:!shadow-none transition-all"
               />
             </form>
 
@@ -127,13 +131,13 @@ export function Navbar() {
                 <div className="flex items-center gap-2">
                   <div className="hidden lg:flex items-center gap-2 px-3 py-2 rounded-xl border border-border bg-secondary/50 max-w-[150px]">
                     <User className="w-4 h-4 text-muted-foreground shrink-0" />
-                    <span className="text-[10px] font-medium text-foreground truncate">
+                    <span className="text-xs font-medium text-foreground truncate">
                       {user.fullName || user.email}
                     </span>
                   </div>
                   <button
                     onClick={handleLogout}
-                    className="text-[10px] text-muted-foreground hover:text-accent transition-colors px-2"
+                    className="text-xs text-muted-foreground hover:text-accent transition-colors px-2"
                   >
                     Выйти
                   </button>
@@ -143,7 +147,7 @@ export function Navbar() {
                   to="/login"
                   className="inline-flex items-center justify-center h-[42px] w-[42px] rounded-xl bg-accent hover:bg-accent-hover transition-colors shadow-sm"
                 >
-                  <User className="w-5 h-5 text-white" />
+                  <User className="w-5 h-5 stroke-[1.5] text-white" />
                 </Link>
               )}
 
@@ -151,12 +155,12 @@ export function Navbar() {
                 to="/favorites"
                 className="relative inline-flex items-center justify-center h-[42px] w-[42px] rounded-xl text-foreground hover:bg-muted/80 transition-colors border border-transparent hover:border-border"
               >
-                <Heart className={`w-5 h-5 ${favorites.length > 0 ? 'fill-current text-red-500' : ''}`} />
+                <Heart className={`w-5 h-5 stroke-[1.5] ${favorites.length > 0 ? 'fill-current text-red-500' : ''}`} />
                 {favorites.length > 0 && (
                   <motion.span
                     initial={{ scale: 0 }}
                     animate={{ scale: 1 }}
-                    className="absolute -top-0.5 -right-0.5 bg-red-500 text-white text-[10px] font-semibold min-w-[18px] h-[18px] px-0.5 rounded-full flex items-center justify-center shadow-sm"
+                    className="absolute -top-0.5 -right-0.5 bg-red-500 text-white text-xs font-semibold min-w-[18px] h-[18px] px-0.5 rounded-full flex items-center justify-center shadow-sm"
                   >
                     {favorites.length}
                   </motion.span>
@@ -170,16 +174,12 @@ export function Navbar() {
                 whileTap={{ scale: 0.95 }}
                 className="relative inline-flex items-center justify-center h-[42px] w-[42px] rounded-xl text-foreground hover:bg-muted/80 transition-colors border border-transparent hover:border-border"
               >
-                <PremiumIconMark 
-                  icon={ShoppingBag} 
-                  size="sm" 
-                  tone={count > 0 ? "accent" : "neutral"} 
-                />
+                <ShoppingBag className={`w-5 h-5 stroke-[1.5] ${count > 0 ? 'text-accent' : 'text-foreground'}`} />
                 {count > 0 && (
                   <motion.span
                     initial={{ scale: 0 }}
                     animate={{ scale: 1 }}
-                    className="absolute -top-0.5 -right-0.5 bg-accent text-accent-foreground text-[10px] font-semibold min-w-[18px] h-[18px] px-0.5 rounded-full flex items-center justify-center shadow-sm"
+                    className="absolute -top-0.5 -right-0.5 bg-accent text-accent-foreground text-xs font-semibold min-w-[18px] h-[18px] px-0.5 rounded-full flex items-center justify-center shadow-sm"
                   >
                     {count}
                   </motion.span>

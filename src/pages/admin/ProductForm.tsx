@@ -385,7 +385,7 @@ export default function ProductForm() {
                 </div>
               ))}
 
-              <label className="flex flex-col items-center justify-center h-32 border-2 border-dashed border-border rounded-lg cursor-pointer hover:border-accent transition-colors">
+              <label className="flex flex-col items-center justify-center h-32 border-2 border-dashed border-border rounded-lg cursor-pointer hover:bg-accent/5 transition-colors">
                 <Upload className="w-8 h-8 text-muted-foreground mb-2" />
                 <span className="text-sm text-muted-foreground">
                   {uploadingImage ? 'Загрузка...' : 'Загрузить'}

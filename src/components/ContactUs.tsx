@@ -87,7 +87,7 @@ export function ContactUs() {
 
           {/* Правая колонка */}
           <div className="flex flex-col gap-6">
-            {/* О компании */}
+            {/* О компании с доставкой и сборкой */}
             <div className="bg-surface border border-border rounded-xl p-5 shadow-md flex-1">
               <h3 className="text-lg font-bold mb-3">Качественная мебель</h3>
               <p className="text-sm text-muted-foreground leading-relaxed mb-4">
@@ -122,8 +122,8 @@ export function ContactUs() {
               </div>
             </div>
 
-            {/* Мессенджеры */}
-            <div className="hidden md:flex flex-col bg-surface border border-border rounded-xl p-5 shadow-md flex-1">
+            {/* Мессенджеры - единый блок */}
+            <div className="bg-surface border border-border rounded-xl p-5 shadow-md flex-1">
               <h3 className="text-lg font-bold mb-1">Выберите удобный мессенджер</h3>
               <p className="text-xs text-muted-foreground mb-4">
                 Ответим в рабочее время, обычно до 10 минут
@@ -134,7 +134,7 @@ export function ContactUs() {
                   href={CONTACTS.whatsapp}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-3 p-3 bg-card border border-border rounded-xl hover:border-accent hover:bg-accent/5 hover:shadow-md transition-all group"
+                  className="flex items-center gap-3 p-3 bg-card border border-border rounded-xl hover:bg-accent/5 hover:shadow-md transition-all group"
                 >
                   <PremiumIconMark icon={MessageCircle} size="sm" tone="accent" className="shrink-0" />
                   <div>
@@ -147,7 +147,7 @@ export function ContactUs() {
                   href={CONTACTS.telegram}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-3 p-3 bg-card border border-border rounded-xl hover:border-accent hover:bg-accent/5 hover:shadow-md transition-all group"
+                  className="flex items-center gap-3 p-3 bg-card border border-border rounded-xl hover:bg-accent/5 hover:shadow-md transition-all group"
                 >
                   <PremiumIconMark icon={Send} size="sm" tone="accent" className="shrink-0" />
                   <div>
@@ -160,7 +160,7 @@ export function ContactUs() {
                   href={CONTACTS.vk}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-3 p-3 bg-card border border-border rounded-xl hover:border-accent hover:bg-accent/5 hover:shadow-md transition-all group"
+                  className="flex items-center gap-3 p-3 bg-card border border-border rounded-xl hover:bg-accent/5 hover:shadow-md transition-all group"
                 >
                   <PremiumIconMark icon={Users} size="sm" tone="accent" className="shrink-0" />
                   <div>

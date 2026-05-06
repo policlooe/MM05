@@ -16,8 +16,9 @@ type Sort = "popular" | "price_asc" | "price_desc";
 
 export default function Catalog() {
   const [params] = useSearchParams();
-  const [query, setQuery] = useState(params.get("q") ?? "");
+  const [query, setQuery] = useState(params.get("search") ?? params.get("q") ?? "");
   const initialCat = params.get("cat") as Category | null;
+  const showPromo = params.get("promo") === "true";
   const [active, setActive] = useState<Category | "Все">(
     initialCat && (allCategories as readonly string[]).includes(initialCat) ? initialCat : "Все"
   );
@@ -32,7 +33,7 @@ export default function Catalog() {
 
   // Реакция на смену query-параметров (например при переходе из шапки)
   useEffect(() => {
-    const q = params.get("q");
+    const q = params.get("search") ?? params.get("q");
     const c = params.get("cat") as Category | null;
     if (q !== null) setQuery(q);
     if (c && (allCategories as readonly string[]).includes(c)) setActive(c);
@@ -46,10 +47,24 @@ export default function Catalog() {
       if (q && !(`${p.name} ${p.shortDescription} ${p.category}`.toLowerCase().includes(q))) return false;
       return true;
     });
-    if (sort === "price_asc") list = [...list].sort((a, b) => a.price - b.price);
-    else if (sort === "price_desc") list = [...list].sort((a, b) => b.price - a.price);
+    
+    // Если showPromo, показываем только товары со скидкой первыми
+    if (showPromo) {
+      list = [...list].sort((a, b) => {
+        const aHasDiscount = a.oldPrice && a.oldPrice > a.price;
+        const bHasDiscount = b.oldPrice && b.oldPrice > b.price;
+        if (aHasDiscount && !bHasDiscount) return -1;
+        if (!aHasDiscount && bHasDiscount) return 1;
+        return 0;
+      });
+    } else if (sort === "price_asc") {
+      list = [...list].sort((a, b) => a.price - b.price);
+    } else if (sort === "price_desc") {
+      list = [...list].sort((a, b) => b.price - a.price);
+    }
+    
     return list;
-  }, [query, active, sort, maxPrice]);
+  }, [query, active, sort, maxPrice, showPromo]);
 
   const reset = () => {
     setQuery("");
@@ -188,7 +203,7 @@ export default function Catalog() {
                   >
                     <Link
                       to={`/product/${p.slug}`}
-                      className="group bg-surface rounded-lg overflow-hidden border border-border hover:border-accent/20 hover:shadow-lg transition-all block"
+                      className="group bg-surface rounded-lg overflow-hidden border border-border hover:shadow-lg transition-all block"
                     >
                       <motion.div 
                         className="relative aspect-square bg-secondary overflow-hidden"
@@ -210,18 +225,18 @@ export default function Catalog() {
                             initial={{ opacity: 0, scale: 0.8 }}
                             animate={{ opacity: 1, scale: 1 }}
                             transition={{ delay: 0.2 }}
-                            className="absolute top-2 left-2 bg-background/90 backdrop-blur-sm border border-border text-muted-foreground text-[11px] font-medium px-2 py-0.5 rounded-md"
+                            className="absolute top-2 left-2 bg-background/90 backdrop-blur-sm border border-border text-muted-foreground text-xs font-medium px-2 py-0.5 rounded-md"
                           >
                             {p.badge}
                           </motion.span>
                         )}
                       </motion.div>
                       <div className="p-3 md:p-4">
-                        <p className="font-semibold text-base md:text-lg mb-1">{formatPrice(p.price)}</p>
+                        <p className="font-bold text-base mb-1">{formatPrice(p.price)}</p>
                         {p.oldPrice && (
-                          <p className="text-xs text-muted-foreground line-through mb-1">{formatPrice(p.oldPrice)}</p>
+                          <p className="text-sm text-muted-foreground line-through mb-1">{formatPrice(p.oldPrice)}</p>
                         )}
-                        <h3 className="text-xs md:text-sm text-foreground/80 leading-tight line-clamp-2">{p.name}</h3>
+                        <h3 className="text-sm text-foreground leading-tight line-clamp-2 font-medium">{p.name}</h3>
                       </div>
                     </Link>
                   </motion.div>

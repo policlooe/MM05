@@ -59,9 +59,9 @@ export const OptimizedProductCard = memo(({
       whileHover={{ 
         y: -8,
         scale: 1.02,
-        transition: { duration: 0.2, ease: [0.22, 1, 0.36, 1] }
+        transition: { duration: 0.15, ease: [0.22, 1, 0.36, 1] }
       }}
-      className="group bg-surface rounded-xl overflow-hidden border border-border hover:border-accent/40 hover:shadow-[var(--shadow-hover)] transition-all duration-300 flex flex-col relative"
+      className="group bg-surface rounded-xl overflow-hidden border border-border hover:shadow-[var(--shadow-hover)] transition-all duration-150 flex flex-col relative"
     >
       <Link to={`/product/${product.slug}`} className="block">
         <div className="relative aspect-square bg-secondary overflow-hidden">
@@ -72,8 +72,6 @@ export const OptimizedProductCard = memo(({
             decoding="async"
             width={400}
             height={400}
-            whileHover={{ scale: 1.08 }}
-            transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
             className="w-full h-full object-cover"
           />
           
@@ -84,7 +82,7 @@ export const OptimizedProductCard = memo(({
                 initial={{ opacity: 0, scale: 0.5, x: -10 }}
                 animate={{ opacity: 1, scale: 1, x: 0 }}
                 transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
-                className="bg-background/95 backdrop-blur-sm border border-border text-muted-foreground text-[10px] font-semibold px-2.5 py-1 rounded-md shadow-sm"
+                className="bg-background/95 backdrop-blur-sm border border-border text-muted-foreground text-xs font-medium px-2.5 py-1 rounded-md shadow-sm"
               >
                 {product.badge}
               </motion.span>
@@ -94,7 +92,7 @@ export const OptimizedProductCard = memo(({
                 initial={{ opacity: 0, scale: 0.5, x: -10 }}
                 animate={{ opacity: 1, scale: 1, x: 0 }}
                 transition={{ delay: 0.3, type: "spring", stiffness: 200 }}
-                className="bg-accent/90 backdrop-blur-sm text-white text-[9px] font-semibold px-2 py-0.5 rounded-md shadow-sm flex items-center gap-1"
+                className="bg-accent/90 backdrop-blur-sm text-white text-xs font-medium px-2 py-0.5 rounded-md shadow-sm flex items-center gap-1"
               >
                 <span className="w-1.5 h-1.5 bg-white rounded-full"></span>
                 В наличии
@@ -110,7 +108,7 @@ export const OptimizedProductCard = memo(({
             transition={{ delay: 0.15 }}
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
-            className="absolute top-2 right-2 w-9 h-9 bg-background/95 backdrop-blur-sm border border-border rounded-full flex items-center justify-center shadow-md hover:bg-accent hover:border-accent hover:text-white transition-all duration-300 z-10"
+            className="absolute top-2 right-2 w-9 h-9 bg-background/95 backdrop-blur-sm border border-border rounded-full flex items-center justify-center shadow-md hover:bg-accent hover:text-white transition-all duration-300 z-10"
           >
             <Heart 
               className={`w-4 h-4 transition-all ${isInFavorites ? 'fill-current text-red-500' : ''}`} 
@@ -121,16 +119,16 @@ export const OptimizedProductCard = memo(({
       
       <div className="p-3.5 flex flex-col flex-1">
         <div className="flex items-baseline gap-2 mb-1">
-          <p className="font-bold text-base md:text-lg">{formatPrice(product.price)}</p>
+          <p className="font-bold text-base">{formatPrice(product.price)}</p>
           {product.oldPrice && (
-            <p className="text-xs text-muted-foreground line-through">
+            <p className="text-sm text-muted-foreground line-through">
               {formatPrice(product.oldPrice)}
             </p>
           )}
         </div>
         
         <Link to={`/product/${product.slug}`} className="block mb-3">
-          <h3 className="text-sm md:text-base text-foreground leading-snug line-clamp-2 hover:text-accent transition-colors font-medium">
+          <h3 className="text-sm text-foreground leading-snug line-clamp-2 hover:text-accent transition-colors font-medium">
             {product.name}
           </h3>
         </Link>
@@ -140,7 +138,7 @@ export const OptimizedProductCard = memo(({
           whileHover={{ scale: 1.03 }}
           whileTap={{ scale: 0.97 }}
           transition={{ duration: 0.15, type: "spring", stiffness: 400 }}
-          className="mt-auto w-full bg-accent hover:bg-accent-hover text-white text-sm font-semibold py-2.5 rounded-lg transition-all shadow-sm hover:shadow-accent flex items-center justify-center gap-2"
+          className="mt-auto w-full bg-accent hover:bg-accent-hover text-white text-sm font-medium py-2.5 rounded-lg transition-all shadow-sm hover:shadow-accent flex items-center justify-center gap-2"
         >
           <ShoppingCart className="w-4 h-4" />
           В корзину

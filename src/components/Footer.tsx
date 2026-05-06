@@ -10,16 +10,16 @@ export function Footer() {
       <div className="container-x pt-10">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
           <div>
-            <Link to="/" className="text-2xl font-semibold text-foreground block mb-3">
+            <Link to="/" className="text-2xl font-bold text-foreground block mb-3 tracking-tight">
               MM05
             </Link>
-            <p className="text-sm text-muted-foreground leading-relaxed">
+            <p className="text-sm text-muted-foreground leading-relaxed max-w-xs">
               Качественная мебель из ЛДСП, МДФ и массива дерева. Работаем с проверенными поставщиками с 2021 года.
             </p>
           </div>
 
           <div>
-            <h4 className="text-xs font-medium text-muted-foreground mb-3 tracking-wide">Каталог</h4>
+            <h4 className="text-xs font-medium text-muted-foreground mb-3 tracking-wide uppercase">Каталог</h4>
             <ul className="flex flex-col gap-2 text-sm">
               <li>
                 <Link to="/catalog" className="text-foreground/85 hover:text-accent transition-colors">
@@ -63,18 +63,18 @@ export function Footer() {
             </ul>
           </div>
 
-          <div className="hidden md:block">
-            <h4 className="text-xs font-medium text-muted-foreground mb-3 tracking-wide">Связь с нами</h4>
+          <div>
+            <h4 className="text-xs font-medium text-muted-foreground mb-3 tracking-wide uppercase">Связь с нами</h4>
             <ul className="flex flex-col gap-3 text-sm">
               <li>
-                <AddressLink variant="inline" className="text-sm text-muted-foreground hover:text-accent" />
+                <AddressLink variant="inline" className="text-sm text-foreground/85 hover:text-accent" />
               </li>
               <li>
                 <a
                   href={`tel:${CONTACTS.phoneTel}`}
-                  className="inline-flex items-center gap-2.5 text-foreground/85 hover:text-accent transition-colors"
+                  className="inline-flex items-center gap-2 text-foreground/85 hover:text-accent transition-colors"
                 >
-                  <PremiumIconMark icon={Phone} size="sm" tone="accent" className="shrink-0" />
+                  <Phone className="w-4 h-4 shrink-0 stroke-2 text-accent" />
                   {CONTACTS.phone}
                 </a>
               </li>
@@ -83,9 +83,9 @@ export function Footer() {
                   href={CONTACTS.whatsapp}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2.5 text-foreground/85 hover:text-accent transition-colors"
+                  className="inline-flex items-center gap-2 text-foreground/85 hover:text-accent transition-colors"
                 >
-                  <PremiumIconMark icon={MessageCircle} size="sm" tone="accent" className="shrink-0" />
+                  <MessageCircle className="w-4 h-4 shrink-0 stroke-2 text-accent" />
                   WhatsApp
                 </a>
               </li>
@@ -94,9 +94,9 @@ export function Footer() {
                   href={CONTACTS.telegram}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2.5 text-foreground/85 hover:text-accent transition-colors"
+                  className="inline-flex items-center gap-2 text-foreground/85 hover:text-accent transition-colors"
                 >
-                  <PremiumIconMark icon={Send} size="sm" tone="accent" className="shrink-0" />
+                  <Send className="w-4 h-4 shrink-0 stroke-2 text-accent" />
                   Telegram
                 </a>
               </li>
@@ -105,9 +105,9 @@ export function Footer() {
                   href={CONTACTS.vk}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2.5 text-foreground/85 hover:text-accent transition-colors"
+                  className="inline-flex items-center gap-2 text-foreground/85 hover:text-accent transition-colors"
                 >
-                  <PremiumIconMark icon={Users} size="sm" tone="accent" className="shrink-0" />
+                  <Users className="w-4 h-4 shrink-0 stroke-2 text-accent" />
                   ВКонтакте
                 </a>
               </li>

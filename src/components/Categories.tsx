@@ -42,7 +42,7 @@ export function Categories() {
           );
           
           // Единый класс для всех плиток - одинаковая высота и пропорции
-          const tileClass = "group border border-border bg-surface rounded-xl md:rounded-2xl p-4 md:p-6 flex flex-col items-center justify-center transition-all hover:border-accent/40 hover:shadow-lg hover:-translate-y-1 active:translate-y-0 min-h-[140px] md:min-h-[160px]";
+          const tileClass = "group border border-border bg-surface rounded-xl md:rounded-2xl p-4 md:p-6 flex flex-col items-center justify-center transition-all hover:shadow-lg hover:-translate-y-1 active:translate-y-0 min-h-[140px] md:min-h-[160px]";
           
           const MotionWrapper = motion(t.href.startsWith("/") ? Link : "a");
           
@@ -80,7 +80,7 @@ export function Categories() {
               to={`/catalog?cat=${encodeURIComponent(c.name)}`}
               className="group flex flex-col items-center text-center"
             >
-              <div className="w-full aspect-square rounded-xl overflow-hidden border border-border bg-secondary mb-2 transition-all group-hover:border-accent/45 group-hover:shadow-md group-hover:-translate-y-0.5 group-active:translate-y-0">
+              <div className="w-full aspect-square rounded-xl overflow-hidden border border-border bg-secondary mb-2 transition-all group-hover:shadow-md group-hover:-translate-y-0.5 group-active:translate-y-0">
                 <img
                   src={c.image}
                   alt={c.name}

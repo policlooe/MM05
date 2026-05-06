@@ -21,11 +21,14 @@ import { CONTACTS } from "@/lib/contacts";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { ecommerce } from "@/lib/web-vitals";
+import { useRecentlyViewed } from "@/store/recentlyViewed";
+import { SimilarProducts } from "@/components/SimilarProducts";
 
 export default function ProductPage() {
   const { slug = "" } = useParams();
   const product = getProductBySlug(slug);
   const { add, open } = useCart();
+  const { add: addToRecentlyViewed } = useRecentlyViewed();
   const navigate = useNavigate();
 
   const [selectedImage, setSelectedImage] = useState<string>("");
@@ -119,7 +122,12 @@ export default function ProductPage() {
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'instant' });
-  }, [slug]);
+    
+    // Add to recently viewed
+    if (product) {
+      addToRecentlyViewed(product);
+    }
+  }, [slug, product, addToRecentlyViewed]);
 
   const openViewer = (imageUrl: string) => {
     const index = allImages.indexOf(imageUrl);
@@ -215,19 +223,19 @@ export default function ProductPage() {
 
             <div>
               {product.badge && (
-                <span className="inline-block border border-border bg-muted/50 text-muted-foreground text-[11px] font-medium px-2 py-0.5 rounded-md mb-3">
+                <span className="inline-block border border-border bg-muted/50 text-muted-foreground text-xs font-medium px-2 py-0.5 rounded-md mb-3">
                   {product.badge}
                 </span>
               )}
               <p className="text-xs text-muted-foreground font-medium mb-2">{product.category}</p>
-              <h1 className="font-serif text-2xl md:text-4xl font-semibold mb-3">{product.name}</h1>
-              <p className="text-muted-foreground text-sm md:text-base leading-relaxed mb-5">
+              <h1 className="font-serif text-4xl md:text-5xl font-bold tracking-tight mb-3">{product.name}</h1>
+              <p className="text-muted-foreground text-base leading-relaxed mb-5 max-w-2xl">
                 {product.shortDescription}
               </p>
 
               <div className="sticky top-4 bg-surface border border-border rounded-lg p-3 mb-3 shadow-sm">
                 <div className="flex items-baseline justify-between gap-2">
-                  <span className="font-serif text-2xl md:text-3xl font-bold text-accent">
+                  <span className="font-serif text-3xl font-bold text-accent">
                     {formatPrice(finalPrice)}
                   </span>
                   {product.oldPrice && finalPrice === product.price && (
@@ -253,7 +261,7 @@ export default function ProductPage() {
                             +{formatPrice(product.assemblyPrice)}
                           </span>
                         </div>
-                        <p className="text-[10px] text-muted-foreground line-clamp-1">
+                        <p className="text-xs text-muted-foreground line-clamp-1">
                           Профессиональная сборка на дому
                         </p>
                       </div>
@@ -360,6 +368,9 @@ export default function ProductPage() {
           </div>
         </div>
       </main>
+      
+      <SimilarProducts currentProduct={product} limit={4} />
+      
       <Footer />
       <CartSidebar />
       <CatalogSidebar />

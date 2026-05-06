@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { useEffect, useRef, useState } from "react";
 import { ShoppingBag, Clock } from "lucide-react";
 import { formatPrice } from "@/store/cart";
 
@@ -70,37 +71,78 @@ const getDaysLeft = (endDate: string): number => {
 };
 
 export function Promotions() {
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const [isPaused, setIsPaused] = useState(false);
+
+  useEffect(() => {
+    const scrollContainer = scrollRef.current;
+    if (!scrollContainer) return;
+
+    let animationId: number;
+    let scrollPosition = 0;
+    const scrollSpeed = 0.5; // Скорость как у баннера (5 секунд на переход)
+
+    const scroll = () => {
+      if (!isPaused && scrollContainer) {
+        scrollPosition += scrollSpeed;
+        
+        // Проверяем, достигли ли конца
+        if (scrollPosition >= scrollContainer.scrollWidth / 2) {
+          scrollPosition = 0;
+        }
+        
+        scrollContainer.scrollLeft = scrollPosition;
+      }
+      animationId = requestAnimationFrame(scroll);
+    };
+
+    animationId = requestAnimationFrame(scroll);
+
+    return () => {
+      if (animationId) {
+        cancelAnimationFrame(animationId);
+      }
+    };
+  }, [isPaused]);
+
   return (
     <section id="promotions" className="py-8 md:py-12">
       <div className="container-x">
         {/* Заголовок секции */}
         <div className="flex items-center justify-between mb-6 md:mb-8">
           <div>
-            <h2 className="font-serif text-2xl md:text-3xl lg:text-4xl font-bold mb-2">
-              🔥 Акции и скидки
+            <h2 className="font-serif text-3xl font-bold tracking-tight mb-2">
+              Акции и скидки
             </h2>
-            <p className="text-sm md:text-base text-muted-foreground">
+            <p className="text-sm text-muted-foreground">
               Специальные предложения на популярные товары
             </p>
           </div>
           <Link
-            to="/catalog"
-            className="hidden md:inline-flex items-center gap-2 px-4 py-2 bg-accent/10 hover:bg-accent hover:text-white text-accent border border-accent/30 hover:border-accent rounded-lg text-sm font-semibold transition-all shadow-sm hover:shadow-md"
+            to="/catalog?promo=true"
+            className="hidden md:inline-flex items-center gap-2 px-5 py-2.5 bg-accent hover:bg-accent-hover text-white rounded-lg text-sm font-medium transition-all shadow-sm hover:shadow-md hover:scale-105 active:scale-95"
           >
-            Все товары →
+            Все товары
           </Link>
         </div>
 
-        {/* Сетка карточек акций */}
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-5">
-          {promotionProducts.map((product) => {
+        {/* Сетка карточек акций с автоскроллом */}
+        <div 
+          ref={scrollRef}
+          onMouseEnter={() => setIsPaused(true)}
+          onMouseLeave={() => setIsPaused(false)}
+          className="flex gap-3 md:gap-5 overflow-x-hidden scroll-smooth"
+          style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+        >
+          {/* Дублируем товары для бесшовного скролла */}
+          {[...promotionProducts, ...promotionProducts].map((product, index) => {
             const daysLeft = product.endsAt ? getDaysLeft(product.endsAt) : null;
 
             return (
               <Link
-                key={product.id}
+                key={`${product.id}-${index}`}
                 to={`/product/${product.slug}`}
-                className="group bg-surface border border-border rounded-xl md:rounded-2xl overflow-hidden hover:border-accent/40 hover:shadow-[var(--shadow-hover)] transition-all duration-400 hover:-translate-y-2"
+                className="group bg-surface border border-border rounded-xl overflow-hidden hover:shadow-[var(--shadow-hover)] transition-all duration-150 flex-shrink-0 w-[280px]"
               >
                 {/* Изображение товара */}
                 <div className="relative aspect-square bg-secondary overflow-hidden">
@@ -108,26 +150,26 @@ export function Promotions() {
                     src={product.image}
                     alt={product.name}
                     loading="lazy"
-                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                   />
 
                   {/* Бейдж скидки */}
-                  <div className="absolute top-2 left-2 bg-destructive text-white text-xs md:text-sm font-bold px-3 md:px-4 py-1.5 md:py-2 rounded-full shadow-lg">
+                  <div className="absolute top-2 left-2 bg-destructive text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-lg">
                     −{product.discount}%
                   </div>
 
                   {/* Таймер акции (если есть) */}
                   {daysLeft !== null && daysLeft > 0 && daysLeft <= 7 && (
-                    <div className="absolute top-2 right-2 bg-accent text-white text-[10px] md:text-xs font-semibold px-2.5 py-1.5 rounded-full shadow-lg flex items-center gap-1">
-                      <Clock className="w-3 h-3" />
+                    <div className="absolute top-2 right-2 bg-accent text-white text-xs font-semibold px-2.5 py-1.5 rounded-full shadow-lg flex items-center gap-1">
+                      <Clock className="w-3 h-3 stroke-2" />
                       {daysLeft}д
                     </div>
                   )}
 
                   {/* Кнопка "В корзину" при hover */}
                   <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent p-3 translate-y-full group-hover:translate-y-0 transition-transform duration-300">
-                    <button className="w-full bg-accent hover:bg-accent-hover text-white py-2.5 rounded-lg text-xs md:text-sm font-semibold flex items-center justify-center gap-2 transition-colors shadow-lg">
-                      <ShoppingBag className="w-4 h-4" />
+                    <button className="w-full bg-accent hover:bg-accent-hover text-white py-2.5 rounded-lg text-sm font-medium flex items-center justify-center gap-2 transition-colors shadow-lg">
+                      <ShoppingBag className="w-4 h-4 stroke-2" />
                       В корзину
                     </button>
                   </div>
@@ -141,7 +183,7 @@ export function Promotions() {
                   </p>
 
                   {/* Название */}
-                  <h3 className="text-sm md:text-base font-semibold mb-3 line-clamp-2 leading-snug min-h-[2.8rem] md:min-h-[3rem]">
+                  <h3 className="text-sm font-medium mb-3 line-clamp-2 leading-snug min-h-[2.8rem]">
                     {product.name}
                   </h3>
 
@@ -154,7 +196,7 @@ export function Promotions() {
 
                     {/* Новая цена */}
                     <div className="flex items-baseline gap-2">
-                      <p className="text-lg md:text-xl font-bold text-accent">
+                      <p className="text-base font-bold text-accent">
                         {formatPrice(product.newPrice)}
                       </p>
                       <p className="text-xs text-accent font-semibold">
@@ -171,8 +213,8 @@ export function Promotions() {
         {/* Кнопка "Все товары" для мобильных */}
         <div className="mt-6 md:hidden">
           <Link
-            to="/catalog"
-            className="block w-full text-center py-3.5 bg-accent/10 hover:bg-accent hover:text-white text-accent border border-accent/30 hover:border-accent rounded-xl text-sm font-semibold transition-all"
+            to="/catalog?promo=true"
+            className="flex items-center justify-center gap-2 w-full py-3.5 bg-accent hover:bg-accent-hover text-white rounded-xl text-sm font-medium transition-all shadow-sm active:scale-95"
           >
             Посмотреть все товары
           </Link>

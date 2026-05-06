@@ -114,7 +114,7 @@ export default function AdminDashboard() {
               <Link
                 key={card.title}
                 to={card.link}
-                className="bg-surface border border-border rounded-xl p-6 hover:shadow-lg transition-all hover:border-accent/30"
+                className="bg-surface border border-border rounded-xl p-6 hover:shadow-lg transition-all"
               >
                 <div className="flex items-center justify-between mb-4">
                   <div className={`${card.bgColor} ${card.color} p-3 rounded-lg`}>

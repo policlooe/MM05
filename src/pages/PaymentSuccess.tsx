@@ -5,6 +5,7 @@ import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
 import { MobileNav } from '@/components/MobileNav';
 import { ChatLauncher } from '@/components/ChatLauncher';
+import { Breadcrumbs } from '@/components/Breadcrumbs';
 
 export default function PaymentSuccess() {
   const [searchParams] = useSearchParams();
@@ -19,6 +20,7 @@ export default function PaymentSuccess() {
       <Navbar />
       <main className="container-x py-12 pb-24 md:pb-10">
         <div className="max-w-2xl mx-auto">
+          <Breadcrumbs />
           {/* Success Icon */}
           <div className="text-center mb-8">
             <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-green-100">

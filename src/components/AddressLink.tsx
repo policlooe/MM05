@@ -47,10 +47,10 @@ export function AddressLink({ variant = "inline", className = "" }: Props) {
     <a
       href="#"
       onClick={onClick}
-      className={`inline-flex items-center gap-1.5 hover:text-accent transition-colors ${className}`}
+      className={`inline-flex items-center gap-2 hover:text-accent transition-colors text-sm font-medium ${className}`}
       aria-label="Открыть адрес склада в картах"
     >
-      <MapPin className="w-4 h-4 shrink-0 stroke-[1.15] text-muted-foreground" />
+      <MapPin className="w-4 h-4 shrink-0 stroke-2 text-muted-foreground" />
       <span>{CONTACTS.addressShort}, Махачкала</span>
     </a>
   );

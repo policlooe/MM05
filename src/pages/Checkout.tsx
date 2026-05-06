@@ -6,6 +6,7 @@ import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { MobileNav } from "@/components/MobileNav";
 import { ChatLauncher } from "@/components/ChatLauncher";
+import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { useCart, formatPrice } from "@/store/cart";
 import { orderService } from "@/services/order";
 import { toast } from "sonner";
@@ -165,6 +166,7 @@ export default function Checkout() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
         >
+          <Breadcrumbs />
           <h1 className="font-serif text-3xl font-semibold mb-2">Оформление заказа</h1>
           <p className="text-sm text-muted-foreground mb-6">
             Заполните форму, и мы свяжемся с вами для подтверждения заказа

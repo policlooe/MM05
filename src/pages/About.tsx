@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { Navbar } from "@/components/Navbar";
+import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { Footer } from "@/components/Footer";
 import { CartSidebar } from "@/components/CartSidebar";
 import { CatalogSidebar } from "@/components/CatalogSidebar";
@@ -16,6 +17,7 @@ const About = () => {
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
+      <Breadcrumbs />
       <main className="container-x py-10">
         {/* Заголовок */}
         <div className="text-center mb-12">

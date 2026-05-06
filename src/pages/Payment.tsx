@@ -5,6 +5,7 @@ import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { ChatLauncher } from "@/components/ChatLauncher";
 import { MobileNav } from "@/components/MobileNav";
+import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { useCart, formatPrice } from "@/store/cart";
 import { paymentService } from "@/services/payment";
 import { toast } from "sonner";
@@ -54,12 +55,7 @@ export default function Payment() {
     <div className="min-h-screen bg-background">
       <Navbar />
       <main className="container-x py-6 pb-24 md:pb-10 max-w-2xl">
-        <Link
-          to="/"
-          className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-accent mb-4"
-        >
-          <ChevronLeft className="w-4 h-4 stroke-[1.15]" /> На главную
-        </Link>
+        <Breadcrumbs />
 
         <h1 className="font-serif text-3xl font-semibold mb-2">Оформление заказа</h1>
         <p className="text-sm text-muted-foreground mb-6">

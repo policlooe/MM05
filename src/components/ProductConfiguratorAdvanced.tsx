@@ -120,7 +120,7 @@ export function ProductConfiguratorAdvanced({
                       ? "border-accent bg-accent/5 text-accent"
                       : isDisabled
                       ? "border-border bg-muted/30 text-muted-foreground cursor-not-allowed opacity-50"
-                      : "border-border bg-white hover:border-accent/40"
+                      : "border-border bg-white hover:bg-accent/5"
                   )}
                 >
                   <span className="font-medium text-sm leading-tight break-words">{option.label}</span>
@@ -182,7 +182,7 @@ export function ProductConfiguratorAdvanced({
                     ? "border-accent bg-accent/5"
                     : isDisabled
                     ? "border-border bg-muted/30 cursor-not-allowed opacity-50"
-                    : "border-border hover:border-accent/40"
+                    : "border-border hover:bg-accent/5"
                 )}
               >
                 <div className="flex-1 min-w-0">
@@ -249,7 +249,7 @@ export function ProductConfiguratorAdvanced({
                           ? "border-accent bg-accent/5"
                           : isDisabled
                           ? "border-border bg-muted/30 cursor-not-allowed opacity-50"
-                          : "border-border hover:border-accent/40"
+                          : "border-border hover:bg-accent/5"
                       )}
                     >
                       <span className={cn(

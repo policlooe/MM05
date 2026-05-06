@@ -2,14 +2,23 @@ import { Link, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { XCircle, ArrowLeft, CreditCard } from 'lucide-react';
+import { Navbar } from '@/components/Navbar';
+import { Footer } from '@/components/Footer';
+import { MobileNav } from '@/components/MobileNav';
+import { ChatLauncher } from '@/components/ChatLauncher';
+import { Breadcrumbs } from '@/components/Breadcrumbs';
 
 export default function PaymentCancel() {
   const [searchParams] = useSearchParams();
   const orderId = searchParams.get('order_id');
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
-      <Card className="max-w-md w-full">
+    <div className="min-h-screen bg-background">
+      <Navbar />
+      <main className="container-x py-12 pb-24 md:pb-10">
+        <div className="max-w-md mx-auto">
+          <Breadcrumbs />
+          <Card className="max-w-md w-full">
         <CardHeader className="text-center">
           <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-red-100">
             <XCircle className="h-10 w-10 text-red-600" />
@@ -62,6 +71,11 @@ export default function PaymentCancel() {
           </div>
         </CardContent>
       </Card>
+        </div>
+      </main>
+      <Footer />
+      <MobileNav />
+      <ChatLauncher />
     </div>
   );
 }

@@ -3,6 +3,7 @@ import { Navbar } from "@/components/Navbar";
 import { Hero } from "@/components/Hero";
 import { Promotions } from "@/components/Promotions";
 import { Products } from "@/components/Products";
+import { RecentlyViewed } from "@/components/RecentlyViewed";
 import { ContactUs } from "@/components/ContactUs";
 import { Footer } from "@/components/Footer";
 import { CartSidebar } from "@/components/CartSidebar";
@@ -23,6 +24,7 @@ export default function Index() {
         </div>
         {/* Products has its own bg-surface-alt */}
         <Products />
+        <RecentlyViewed />
         <div className="bg-surface">
           <ContactUs />
         </div>

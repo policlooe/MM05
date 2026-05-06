@@ -86,7 +86,7 @@ export default function Favorites() {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.05, duration: 0.3 }}
-                  className="bg-surface border border-border rounded-xl overflow-hidden hover:border-accent/40 hover:shadow-lg transition-all group"
+                  className="bg-surface border border-border rounded-xl overflow-hidden hover:shadow-lg transition-all group"
                 >
                   <Link to={`/product/${product.slug}`} className="block">
                     <div className="relative aspect-square bg-secondary overflow-hidden">

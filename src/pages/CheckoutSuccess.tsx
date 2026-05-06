@@ -5,6 +5,7 @@ import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { MobileNav } from "@/components/MobileNav";
 import { ChatLauncher } from "@/components/ChatLauncher";
+import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { formatPrice } from "@/store/cart";
 import { motion } from "framer-motion";
 import { ecommerce } from "@/lib/web-vitals";
@@ -58,6 +59,7 @@ export default function CheckoutSuccess() {
     <div className="min-h-screen bg-background">
       <Navbar />
       <main className="container-x py-10 pb-24 md:pb-10 max-w-2xl">
+        <Breadcrumbs />
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}

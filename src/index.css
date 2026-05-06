@@ -153,6 +153,43 @@
   ::-webkit-scrollbar-thumb:hover {
     background: hsl(var(--muted-foreground) / 0.4);
   }
+
+  /* Убираем все обводки и ring эффекты с input[type="search"] */
+  input[type="search"]:focus {
+    outline: none !important;
+    box-shadow: none !important;
+    border-color: hsl(var(--border)) !important;
+  }
+
+  input[type="search"]:focus-visible {
+    outline: none !important;
+    box-shadow: none !important;
+    border-color: hsl(var(--border)) !important;
+  }
+
+  /* Глобальное правило для всех иконок - единая толщина stroke */
+  .lucide {
+    stroke-width: 1.5;
+  }
+
+  /* Для маленьких иконок (16px) - более толстый stroke */
+  .lucide.w-4 {
+    stroke-width: 2;
+  }
+
+  .lucide.h-4 {
+    stroke-width: 2;
+  }
+
+  /* Для средних и больших иконок (20px+) - стандартный stroke */
+  .lucide.w-5,
+  .lucide.h-5,
+  .lucide.w-6,
+  .lucide.h-6,
+  .lucide.w-8,
+  .lucide.h-8 {
+    stroke-width: 1.5;
+  }
 }
 
 @layer utilities {

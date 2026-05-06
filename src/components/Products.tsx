@@ -46,7 +46,7 @@ export function Products() {
               className={`shrink-0 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-300 border-2 ${
                 active === f
                   ? "border-accent bg-accent text-white shadow-accent scale-105"
-                  : "border-border bg-surface text-foreground hover:bg-muted hover:border-accent/30 hover:shadow-md"
+                  : "border-border bg-surface text-foreground hover:bg-muted hover:shadow-md"
               }`}
             >
               {f}

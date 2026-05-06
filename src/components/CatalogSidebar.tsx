@@ -239,7 +239,7 @@ export function CatalogSidebar() {
                     animate={{ opacity: 1, scale: 1 }}
                     exit={{ opacity: 0, scale: 0.9 }}
                     transition={{ duration: 0.2, delay: index * 0.02 }}
-                    className="group bg-surface rounded-lg overflow-hidden border border-border hover:border-accent/20 hover:shadow-md transition-all"
+                    className="group bg-surface rounded-lg overflow-hidden border border-border hover:shadow-md transition-all"
                   >
                     <Link
                       to={`/product/${p.slug}`}
