@@ -1,26 +1,45 @@
 import { useEffect, useState } from 'react';
 import { AdminLayout } from '@/components/AdminLayout';
-import { Search, Mail, Phone, Calendar } from 'lucide-react';
+import { Search, Shield, Ban, CheckCircle, Mail, Calendar } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Button } from '@/components/ui/button';
 import api from '@/services/api';
+import { toast } from '@/hooks/use-toast';
+import { format } from 'date-fns';
+import { ru } from 'date-fns/locale';
 
 interface User {
   id: string;
   email: string;
+  name: string;
   fullName?: string;
   phone?: string;
   role: string;
+  isActive: boolean;
   createdAt: string;
-  lastLoginAt?: string;
-  _count: {
+  _count?: {
     orders: number;
   };
 }
 
+const roleLabels: Record<string, string> = {
+  USER: 'Пользователь',
+  ADMIN: 'Администратор',
+};
+
+const roleColors: Record<string, string> = {
+  USER: 'bg-blue-500/10 text-blue-500',
+  ADMIN: 'bg-purple-500/10 text-purple-500',
+};
+
 export default function Users() {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
+  const [roleFilter, setRoleFilter] = useState<string>('all');
+  const [statusFilter, setStatusFilter] = useState<string>('all');
 
   useEffect(() => {
     fetchUsers();
@@ -31,19 +50,67 @@ export default function Users() {
       setLoading(true);
       const response = await api.get('/admin/users');
       setUsers(response.data.data);
-    } catch (err) {
-      setError('Ошибка загрузки пользователей');
-      console.error(err);
+    } catch (error) {
+      toast({
+        title: 'Ошибка',
+        description: 'Не удалось загрузить пользователей',
+        variant: 'destructive',
+      });
     } finally {
       setLoading(false);
     }
   };
 
-  const filteredUsers = users.filter(
-    (user) =>
+  const handleRoleChange = async (userId: string, newRole: string) => {
+    try {
+      await api.patch(`/admin/users/${userId}/role`, { role: newRole });
+      setUsers(users.map((user) => (user.id === userId ? { ...user, role: newRole } : user)));
+      toast({
+        title: 'Успешно',
+        description: 'Роль пользователя изменена',
+      });
+    } catch (error) {
+      toast({
+        title: 'Ошибка',
+        description: 'Не удалось изменить роль',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const handleToggleStatus = async (userId: string, isActive: boolean) => {
+    try {
+      await api.patch(`/admin/users/${userId}/status`, { isActive: !isActive });
+      setUsers(
+        users.map((user) => (user.id === userId ? { ...user, isActive: !isActive } : user))
+      );
+      toast({
+        title: 'Успешно',
+        description: `Пользователь ${!isActive ? 'активирован' : 'заблокирован'}`,
+      });
+    } catch (error) {
+      toast({
+        title: 'Ошибка',
+        description: 'Не удалось изменить статус',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const filteredUsers = users.filter((user) => {
+    const matchesSearch =
       user.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      user.fullName?.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+      user.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      user.fullName?.toLowerCase().includes(searchQuery.toLowerCase());
+
+    const matchesRole = roleFilter === 'all' || user.role === roleFilter;
+    const matchesStatus =
+      statusFilter === 'all' ||
+      (statusFilter === 'active' && user.isActive) ||
+      (statusFilter === 'blocked' && !user.isActive);
+
+    return matchesSearch && matchesRole && matchesStatus;
+  });
 
   if (loading) {
     return (
@@ -65,94 +132,183 @@ export default function Users() {
           </p>
         </div>
 
-        {error && (
-          <div className="bg-destructive/10 border border-destructive/30 text-destructive rounded-lg p-4">
-            {error}
-          </div>
-        )}
-
-        <div className="bg-surface border border-border rounded-xl p-4">
-          <div className="relative">
+        <div className="flex flex-col md:flex-row gap-4">
+          <div className="flex-1 relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-            <input
+            <Input
               type="text"
-              placeholder="Поиск по email или имени..."
+              placeholder="Поиск по имени или email..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-border rounded-lg focus:outline-none focus:border-accent"
+              className="pl-10"
             />
           </div>
-        </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredUsers.map((user) => (
-            <div
-              key={user.id}
-              className="bg-surface border border-border rounded-xl p-6 hover:shadow-lg transition-shadow"
-            >
-              <div className="flex items-start justify-between mb-4">
-                <div className="flex-1">
-                  <h3 className="font-semibold text-lg">
-                    {user.fullName || 'Без имени'}
-                  </h3>
-                  <span
-                    className={`inline-block px-2 py-1 text-xs font-medium rounded-full mt-1 ${
-                      user.role === 'ADMIN'
-                        ? 'bg-purple-500/10 text-purple-500'
-                        : 'bg-blue-500/10 text-blue-500'
-                    }`}
-                  >
-                    {user.role === 'ADMIN' ? 'Администратор' : 'Пользователь'}
-                  </span>
-                </div>
-              </div>
+          <div className="flex items-center gap-2">
+            <Select value={roleFilter} onValueChange={setRoleFilter}>
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Все роли" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Все роли</SelectItem>
+                <SelectItem value="USER">Пользователи</SelectItem>
+                <SelectItem value="ADMIN">Администраторы</SelectItem>
+              </SelectContent>
+            </Select>
 
-              <div className="space-y-2">
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <Mail className="w-4 h-4" />
-                  <span className="truncate">{user.email}</span>
-                </div>
-
-                {user.phone && (
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <Phone className="w-4 h-4" />
-                    <span>{user.phone}</span>
-                  </div>
-                )}
-
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <Calendar className="w-4 h-4" />
-                  <span>
-                    Регистрация:{' '}
-                    {new Date(user.createdAt).toLocaleDateString('ru-RU')}
-                  </span>
-                </div>
-
-                {user.lastLoginAt && (
-                  <div className="text-sm text-muted-foreground">
-                    Последний вход:{' '}
-                    {new Date(user.lastLoginAt).toLocaleDateString('ru-RU')}
-                  </div>
-                )}
-              </div>
-
-              <div className="mt-4 pt-4 border-t border-border">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">Заказов:</span>
-                  <span className="text-lg font-bold text-accent">
-                    {user._count.orders}
-                  </span>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {filteredUsers.length === 0 && (
-          <div className="text-center py-12 text-muted-foreground">
-            Пользователи не найдены
+            <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Все статусы" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Все статусы</SelectItem>
+                <SelectItem value="active">Активные</SelectItem>
+                <SelectItem value="blocked">Заблокированные</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
-        )}
+        </div>
+
+        <div className="bg-surface border border-border rounded-xl overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-muted">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                    Пользователь
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                    Роль
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                    Заказов
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                    Дата регистрации
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                    Статус
+                  </th>
+                  <th className="px-6 py-3 text-right text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                    Действия
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border">
+                {filteredUsers.map((user) => (
+                  <tr key={user.id} className="hover:bg-muted/50">
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-3">
+                        <div className="flex items-center justify-center w-10 h-10 rounded-full bg-accent/10 text-accent font-semibold">
+                          {(user.name || user.fullName || user.email)[0].toUpperCase()}
+                        </div>
+                        <div>
+                          <div className="text-sm font-medium text-foreground">
+                            {user.name || user.fullName || 'Без имени'}
+                          </div>
+                          <div className="text-sm text-muted-foreground flex items-center gap-1">
+                            <Mail className="w-3 h-3" />
+                            {user.email}
+                          </div>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <Select
+                        value={user.role}
+                        onValueChange={(value) => handleRoleChange(user.id, value)}
+                      >
+                        <SelectTrigger className="w-[150px]">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="USER">Пользователь</SelectItem>
+                          <SelectItem value="ADMIN">Администратор</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-foreground">
+                      {user._count?.orders || 0}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm text-foreground flex items-center gap-1">
+                        <Calendar className="w-3 h-3" />
+                        {format(new Date(user.createdAt), 'dd MMM yyyy', { locale: ru })}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <Badge
+                        className={
+                          user.isActive
+                            ? 'bg-green-500/10 text-green-500'
+                            : 'bg-red-500/10 text-red-500'
+                        }
+                      >
+                        {user.isActive ? 'Активен' : 'Заблокирован'}
+                      </Badge>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-right">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleToggleStatus(user.id, user.isActive)}
+                        className={
+                          user.isActive
+                            ? 'text-red-500 hover:text-red-700'
+                            : 'text-green-500 hover:text-green-700'
+                        }
+                      >
+                        {user.isActive ? (
+                          <>
+                            <Ban className="w-4 h-4 mr-1" />
+                            Заблокировать
+                          </>
+                        ) : (
+                          <>
+                            <CheckCircle className="w-4 h-4 mr-1" />
+                            Активировать
+                          </>
+                        )}
+                      </Button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {filteredUsers.length === 0 && (
+            <div className="text-center py-12 text-muted-foreground">
+              Пользователи не найдены
+            </div>
+          )}
+        </div>
+
+        <div className="bg-surface border border-border rounded-xl p-6">
+          <div className="flex items-center gap-2 mb-4">
+            <Shield className="w-5 h-5 text-accent" />
+            <h2 className="text-xl font-semibold">Статистика</h2>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="p-4 bg-muted rounded-lg">
+              <p className="text-sm text-muted-foreground mb-1">Всего пользователей</p>
+              <p className="text-2xl font-bold">{users.length}</p>
+            </div>
+            <div className="p-4 bg-muted rounded-lg">
+              <p className="text-sm text-muted-foreground mb-1">Администраторов</p>
+              <p className="text-2xl font-bold">
+                {users.filter((u) => u.role === 'ADMIN').length}
+              </p>
+            </div>
+            <div className="p-4 bg-muted rounded-lg">
+              <p className="text-sm text-muted-foreground mb-1">Активных</p>
+              <p className="text-2xl font-bold">
+                {users.filter((u) => u.isActive).length}
+              </p>
+            </div>
+          </div>
+        </div>
       </div>
     </AdminLayout>
   );

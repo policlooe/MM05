@@ -20,6 +20,11 @@ const Login = lazy(() => import("./pages/Login"));
 const Register = lazy(() => import("./pages/Register"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
+// Admin pages
+const AdminDashboard = lazy(() => import("./pages/admin/Dashboard"));
+const ProductsManagement = lazy(() => import("./pages/admin/ProductsManagement"));
+const ProductEdit = lazy(() => import("./pages/admin/ProductEdit"));
+
 const PageLoader = () => (
   <div className="flex items-center justify-center min-h-screen">
     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-accent"></div>
@@ -63,6 +68,13 @@ function App() {
                 <Route path="/contact" element={<Contact />} />
                 <Route path="/login" element={<Login />} />
                 <Route path="/register" element={<Register />} />
+                
+                {/* Admin Routes */}
+                <Route path="/admin" element={<AdminDashboard />} />
+                <Route path="/admin/products" element={<ProductsManagement />} />
+                <Route path="/admin/products/new" element={<ProductEdit />} />
+                <Route path="/admin/products/edit/:id" element={<ProductEdit />} />
+                
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </Suspense>

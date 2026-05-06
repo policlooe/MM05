@@ -1,28 +1,30 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { AdminLayout } from '@/components/AdminLayout';
-import { Search, Eye } from 'lucide-react';
+import { Search, Eye, Filter } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import api from '@/services/api';
+import { format } from 'date-fns';
+import { ru } from 'date-fns/locale';
 
 interface Order {
   id: string;
   orderNumber: string;
   status: string;
   total: number;
+  totalAmount?: number;
   customerName: string;
   customerEmail: string;
-  customerPhone: string;
   createdAt: string;
-  user: {
+  user?: {
+    name: string;
     email: string;
-    fullName?: string;
   };
-  items: Array<{
-    quantity: number;
-    price: number;
-    product?: {
-      name: string;
-    };
-  }>;
+  _count?: {
+    items: number;
+  };
 }
 
 const statusColors: Record<string, string> = {
@@ -44,11 +46,11 @@ const statusLabels: Record<string, string> = {
 };
 
 export default function Orders() {
+  const navigate = useNavigate();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const [statusFilter, setStatusFilter] = useState<string>('all');
 
   useEffect(() => {
     fetchOrders();
@@ -59,37 +61,25 @@ export default function Orders() {
       setLoading(true);
       const response = await api.get('/admin/orders');
       setOrders(response.data.data);
-    } catch (err) {
-      setError('Ошибка загрузки заказов');
-      console.error(err);
+    } catch (error) {
+      console.error('Error fetching orders:', error);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleStatusChange = async (orderId: string, newStatus: string) => {
-    try {
-      await api.put(`/admin/orders/${orderId}/status`, {
-        status: newStatus,
-      });
-      
-      setOrders(
-        orders.map((order) =>
-          order.id === orderId ? { ...order, status: newStatus } : order
-        )
-      );
-    } catch (err) {
-      alert('Ошибка изменения статуса');
-      console.error(err);
-    }
-  };
-
-  const filteredOrders = orders.filter(
-    (order) =>
+  const filteredOrders = orders.filter((order) => {
+    const matchesSearch =
       order.orderNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      order.customerName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      order.customerEmail.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+      order.customerName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      order.customerEmail?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      order.user?.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      order.user?.email?.toLowerCase().includes(searchQuery.toLowerCase());
+
+    const matchesStatus = statusFilter === 'all' || order.status === statusFilter;
+
+    return matchesSearch && matchesStatus;
+  });
 
   if (loading) {
     return (
@@ -111,22 +101,33 @@ export default function Orders() {
           </p>
         </div>
 
-        {error && (
-          <div className="bg-destructive/10 border border-destructive/30 text-destructive rounded-lg p-4">
-            {error}
-          </div>
-        )}
-
-        <div className="bg-surface border border-border rounded-xl p-4">
-          <div className="relative">
+        <div className="flex flex-col md:flex-row gap-4">
+          <div className="flex-1 relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-            <input
+            <Input
               type="text"
               placeholder="Поиск по номеру заказа, имени или email..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-border rounded-lg focus:outline-none focus:border-accent"
+              className="pl-10"
             />
+          </div>
+
+          <div className="flex items-center gap-2">
+            <Filter className="w-5 h-5 text-muted-foreground" />
+            <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <SelectTrigger className="w-[200px]">
+                <SelectValue placeholder="Все статусы" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Все статусы</SelectItem>
+                {Object.entries(statusLabels).map(([value, label]) => (
+                  <SelectItem key={value} value={value}>
+                    {label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
         </div>
 
@@ -142,13 +143,16 @@ export default function Orders() {
                     Клиент
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                    Дата
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                    Товаров
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                     Сумма
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                     Статус
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                    Дата
                   </th>
                   <th className="px-6 py-3 text-right text-xs font-medium text-muted-foreground uppercase tracking-wider">
                     Действия
@@ -160,45 +164,37 @@ export default function Orders() {
                   <tr key={order.id} className="hover:bg-muted/50">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm font-medium text-foreground">
-                        {order.orderNumber}
+                        #{order.orderNumber}
                       </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="text-sm font-medium text-foreground">
-                        {order.customerName}
-                      </div>
-                      <div className="text-sm text-muted-foreground">
-                        {order.customerEmail}
-                      </div>
-                      <div className="text-sm text-muted-foreground">
-                        {order.customerPhone}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-foreground">
-                      {(Number(order.total) / 100).toLocaleString('ru-RU')} ₽
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <select
-                        value={order.status}
-                        onChange={(e) => handleStatusChange(order.id, e.target.value)}
-                        className={`px-2 py-1 text-xs font-medium rounded-full border-0 ${
-                          statusColors[order.status]
-                        }`}
-                      >
-                        {Object.entries(statusLabels).map(([value, label]) => (
-                          <option key={value} value={value}>
-                            {label}
-                          </option>
-                        ))}
-                      </select>
+                      <div className="text-sm font-medium text-foreground">
+                        {order.user?.name || order.customerName}
+                      </div>
+                      <div className="text-sm text-muted-foreground">
+                        {order.user?.email || order.customerEmail}
+                      </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-foreground">
-                      {new Date(order.createdAt).toLocaleDateString('ru-RU')}
+                      {format(new Date(order.createdAt), 'dd MMM yyyy', { locale: ru })}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-foreground">
+                      {order._count?.items || 0}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm font-medium text-foreground">
+                        {(Number(order.totalAmount || order.total) / 100).toLocaleString('ru-RU')} ₽
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <Badge className={statusColors[order.status]}>
+                        {statusLabels[order.status]}
+                      </Badge>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <button
-                        onClick={() => setSelectedOrder(order)}
-                        className="text-blue-500 hover:text-blue-700"
+                        onClick={() => navigate(`/admin/orders/${order.id}`)}
+                        className="text-accent hover:text-accent-hover transition-colors"
                       >
                         <Eye className="w-5 h-5" />
                       </button>
@@ -216,63 +212,6 @@ export default function Orders() {
           )}
         </div>
       </div>
-
-      {selectedOrder && (
-        <div
-          className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50"
-          onClick={() => setSelectedOrder(null)}
-        >
-          <div
-            className="bg-surface rounded-xl p-6 max-w-2xl w-full max-h-[80vh] overflow-y-auto"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <h2 className="text-2xl font-bold mb-4">
-              Заказ {selectedOrder.orderNumber}
-            </h2>
-            
-            <div className="space-y-4">
-              <div>
-                <h3 className="font-semibold mb-2">Информация о клиенте</h3>
-                <p className="text-sm">Имя: {selectedOrder.customerName}</p>
-                <p className="text-sm">Email: {selectedOrder.customerEmail}</p>
-                <p className="text-sm">Телефон: {selectedOrder.customerPhone}</p>
-              </div>
-
-              <div>
-                <h3 className="font-semibold mb-2">Товары</h3>
-                <div className="space-y-2">
-                  {selectedOrder.items.map((item, index) => (
-                    <div key={index} className="flex justify-between text-sm">
-                      <span>
-                        {item.product?.name || 'Товар'} x {item.quantity}
-                      </span>
-                      <span className="font-medium">
-                        {(Number(item.price) / 100).toLocaleString('ru-RU')} ₽
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div className="border-t pt-4">
-                <div className="flex justify-between text-lg font-bold">
-                  <span>Итого:</span>
-                  <span>
-                    {(Number(selectedOrder.total) / 100).toLocaleString('ru-RU')} ₽
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            <button
-              onClick={() => setSelectedOrder(null)}
-              className="mt-6 w-full bg-accent hover:bg-accent-hover text-white py-2 rounded-lg transition-colors"
-            >
-              Закрыть
-            </button>
-          </div>
-        </div>
-      )}
     </AdminLayout>
   );
 }
