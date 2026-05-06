@@ -1,6 +1,6 @@
 import { ShoppingBag, Search, User, Heart } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, memo } from "react";
 import { motion } from "framer-motion";
 import { useCart } from "@/store/cart";
 import { useFavorites } from "@/store/favorites";
@@ -10,7 +10,7 @@ import { CONTACTS } from "@/lib/contacts";
 import { PremiumIconMark } from "@/components/PremiumIcon";
 import { cn } from "@/lib/utils";
 
-export function Navbar() {
+export const Navbar = memo(function Navbar() {
   const { count, open } = useCart();
   const { favorites } = useFavorites();
   const { open: openCatalog } = useCatalog();
@@ -192,4 +192,4 @@ export function Navbar() {
       </div>
     </header>
   );
-}
+});

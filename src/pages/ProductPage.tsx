@@ -162,12 +162,11 @@ export default function ProductPage() {
       <Navbar />
       <Breadcrumbs />
       <main className="container-x py-3 pb-20 md:pb-10">
-        <div className="max-w-6xl mx-auto px-3 md:px-4">
-          <div className="grid md:grid-cols-2 gap-4 lg:gap-6">
-            <div className="flex flex-col items-center">
+        <div className="w-full max-w-[480px] mx-auto px-3 md:max-w-6xl md:px-4">
+          <div className="flex flex-col md:grid md:grid-cols-2 gap-4">
+            <div className="flex flex-col w-full">
               <motion.div 
-                className="bg-surface rounded-xl overflow-hidden border border-border aspect-square mb-3 cursor-pointer group relative w-full max-w-md md:max-w-none"
-                whileHover={{ scale: 1.02 }}
+                className="bg-surface rounded-xl overflow-hidden border border-border aspect-square mb-3 cursor-pointer group relative w-full max-w-[100%]"
                 transition={{ duration: 0.3 }}
                 onClick={() => openViewer(selectedImage)}
               >
@@ -190,7 +189,7 @@ export default function ProductPage() {
               </motion.div>
 
               {allImages.length > 1 && (
-                <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-muted scrollbar-track-transparent w-full max-w-md md:max-w-none justify-center md:justify-start">
+                <div className="flex gap-2 overflow-x-auto w-full pb-2 scrollbar-thin scrollbar-thumb-muted scrollbar-track-transparent justify-center md:justify-start">
                   {allImages.map((img, index) => (
                     <motion.button
                       key={index}
@@ -201,12 +200,11 @@ export default function ProductPage() {
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
                       className={cn(
-                        "shrink-0 bg-surface rounded-lg overflow-hidden border-2 transition-all aspect-square hover:opacity-80 cursor-pointer",
+                        "shrink-0 bg-surface rounded-lg overflow-hidden border-2 transition-all aspect-square hover:opacity-80 cursor-pointer w-[64px] h-[64px]",
                         selectedImage === img 
                           ? "border-accent opacity-100 ring-2 ring-accent/20" 
                           : "border-border opacity-70"
                       )}
-                      style={{ width: '80px', height: '80px' }}
                     >
                       <img
                         src={img}
@@ -221,20 +219,20 @@ export default function ProductPage() {
               )}
             </div>
 
-            <div className="flex flex-col items-center md:items-start text-center md:text-left px-0 md:px-0">
+            <div className="flex flex-col w-full text-left gap-3 min-w-0">
               {product.badge && (
                 <span className="inline-block border border-border bg-muted/50 text-muted-foreground text-xs font-medium px-2 py-0.5 rounded-md mb-2">
                   {product.badge}
                 </span>
               )}
               <p className="text-xs text-muted-foreground font-medium mb-1.5">{product.category}</p>
-              <h1 className="font-serif text-2xl md:text-4xl lg:text-5xl font-bold tracking-tight mb-2.5">{product.name}</h1>
-              <p className="text-muted-foreground text-sm md:text-base leading-relaxed mb-4 max-w-2xl">
+              <h1 className="text-lg md:text-3xl font-semibold leading-tight break-words">{product.name}</h1>
+              <p className="text-sm text-muted-foreground leading-relaxed break-words max-w-2xl">
                 {product.shortDescription}
               </p>
 
-              <div className="sticky top-4 bg-surface border border-border rounded-xl p-3 mb-3 shadow-sm w-full max-w-md md:max-w-none">
-                <div className="flex items-baseline justify-center md:justify-between gap-2">
+              <div className="w-full bg-surface border border-border rounded-xl p-3 shadow-sm">
+                <div className="flex items-baseline justify-between gap-2">
                   <span className="font-serif text-2xl md:text-3xl font-bold text-accent">
                     {formatPrice(finalPrice)}
                   </span>
@@ -299,7 +297,7 @@ export default function ProductPage() {
                 </span>
               </div>
 
-              <div className="flex flex-col gap-2 mb-6 w-full max-w-md md:max-w-none">
+              <div className="flex flex-col gap-2 w-full">
                 <button
                   onClick={() => {
                     const configToUse = product.advancedConfiguration 

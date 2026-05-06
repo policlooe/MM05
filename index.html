@@ -39,9 +39,25 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <meta name="apple-mobile-web-app-title" content="MM05" />
 
+  <!-- DNS Prefetch & Preconnect для критических ресурсов -->
+  <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
+  <link rel="dns-prefetch" href="https://fonts.gstatic.com" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  
+  <!-- Preload критических шрифтов -->
+  <link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" as="style" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  
+  <!-- Prefetch для следующих страниц -->
+  <link rel="prefetch" href="/catalog" as="document" />
+  
+  <!-- Preload критических изображений -->
+  <link rel="preload" href="/src/assets/hero-banner.jpg" as="image" type="image/jpeg" />
+  
+  <!-- Preload критических скриптов -->
+  <link rel="modulepreload" href="/src/main.tsx" />
+  <link rel="modulepreload" href="/src/App.tsx" />
 </head>
 <body>
   <div id="root"></div>

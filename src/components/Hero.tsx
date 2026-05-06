@@ -1,7 +1,8 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, memo } from "react";
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronRight, ChevronLeft } from "lucide-react";
+import { OptimizedImage } from "./OptimizedImage";
 import heroBanner from "@/assets/hero-banner.jpg";
 
 // Banner data
@@ -38,9 +39,11 @@ const banners = [
   },
 ];
 
-export function Hero() {
+export const Hero = memo(function Hero() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isAutoPlaying, setIsAutoPlaying] = useState(true);
+  const [touchStart, setTouchStart] = useState(0);
+  const [touchEnd, setTouchEnd] = useState(0);
 
   // Auto-rotate banners every 5 seconds
   useEffect(() => {
@@ -68,6 +71,34 @@ export function Hero() {
     setIsAutoPlaying(false);
   };
 
+  // Touch handlers for swipe navigation
+  const handleTouchStart = (e: React.TouchEvent) => {
+    setTouchStart(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    setTouchEnd(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchEnd = () => {
+    if (!touchStart || !touchEnd) return;
+    
+    const distance = touchStart - touchEnd;
+    const isLeftSwipe = distance > 50;
+    const isRightSwipe = distance < -50;
+
+    if (isLeftSwipe) {
+      goToNext();
+    }
+    if (isRightSwipe) {
+      goToPrev();
+    }
+
+    // Reset
+    setTouchStart(0);
+    setTouchEnd(0);
+  };
+
   const currentBanner = banners[currentIndex];
 
   return (
@@ -84,23 +115,32 @@ export function Hero() {
         
         <Link
           to={currentBanner.link}
-          className="relative block rounded-xl md:rounded-3xl overflow-hidden bg-secondary aspect-[16/11] md:aspect-[21/8] group transition-all shadow-sm hover:shadow-lg"
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
+          className="relative block rounded-xl md:rounded-3xl overflow-hidden bg-secondary aspect-[16/11] md:aspect-[21/8] group transition-all shadow-sm hover:shadow-lg touch-pan-y"
           aria-label={currentBanner.cta}
         >
           {/* Banner Images with AnimatePresence */}
           <AnimatePresence mode="wait">
-            <motion.img
+            <motion.div
               key={currentBanner.id}
-              src={currentBanner.image}
-              alt={currentBanner.title}
-              width={1200}
-              height={900}
               initial={{ opacity: 0, scale: 1.1 }}
               animate={{ opacity: 1, scale: 1.01 }}
               exit={{ opacity: 0, scale: 0.95 }}
               transition={{ duration: 0.7, ease: "easeInOut" }}
-              className="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 ease-out group-hover:scale-[1.08] group-hover:-translate-y-2 group-active:scale-100 group-active:opacity-90"
-            />
+              className="absolute inset-0"
+            >
+              <OptimizedImage
+                src={currentBanner.image}
+                alt={currentBanner.title}
+                width={1200}
+                height={900}
+                priority={true}
+                loading="eager"
+                className="w-full h-full object-cover transition-transform duration-1000 ease-out group-hover:scale-[1.08] group-hover:-translate-y-2 group-active:scale-100 group-active:opacity-90"
+              />
+            </motion.div>
           </AnimatePresence>
 
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent md:bg-gradient-to-r md:from-black/75 md:via-black/35 md:to-transparent transition-opacity duration-700 group-hover:opacity-95 group-active:opacity-100" />
@@ -193,4 +233,4 @@ export function Hero() {
       </motion.div>
     </section>
   );
-}
+});

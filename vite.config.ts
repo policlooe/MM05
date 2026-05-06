@@ -5,13 +5,6 @@ import { componentTagger } from "lovable-tagger";
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
-  server: {
-    host: "::",
-    port: 8080,
-    hmr: {
-      overlay: false,
-    },
-  },
   plugins: [react(), mode === "development" && componentTagger()].filter(Boolean),
   resolve: {
     alias: {
@@ -25,10 +18,24 @@ export default defineConfig(({ mode }) => ({
     target: "es2015",
     rollupOptions: {
       output: {
-        // Упрощенное разделение кода без циклических зависимостей
-        manualChunks: {
-          'react-vendor': ['react', 'react-dom', 'react-router-dom'],
-          'animation-vendor': ['framer-motion'],
+        // Оптимизированное разделение кода
+        manualChunks: (id) => {
+          // React и связанные библиотеки
+          if (id.includes('node_modules/react') || id.includes('node_modules/react-dom') || id.includes('node_modules/react-router')) {
+            return 'react-vendor';
+          }
+          // Framer Motion
+          if (id.includes('node_modules/framer-motion')) {
+            return 'animation-vendor';
+          }
+          // UI библиотеки
+          if (id.includes('node_modules/@radix-ui') || id.includes('node_modules/lucide-react')) {
+            return 'ui-vendor';
+          }
+          // Остальные node_modules
+          if (id.includes('node_modules')) {
+            return 'vendor';
+          }
         },
         // Оптимизация имен файлов для кеширования
         entryFileNames: "assets/[name]-[hash].js",
@@ -40,13 +47,32 @@ export default defineConfig(({ mode }) => ({
     chunkSizeWarningLimit: 1000,
     // Оптимизация CSS
     cssCodeSplit: true,
-    // Source maps для debugging
+    cssMinify: true,
+    // Source maps только для production debugging
     sourcemap: false,
     // Оптимизация для production
     reportCompressedSize: false,
+    // Оптимизация ассетов
+    assetsInlineLimit: 4096, // 4kb
   },
   // Оптимизация зависимостей
   optimizeDeps: {
-    include: ["react", "react-dom", "react-router-dom", "@tanstack/react-query"],
+    include: [
+      "react", 
+      "react-dom", 
+      "react-router-dom", 
+      "@tanstack/react-query",
+      "framer-motion",
+      "zustand"
+    ],
+    exclude: ['@tanstack/react-query-devtools'],
+  },
+  // Оптимизация dev сервера
+  server: {
+    host: "::",
+    port: 8080,
+    hmr: {
+      overlay: false,
+    },
   },
 }));

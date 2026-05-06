@@ -1,11 +1,11 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, memo } from "react";
 import { motion } from "framer-motion";
 import { products } from "@/data/products";
 import { OptimizedProductCard } from "./OptimizedProductList";
 
 const filters = ["Все", "Кровати", "Шкафы", "Столы", "Кресла", "Беседки", "Тумбы"] as const;
 
-export function Products() {
+export const Products = memo(function Products() {
   const [active, setActive] = useState<(typeof filters)[number]>("Все");
 
   const list = useMemo(() => {
@@ -62,4 +62,4 @@ export function Products() {
       </div>
     </section>
   );
-}
+});

@@ -1,7 +1,8 @@
 import { Link } from "react-router-dom";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, memo } from "react";
 import { ShoppingBag, Clock } from "lucide-react";
 import { formatPrice } from "@/store/cart";
+import { OptimizedImage } from "./OptimizedImage";
 
 // Интерфейс для акционного товара
 interface PromotionProduct {
@@ -70,7 +71,7 @@ const getDaysLeft = (endDate: string): number => {
   return diffDays > 0 ? diffDays : 0;
 };
 
-export function Promotions() {
+export const Promotions = memo(function Promotions() {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [isPaused, setIsPaused] = useState(false);
 
@@ -146,10 +147,9 @@ export function Promotions() {
               >
                 {/* Изображение товара */}
                 <div className="relative aspect-square bg-secondary overflow-hidden">
-                  <img
+                  <OptimizedImage
                     src={product.image}
                     alt={product.name}
-                    loading="lazy"
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                   />
 
@@ -222,4 +222,4 @@ export function Promotions() {
       </div>
     </section>
   );
-}
+});

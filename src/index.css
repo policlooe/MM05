@@ -77,6 +77,7 @@
     box-sizing: border-box;
     margin: 0;
     padding: 0;
+    min-width: 0; /* Критично для flex элементов */
   }
 
   /* Предотвращение горизонтального скролла на всех уровнях */
@@ -91,6 +92,7 @@
 
   html {
     scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch; /* Плавный скролл на iOS */
   }
 
   body {
@@ -99,11 +101,13 @@
     font-feature-settings: "kern" 1, "liga" 1;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
     min-height: 100vh;
     position: relative;
     font-size: 16px; /* КРИТИЧНО: Базовый размер 16px для читаемости */
     line-height: 1.6;
     padding-top: env(safe-area-inset-top); /* iOS safe area */
+    touch-action: pan-y pinch-zoom; /* Оптимизация touch events */
   }
 
   /* Предотвращение сдвига при скрытии скроллбара */
@@ -118,6 +122,7 @@
     max-width: 100vw;
     overflow-x: hidden;
     position: relative;
+    isolation: isolate; /* Создаем новый stacking context */
   }
 
   .font-serif {
@@ -129,11 +134,7 @@
     font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter", system-ui, sans-serif;
     font-weight: 600;
     letter-spacing: -0.02em;
-  }
-
-  /* Apple-style smooth scrolling */
-  html {
-    scroll-behavior: smooth;
+    text-rendering: optimizeLegibility;
   }
 
   /* Premium scrollbar */
@@ -193,26 +194,105 @@
     stroke-width: 1.5;
   }
 
-  /* Анти-мерцание при скролле */
+  /* ========================================
+     КРИТИЧНО: Анти-мерцание и оптимизация производительности
+     ======================================== */
+  
   * {
     -webkit-tap-highlight-color: transparent;
   }
 
+  /* GPU acceleration для карточек и интерактивных элементов */
   .card,
   [class*="card"],
-  [class*="Card"] {
-    will-change: transform;
+  [class*="Card"],
+  article {
     transform: translateZ(0);
     backface-visibility: hidden;
     -webkit-backface-visibility: hidden;
+    /* CSS containment для изоляции layout */
+    contain: layout style paint;
   }
 
-  /* Оптимизация для изображений */
+  /* Оптимизация для кнопок и ссылок */
+  button,
+  a[href],
+  [role="button"] {
+    transform: translateZ(0);
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation; /* Убирает 300ms задержку на мобильных */
+  }
+
+  /* Оптимизация для изображений - предотвращение мерцания */
   img {
-    will-change: transform;
     transform: translateZ(0);
     backface-visibility: hidden;
     -webkit-backface-visibility: hidden;
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: crisp-edges;
+    /* Lazy loading hint */
+    content-visibility: auto;
+  }
+
+  /* Content visibility для off-screen секций */
+  section,
+  .lazy-section {
+    content-visibility: auto;
+    contain-intrinsic-size: 0 500px;
+  }
+
+  /* Оптимизация анимаций - только transform и opacity */
+  @media (prefers-reduced-motion: no-preference) {
+    * {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+
+  /* Предотвращение layout shift */
+  img[width][height] {
+    height: auto;
+  }
+
+  /* Оптимизация для скролла */
+  * {
+    scroll-behavior: smooth;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    * {
+      scroll-behavior: auto;
+    }
+  }
+
+  /* Оптимизация рендеринга текста */
+  body,
+  h1, h2, h3, h4, h5, h6,
+  p, span, a, button {
+    text-rendering: optimizeSpeed;
+  }
+
+  /* Оптимизация для списков */
+  ul, ol {
+    list-style: none;
+  }
+
+  /* Предотвращение FOUC (Flash of Unstyled Content) */
+  html {
+    visibility: visible;
+    opacity: 1;
   }
 }
 
@@ -412,4 +492,3 @@
 .pb-safe-area {
   padding-bottom: env(safe-area-inset-bottom);
 }
-

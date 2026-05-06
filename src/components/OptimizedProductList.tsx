@@ -5,6 +5,7 @@ import { useCart, formatPrice } from '@/store/cart';
 import { useFavorites } from '@/store/favorites';
 import { toast } from 'sonner';
 import { Heart, ShoppingCart } from 'lucide-react';
+import { OptimizedImage } from './OptimizedImage';
 import type { Product } from '@/data/products';
 
 // Оптимизированная карточка товара с минимальными ререндерами
@@ -48,27 +49,26 @@ export const OptimizedProductCard = memo(({
 
   return (
     <motion.article
-      initial={{ opacity: 0, y: 20, scale: 0.95 }}
-      whileInView={{ opacity: 1, y: 0, scale: 1 }}
+      initial={{ opacity: 0, y: 20 }}
+      whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-50px" }}
       transition={{ 
-        duration: 0.3, 
-        delay: Math.min(index * 0.05, 0.2),
+        duration: 0.2, 
+        delay: Math.min(index * 0.03, 0.15),
         ease: [0.22, 1, 0.36, 1]
       }}
-      whileHover={{ 
-        y: -4,
-        transition: { duration: 0.15, ease: [0.22, 1, 0.36, 1] }
+      className="group bg-surface rounded-xl overflow-hidden border border-border hover:shadow-md transition-shadow duration-150 flex flex-col relative"
+      style={{
+        transform: 'translateZ(0)',
+        willChange: 'auto',
+        contain: 'layout style paint'
       }}
-      className="group bg-surface rounded-xl overflow-hidden border border-border hover:shadow-md transition-all duration-150 flex flex-col relative"
     >
       <Link to={`/product/${product.slug}`} className="block">
         <div className="relative aspect-square bg-secondary overflow-hidden">
-          <img
+          <OptimizedImage
             src={product.image}
             alt={product.name}
-            loading="lazy"
-            decoding="async"
             width={400}
             height={400}
             className="w-full h-full object-cover"
