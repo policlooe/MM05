@@ -99,6 +99,12 @@ export const Hero = memo(function Hero() {
     setTouchEnd(0);
   };
 
+  // Prevent default only when needed (not passive)
+  const handleTouchMoveWithPrevent = (e: React.TouchEvent) => {
+    handleTouchMove(e);
+    // Don't prevent default to allow scrolling
+  };
+
   const currentBanner = banners[currentIndex];
 
   return (
@@ -116,7 +122,7 @@ export const Hero = memo(function Hero() {
         <Link
           to={currentBanner.link}
           onTouchStart={handleTouchStart}
-          onTouchMove={handleTouchMove}
+          onTouchMove={handleTouchMoveWithPrevent}
           onTouchEnd={handleTouchEnd}
           className="relative block rounded-xl md:rounded-3xl overflow-hidden bg-secondary aspect-[16/11] md:aspect-[21/8] group transition-all shadow-sm hover:shadow-lg touch-pan-y"
           aria-label={currentBanner.cta}
