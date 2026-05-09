@@ -44,7 +44,7 @@ export function SimilarProducts({ currentProduct, limit = 4 }: SimilarProductsPr
             <Sparkles className="w-5 h-5 text-accent" />
           </div>
           <div>
-            <h2 className="font-serif text-2xl md:text-3xl font-bold">
+            <h2 className="text-3xl font-semibold tracking-tight">
               Похожие товары
             </h2>
             <p className="text-sm text-muted-foreground">

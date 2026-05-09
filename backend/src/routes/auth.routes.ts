@@ -2,7 +2,8 @@ import { Router } from 'express';
 import { AuthController } from '../controllers/auth.controller.js';
 import { authMiddleware } from '../middleware/auth.middleware.js';
 import { loginLimiter, registerLimiter } from '../middleware/rateLimiter.middleware.js';
-import { validate, registerSchema, loginSchema, refreshSchema } from '../validators/auth.validator.js';
+import { validateBody } from '../middleware/validation.middleware.js';
+import { registerSchema, loginSchema, refreshSchema } from '../validators/auth.validator.js';
 
 const router = Router();
 
@@ -10,7 +11,7 @@ const router = Router();
 router.post(
   '/register',
   registerLimiter,
-  validate(registerSchema),
+  validateBody(registerSchema),
   AuthController.register
 );
 
@@ -18,14 +19,14 @@ router.post(
 router.post(
   '/login',
   loginLimiter,
-  validate(loginSchema),
+  validateBody(loginSchema),
   AuthController.login
 );
 
 // Обновление токена
 router.post(
   '/refresh',
-  validate(refreshSchema),
+  validateBody(refreshSchema),
   AuthController.refresh
 );
 

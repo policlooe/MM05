@@ -7,12 +7,13 @@
   <!-- SEO Meta Tags -->
   <title>MM05 — Мебель из массива в Махачкале | Доставка по Дагестану</title>
   <meta name="description" content="Качественная мебель из массива дерева в Махачкале. Кровати, шкафы, столы, кресла, беседки. Доставка по Дагестану. Бесплатная доставка от 30 000 ₽." />
-  <meta name="keywords" content="мебель махачкала, мебель дагестан, мебель из массива, кровати махачкала, шкафы махачкала, столы махачкала, мебель шамхал" />
   <meta name="author" content="MM05" />
   <link rel="canonical" href="https://mm05.vercel.app/" />
   
-  <!-- Favicon -->
+  <!-- Favicon & Icons -->
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+  <link rel="manifest" href="/site.webmanifest" />
   
   <!-- Open Graph / Facebook -->
   <meta property="og:type" content="website" />
@@ -50,8 +51,115 @@
   
   <!-- Prefetch для следующих страниц -->
   <link rel="prefetch" href="/catalog" as="document" />
+  
+  <!-- JSON-LD микроразметка для локального бизнеса -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FurnitureStore",
+    "name": "MM05 — Мебель из массива",
+    "description": "Качественная мебель из массива дерева в Махачкале. Кровати, шкафы, столы, кресла, беседки. Доставка по Дагестану.",
+    "url": "https://mm05.vercel.app/",
+    "telephone": "+7-928-833-15-32",
+    "address": {
+      "@type": "PostalAddress",
+      "addressLocality": "Махачкала",
+      "addressRegion": "Республика Дагестан",
+      "addressCountry": "RU"
+    },
+    "geo": {
+      "@type": "GeoCoordinates",
+      "latitude": "42.9849",
+      "longitude": "47.5047"
+    },
+    "priceRange": "₽₽",
+    "openingHoursSpecification": [
+      {
+        "@type": "OpeningHoursSpecification",
+        "dayOfWeek": [
+          "Monday",
+          "Tuesday",
+          "Wednesday",
+          "Thursday",
+          "Friday",
+          "Saturday",
+          "Sunday"
+        ],
+        "opens": "09:00",
+        "closes": "20:00"
+      }
+    ],
+    "paymentAccepted": ["Cash", "Credit Card"],
+    "currenciesAccepted": "RUB",
+    "areaServed": {
+      "@type": "GeoCircle",
+      "geoMidpoint": {
+        "@type": "GeoCoordinates",
+        "latitude": "42.9849",
+        "longitude": "47.5047"
+      },
+      "geoRadius": "100000"
+    },
+    "hasOfferCatalog": {
+      "@type": "OfferCatalog",
+      "name": "Каталог мебели",
+      "itemListElement": [
+        {
+          "@type": "Offer",
+          "itemOffered": {
+            "@type": "Product",
+            "name": "Кровати из массива"
+          }
+        },
+        {
+          "@type": "Offer",
+          "itemOffered": {
+            "@type": "Product",
+            "name": "Шкафы из массива"
+          }
+        },
+        {
+          "@type": "Offer",
+          "itemOffered": {
+            "@type": "Product",
+            "name": "Столы из массива"
+          }
+        },
+        {
+          "@type": "Offer",
+          "itemOffered": {
+            "@type": "Product",
+            "name": "Кресла из массива"
+          }
+        },
+        {
+          "@type": "Offer",
+          "itemOffered": {
+            "@type": "Product",
+            "name": "Беседки из массива"
+          }
+        }
+      ]
+    }
+  }
+  </script>
 </head>
 <body>
+  <!-- Fallback для пользователей без JavaScript -->
+  <noscript>
+    <div style="display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 20px; text-align: center; font-family: Inter, sans-serif;">
+      <div>
+        <h1 style="font-size: 24px; font-weight: 600; margin-bottom: 16px;">MM05 — Мебель из массива</h1>
+        <p style="font-size: 16px; color: #666; margin-bottom: 24px;">
+          Для корректной работы интернет-магазина необходимо включить JavaScript в настройках вашего браузера.
+        </p>
+        <p style="font-size: 14px; color: #999;">
+          Свяжитесь с нами: <a href="tel:+79288331532" style="color: #22c55e;">+7 928 833-15-32</a>
+        </p>
+      </div>
+    </div>
+  </noscript>
+  
   <div id="root"></div>
   <script type="module" src="/src/main.tsx"></script>
 </body>

@@ -18,7 +18,7 @@ export function Footer() {
             </p>
           </div>
 
-          <div>
+          <nav aria-label="Навигация по каталогу">
             <h4 className="text-xs font-medium text-muted-foreground mb-3 tracking-wide uppercase">Каталог</h4>
             <ul className="flex flex-col gap-2 text-sm">
               <li>
@@ -61,9 +61,9 @@ export function Footer() {
                 </Link>
               </li>
             </ul>
-          </div>
+          </nav>
 
-          <div>
+          <address className="not-italic">
             <h4 className="text-xs font-medium text-muted-foreground mb-3 tracking-wide uppercase">Связь с нами</h4>
             <ul className="flex flex-col gap-3 text-sm">
               <li>
@@ -112,7 +112,7 @@ export function Footer() {
                 </a>
               </li>
             </ul>
-          </div>
+          </address>
         </div>
 
         <div className="border-t border-border pt-5 text-xs text-muted-foreground text-center md:text-left">

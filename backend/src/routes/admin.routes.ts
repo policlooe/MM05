@@ -1,6 +1,10 @@
 import { Router } from 'express';
 import { AdminController } from '../controllers/admin.controller.js';
 import { authMiddleware, adminMiddleware } from '../middleware/auth.middleware.js';
+import { validateBody, validateParams, validateQuery } from '../middleware/validation.middleware.js';
+import { idParamSchema, paginationSchema, statsQuerySchema } from '../validators/admin.validator.js';
+import { createProductSchema, updateProductSchema } from '../validators/product.validator.js';
+import { updateOrderStatusSchema } from '../validators/order.validator.js';
 
 const router = Router();
 
@@ -8,19 +12,19 @@ const router = Router();
 router.use(authMiddleware, adminMiddleware);
 
 // Товары
-router.get('/products', AdminController.getAllProducts);
-router.post('/products', AdminController.createProduct);
-router.put('/products/:id', AdminController.updateProduct);
-router.delete('/products/:id', AdminController.deleteProduct);
+router.get('/products', validateQuery(paginationSchema), AdminController.getAllProducts);
+router.post('/products', validateBody(createProductSchema), AdminController.createProduct);
+router.put('/products/:id', validateParams(idParamSchema), validateBody(updateProductSchema), AdminController.updateProduct);
+router.delete('/products/:id', validateParams(idParamSchema), AdminController.deleteProduct);
 
 // Заказы
-router.get('/orders', AdminController.getAllOrders);
-router.put('/orders/:id/status', AdminController.updateOrderStatus);
+router.get('/orders', validateQuery(paginationSchema), AdminController.getAllOrders);
+router.put('/orders/:id/status', validateParams(idParamSchema), validateBody(updateOrderStatusSchema), AdminController.updateOrderStatus);
 
 // Пользователи
-router.get('/users', AdminController.getAllUsers);
+router.get('/users', validateQuery(paginationSchema), AdminController.getAllUsers);
 
 // Статистика
-router.get('/stats', AdminController.getStats);
+router.get('/stats', validateQuery(statsQuerySchema), AdminController.getStats);
 
 export default router;

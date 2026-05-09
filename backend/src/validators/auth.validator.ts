@@ -45,26 +45,3 @@ export const refreshSchema = z.object({
     .string()
     .min(1, 'Refresh token is required'),
 });
-
-/**
- * Middleware для валидации данных
- */
-export const validate = (schema: z.ZodSchema) => {
-  return (req: any, res: any, next: any) => {
-    try {
-      schema.parse(req.body);
-      next();
-    } catch (error) {
-      if (error instanceof z.ZodError) {
-        return res.status(400).json({
-          error: 'Validation failed',
-          details: error.errors.map((err) => ({
-            field: err.path.join('.'),
-            message: err.message,
-          })),
-        });
-      }
-      next(error);
-    }
-  };
-};

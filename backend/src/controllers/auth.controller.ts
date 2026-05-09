@@ -1,11 +1,19 @@
 import { Request, Response } from 'express';
 import { AuthService } from '../services/auth.service.js';
 
-const COOKIE_OPTIONS = {
+const REFRESH_COOKIE_OPTIONS = {
   httpOnly: true,
   secure: process.env.NODE_ENV === 'production',
   sameSite: 'strict' as const,
   maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+  path: '/',
+};
+
+const ACCESS_COOKIE_OPTIONS = {
+  httpOnly: true,
+  secure: process.env.NODE_ENV === 'production',
+  sameSite: 'strict' as const,
+  maxAge: 15 * 60 * 1000, // 15 minutes
   path: '/',
 };
 
@@ -14,14 +22,15 @@ export class AuthController {
     try {
       const result = await AuthService.register(req.body);
 
-      res.cookie('refreshToken', result.refreshToken, COOKIE_OPTIONS);
+      // Устанавливаем оба токена в httpOnly cookies
+      res.cookie('accessToken', result.accessToken, ACCESS_COOKIE_OPTIONS);
+      res.cookie('refreshToken', result.refreshToken, REFRESH_COOKIE_OPTIONS);
 
       res.status(201).json({
         success: true,
         message: 'User registered successfully',
         data: {
           user: result.user,
-          accessToken: result.accessToken,
         },
       });
     } catch (error: unknown) {
@@ -37,14 +46,15 @@ export class AuthController {
     try {
       const result = await AuthService.login(req.body);
 
-      res.cookie('refreshToken', result.refreshToken, COOKIE_OPTIONS);
+      // Устанавливаем оба токена в httpOnly cookies
+      res.cookie('accessToken', result.accessToken, ACCESS_COOKIE_OPTIONS);
+      res.cookie('refreshToken', result.refreshToken, REFRESH_COOKIE_OPTIONS);
 
       res.status(200).json({
         success: true,
         message: 'Login successful',
         data: {
           user: result.user,
-          accessToken: result.accessToken,
         },
       });
     } catch (error: unknown) {
@@ -69,14 +79,17 @@ export class AuthController {
 
       const result = await AuthService.refresh(refreshToken);
 
+      // Обновляем accessToken в cookie
+      res.cookie('accessToken', result.accessToken, ACCESS_COOKIE_OPTIONS);
+
       res.status(200).json({
         success: true,
         message: 'Token refreshed successfully',
-        data: result,
       });
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : 'Token refresh failed';
-      res.clearCookie('refreshToken', COOKIE_OPTIONS);
+      res.clearCookie('accessToken', ACCESS_COOKIE_OPTIONS);
+      res.clearCookie('refreshToken', REFRESH_COOKIE_OPTIONS);
       res.status(401).json({
         success: false,
         error: message,
@@ -92,7 +105,9 @@ export class AuthController {
         await AuthService.logout(refreshToken);
       }
 
-      res.clearCookie('refreshToken', COOKIE_OPTIONS);
+      // Очищаем оба cookie
+      res.clearCookie('accessToken', ACCESS_COOKIE_OPTIONS);
+      res.clearCookie('refreshToken', REFRESH_COOKIE_OPTIONS);
 
       res.status(200).json({
         success: true,

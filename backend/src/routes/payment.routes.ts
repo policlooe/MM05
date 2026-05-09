@@ -1,6 +1,12 @@
 import { Router } from 'express';
 import { paymentController } from '../controllers/payment.controller';
 import { authMiddleware, adminMiddleware } from '../middleware/auth.middleware';
+import { validateBody, validateParams } from '../middleware/validation.middleware.js';
+import {
+  createCheckoutSessionSchema,
+  sessionIdParamSchema,
+  createRefundSchema,
+} from '../validators/payment.validator.js';
 
 const router = Router();
 
@@ -12,6 +18,7 @@ const router = Router();
 router.post(
   '/create-checkout-session',
   authMiddleware,
+  validateBody(createCheckoutSessionSchema),
   (req, res, next) => paymentController.createCheckoutSession(req, res, next)
 );
 
@@ -34,6 +41,7 @@ router.post(
 router.get(
   '/session/:sessionId',
   authMiddleware,
+  validateParams(sessionIdParamSchema),
   (req, res, next) => paymentController.getSessionStatus(req, res, next)
 );
 
@@ -46,6 +54,7 @@ router.post(
   '/refund',
   authMiddleware,
   adminMiddleware,
+  validateBody(createRefundSchema),
   (req, res, next) => paymentController.createRefund(req, res, next)
 );
 

@@ -1,0 +1,29 @@
+{
+  "name": "MM05 — Мебель из массива",
+  "short_name": "MM05",
+  "description": "Качественная мебель из массива дерева в Махачкале. Доставка по Дагестану.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#ffffff",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ],
+  "categories": ["shopping", "lifestyle"],
+  "lang": "ru",
+  "dir": "ltr",
+  "scope": "/",
+  "prefer_related_applications": false
+}

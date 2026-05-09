@@ -23,6 +23,7 @@ import { cn } from "@/lib/utils";
 import { ecommerce } from "@/lib/web-vitals";
 import { useRecentlyViewed } from "@/store/recentlyViewed";
 import { SimilarProducts } from "@/components/SimilarProducts";
+import { SEO } from "@/components/SEO";
 
 export default function ProductPage() {
   const { slug = "" } = useParams();
@@ -159,6 +160,16 @@ export default function ProductPage() {
 
   return (
     <div className="min-h-screen bg-background">
+      {product && (
+        <SEO
+          title={product.name}
+          description={product.description || `${product.name} из массива дерева. Цена: ${formatPrice(product.price)}`}
+          image={product.image}
+          url={`/product/${product.slug}`}
+          type="product"
+          keywords={[product.name, product.category, 'мебель из массива']}
+        />
+      )}
       <Navbar />
       <Breadcrumbs />
       <main className="container-x py-3 pb-20 md:pb-10">
@@ -226,7 +237,7 @@ export default function ProductPage() {
                 </span>
               )}
               <p className="text-xs text-muted-foreground font-medium mb-1.5">{product.category}</p>
-              <h1 className="text-lg md:text-3xl font-semibold leading-tight break-words">{product.name}</h1>
+              <h1 className="text-4xl md:text-5xl font-bold tracking-tight leading-tight break-words">{product.name}</h1>
               <p className="text-sm text-muted-foreground leading-relaxed break-words max-w-2xl">
                 {product.shortDescription}
               </p>
@@ -323,14 +334,14 @@ export default function ProductPage() {
               </div>
 
               <section className="mb-4">
-                <h2 className="text-base font-semibold mb-2">Описание</h2>
-                <p className="text-xs leading-relaxed text-foreground/85 whitespace-pre-line">
+                <h2 className="text-2xl font-semibold mb-2">Описание</h2>
+                <p className="text-sm leading-relaxed text-foreground/85 whitespace-pre-line">
                   {product.description}
                 </p>
               </section>
 
               <section className="mb-4">
-                <h2 className="text-base font-semibold mb-2">Характеристики</h2>
+                <h2 className="text-2xl font-semibold mb-2">Характеристики</h2>
                 <dl className="bg-surface border border-border rounded-lg divide-y divide-border">
                   {product.specs.map((s) => (
                     <div key={s.label} className="flex justify-between gap-3 px-3 py-2 text-xs">

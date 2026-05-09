@@ -11,6 +11,7 @@ import { CartSidebar } from "@/components/CartSidebar";
 import { CatalogSidebar } from "@/components/CatalogSidebar";
 import { MobileNav } from "@/components/MobileNav";
 import { ChatLauncher } from "@/components/ChatLauncher";
+import { SEO } from "@/components/SEO";
 
 type Sort = "popular" | "price_asc" | "price_desc";
 
@@ -75,30 +76,37 @@ export default function Catalog() {
 
   return (
     <div className="min-h-screen bg-background">
+      <SEO
+        title="Каталог мебели"
+        description="Полный каталог мебели из массива дерева. Кровати, шкафы, столы, стулья, кресла, беседки. Более 100 моделей."
+        keywords={['каталог мебели', 'купить мебель', 'мебель из массива']}
+        url="/catalog"
+      />
       <Navbar />
       <Breadcrumbs />
       <main className="container-x py-6 pb-24 md:pb-10">
         <div className="flex items-center justify-between mb-4">
-          <h1 className="font-serif text-2xl md:text-3xl font-semibold">Каталог</h1>
+          <h1 className="text-4xl md:text-5xl font-bold tracking-tight">Каталог</h1>
           <button
             onClick={() => setFiltersOpen((v) => !v)}
             className="md:hidden flex items-center gap-2 text-sm bg-secondary border border-border px-3 py-2 rounded-lg"
             aria-label="Фильтры"
           >
-            <SlidersHorizontal className="w-4 h-4" />
+            <SlidersHorizontal className="w-4 h-4 stroke-2" />
             Фильтры
           </button>
         </div>
 
         {/* Поиск */}
-        <div className="relative mb-4">
-          <Search className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 stroke-[1.15] text-muted-foreground/90" />
+        <form className="relative mb-4" role="search">
+          <Search className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 stroke-2 text-muted-foreground/90" />
           <input
             type="search"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Поиск по названию, категории..."
             maxLength={80}
+            aria-label="Поиск товаров"
             className="w-full bg-secondary border border-transparent focus:border-accent/25 rounded-lg pl-11 pr-10 py-3 text-sm outline-none focus:ring-2 focus:ring-accent/20"
           />
           {query && (
@@ -107,10 +115,10 @@ export default function Catalog() {
               className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-muted-foreground hover:text-accent"
               aria-label="Очистить"
             >
-              <X className="w-4 h-4" />
+              <X className="w-4 h-4 stroke-2" />
             </button>
           )}
-        </div>
+        </form>
 
         <div className="grid md:grid-cols-[260px_1fr] gap-6">
           {/* Фильтры */}
@@ -191,7 +199,7 @@ export default function Catalog() {
             ) : (
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-5">
                 {filtered.map((p, index) => (
-                  <motion.div
+                  <motion.article
                     key={p.id}
                     initial={{ opacity: 0, y: 30 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -236,10 +244,10 @@ export default function Catalog() {
                         {p.oldPrice && (
                           <p className="text-sm text-muted-foreground line-through mb-1">{formatPrice(p.oldPrice)}</p>
                         )}
-                        <h3 className="text-sm text-foreground leading-tight line-clamp-2 font-medium">{p.name}</h3>
+                      <h3 className="text-sm text-foreground leading-tight line-clamp-2 font-medium">{p.name}</h3>
                       </div>
                     </Link>
-                  </motion.div>
+                  </motion.article>
                 ))}
               </div>
             )}

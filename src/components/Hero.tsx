@@ -124,7 +124,7 @@ export const Hero = memo(function Hero() {
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMoveWithPrevent}
           onTouchEnd={handleTouchEnd}
-          className="relative block rounded-xl md:rounded-3xl overflow-hidden bg-secondary aspect-[16/11] md:aspect-[21/8] group transition-all shadow-sm hover:shadow-lg touch-pan-y"
+          className="ios-gpu-optimized relative block rounded-xl md:rounded-3xl overflow-hidden bg-secondary aspect-[16/11] md:aspect-[21/8] group transition-all shadow-sm hover:shadow-lg touch-pan-y"
           aria-label={currentBanner.cta}
         >
           {/* Banner Images with AnimatePresence */}
@@ -135,7 +135,7 @@ export const Hero = memo(function Hero() {
               animate={{ opacity: 1, scale: 1.01 }}
               exit={{ opacity: 0, scale: 0.95 }}
               transition={{ duration: 0.7, ease: "easeInOut" }}
-              className="absolute inset-0"
+              className="ios-gpu-optimized absolute inset-0"
             >
               <OptimizedImage
                 src={currentBanner.image}
@@ -165,7 +165,7 @@ export const Hero = memo(function Hero() {
                   {currentBanner.badge}
                 </p>
                 
-                <h1 className="font-serif text-xl md:text-3xl lg:text-4xl font-semibold leading-[1.2] text-white mb-1.5 md:mb-4">
+                <h1 className="text-4xl md:text-5xl font-bold tracking-tight leading-[1.2] text-white mb-1.5 md:mb-4">
                   {currentBanner.title}
                   <br />
                   <span className="text-white/90">

@@ -7,16 +7,11 @@ export const api = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
-  withCredentials: true,
+  withCredentials: true, // Важно для отправки cookies
 });
 
-api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('accessToken');
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
-});
+// Удаляем interceptor для добавления токена из localStorage
+// Токены теперь автоматически отправляются через cookies
 
 api.interceptors.response.use(
   (response) => response,
@@ -27,19 +22,17 @@ api.interceptors.response.use(
       originalRequest._retry = true;
 
       try {
-        const response = await axios.post(
+        // Пытаемся обновить токен
+        await axios.post(
           `${API_URL}/auth/refresh`,
           {},
           { withCredentials: true }
         );
 
-        const { accessToken } = response.data.data;
-        localStorage.setItem('accessToken', accessToken);
-
-        originalRequest.headers.Authorization = `Bearer ${accessToken}`;
+        // Повторяем оригинальный запрос
         return api(originalRequest);
       } catch (refreshError) {
-        localStorage.removeItem('accessToken');
+        // Если обновление токена не удалось, очищаем данные пользователя и редиректим
         localStorage.removeItem('user');
         window.location.href = '/login';
         return Promise.reject(refreshError);

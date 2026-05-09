@@ -25,7 +25,7 @@ export function RecentlyViewed() {
             <Clock className="w-5 h-5 text-accent" />
           </div>
           <div>
-            <h2 className="font-serif text-2xl md:text-3xl font-bold">
+            <h2 className="text-3xl font-semibold tracking-tight">
               Недавно просмотренные
             </h2>
             <p className="text-sm text-muted-foreground">

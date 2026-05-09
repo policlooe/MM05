@@ -16,7 +16,7 @@ export function ContactUs() {
   return (
     <section id="contact-us" className="py-8 md:py-12">
       <div className="container-x">
-        <h2 className="font-serif text-2xl md:text-3xl lg:text-4xl font-bold mb-6 md:mb-8">Как нас найти?</h2>
+        <h2 className="text-3xl font-semibold tracking-tight mb-6 md:mb-8">Как нас найти?</h2>
 
         <div className="grid lg:grid-cols-2 gap-6">
           {/* Левая колонка - Контакты и местоположение */}
@@ -89,7 +89,7 @@ export function ContactUs() {
           <div className="flex flex-col gap-6">
             {/* О компании с доставкой и сборкой */}
             <div className="bg-surface border border-border rounded-xl p-5 shadow-md flex-1">
-              <h3 className="text-lg font-bold mb-3">Качественная мебель</h3>
+              <h3 className="text-xl font-semibold mb-3">Качественная мебель</h3>
               <p className="text-sm text-muted-foreground leading-relaxed mb-4">
                 Работаем напрямую с поставщиками. Предлагаем мебель из ЛДСП, МДФ и эксклюзивные кровати из массива бука по справедливым ценам.
               </p>
@@ -124,7 +124,7 @@ export function ContactUs() {
 
             {/* Мессенджеры - единый блок */}
             <div className="bg-surface border border-border rounded-xl p-5 shadow-md flex-1">
-              <h3 className="text-lg font-bold mb-1">Выберите удобный мессенджер</h3>
+              <h3 className="text-xl font-semibold mb-1">Выберите удобный мессенджер</h3>
               <p className="text-xs text-muted-foreground mb-4">
                 Ответим в рабочее время, обычно до 10 минут
               </p>

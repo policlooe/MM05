@@ -31,22 +31,12 @@ export const authMiddleware = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    // Получение токена из заголовка
-    const authHeader = req.headers.authorization;
+    // Получение токена из cookie
+    const token = req.cookies.accessToken;
 
-    if (!authHeader) {
+    if (!token) {
       res.status(401).json({
-        error: 'Authorization header is missing',
-      });
-      return;
-    }
-
-    // Проверка формата "Bearer <token>"
-    const [bearer, token] = authHeader.split(' ');
-
-    if (bearer !== 'Bearer' || !token) {
-      res.status(401).json({
-        error: 'Invalid authorization format. Use: Bearer <token>',
+        error: 'Access token is missing',
       });
       return;
     }
@@ -104,19 +94,15 @@ export const optionalAuthMiddleware = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const authHeader = req.headers.authorization;
+    const token = req.cookies.accessToken;
 
-    if (authHeader) {
-      const [bearer, token] = authHeader.split(' ');
-
-      if (bearer === 'Bearer' && token) {
-        const payload = TokenService.verifyAccessToken(token);
-        req.user = {
-          userId: payload.userId,
-          email: payload.email,
-          role: payload.role,
-        };
-      }
+    if (token) {
+      const payload = TokenService.verifyAccessToken(token);
+      req.user = {
+        userId: payload.userId,
+        email: payload.email,
+        role: payload.role,
+      };
     }
 
     next();

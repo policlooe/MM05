@@ -29,9 +29,10 @@ export default function Payment() {
   }, [count, loading, navigate]);
 
   const handleStripeCheckout = async () => {
-    const token = localStorage.getItem('accessToken');
+    // Проверяем наличие пользователя в localStorage
+    const user = localStorage.getItem('user');
     
-    if (!token) {
+    if (!user) {
       toast.error("Войдите в аккаунт для оформления заказа");
       navigate("/login");
       return;

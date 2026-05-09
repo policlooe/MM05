@@ -53,9 +53,9 @@ export default function Register() {
         fullName: formData.fullName
       });
 
-      const { user, accessToken } = response.data.data;
+      const { user } = response.data.data;
 
-      localStorage.setItem('accessToken', accessToken);
+      // Сохраняем только данные пользователя, токены в httpOnly cookies
       localStorage.setItem('user', JSON.stringify(user));
 
       navigate('/');

@@ -10,7 +10,7 @@ const tiles: { title: string; sub: string; href: string; icon: LucideIcon }[] = 
 
 export function Categories() {
   return (
-    <section id="categories" className="container-x py-3 md:py-4 space-y-4 md:space-y-5">
+    <section id="categories" className="container-x py-3 md:py-4 space-y-4 md:space-y-5" aria-label="Категории товаров">
       {/* Плитки каталога и акций - улучшенная адаптивность */}
       <div className="grid grid-cols-2 gap-3 md:gap-4 max-w-2xl mx-auto">
         {tiles.map((t, index) => {
@@ -42,7 +42,7 @@ export function Categories() {
           );
           
           // Единый класс для всех плиток - одинаковая высота и пропорции
-          const tileClass = "group border border-border bg-surface rounded-xl md:rounded-2xl p-4 md:p-6 flex flex-col items-center justify-center transition-all hover:shadow-lg hover:-translate-y-1 active:translate-y-0 min-h-[140px] md:min-h-[160px]";
+          const tileClass = "ios-gpu-optimized group border border-border bg-surface rounded-xl md:rounded-2xl p-4 md:p-6 flex flex-col items-center justify-center transition-all hover:shadow-lg hover:-translate-y-1 active:translate-y-0 min-h-[140px] md:min-h-[160px]";
           
           const MotionWrapper = motion(t.href.startsWith("/") ? Link : "a");
           
@@ -70,7 +70,7 @@ export function Categories() {
 
       {/* Категории товаров */}
       <div>
-        <h2 className="font-serif text-lg md:text-xl font-semibold mb-3 md:mb-4 px-0.5">
+        <h2 className="text-2xl font-semibold tracking-tight mb-3 md:mb-4 px-0.5">
           Категории
         </h2>
         <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2 md:gap-3">
@@ -78,7 +78,7 @@ export function Categories() {
             <Link
               key={c.name}
               to={`/catalog?cat=${encodeURIComponent(c.name)}`}
-              className="group flex flex-col items-center text-center"
+              className="ios-gpu-optimized group flex flex-col items-center text-center"
             >
               <div className="w-full aspect-square rounded-xl overflow-hidden border border-border bg-secondary mb-2 transition-all group-hover:shadow-md group-hover:-translate-y-0.5 group-active:translate-y-0">
                 <img
@@ -90,9 +90,9 @@ export function Categories() {
                   className="w-full h-full object-cover opacity-[0.94] group-hover:opacity-100 group-hover:scale-105 transition-all duration-300"
                 />
               </div>
-              <p className="text-xs md:text-sm font-medium leading-tight text-foreground">
+              <h3 className="text-xs md:text-sm font-medium leading-tight text-foreground">
                 {c.name}
-              </p>
+              </h3>
               <p className="text-xs text-muted-foreground mt-0.5">
                 {c.count} моделей
               </p>

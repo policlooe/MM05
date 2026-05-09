@@ -71,17 +71,51 @@ export class PaymentController {
    */
   async handleWebhook(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const signature = req.headers['stripe-signature'] as string;
+      const signature = req.headers['stripe-signature'];
+      const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
 
-      if (!signature) {
-        res.status(400).json({ error: 'Missing stripe-signature header' });
+      if (!signature || !webhookSecret) {
+        res.status(400).json({ error: 'Missing signature or secret' });
         return;
       }
 
-      // req.body should be raw buffer for webhook verification
-      const result = await stripeService.handleWebhook(signature, req.body);
+      let event;
 
-      res.json(result);
+      // Криптографическая валидация
+      try {
+        const stripe = (await import('../services/stripe.service')).stripe;
+        event = stripe.webhooks.constructEvent(
+          req.body, // Buffer expected here
+          signature,
+          webhookSecret
+        );
+      } catch (error: unknown) {
+        const errMessage = error instanceof Error ? error.message : 'Unknown signature error';
+        res.status(400).json({ error: errMessage });
+        return;
+      }
+
+      // Делегирование бизнес-логики сервису
+      switch (event.type) {
+        case 'checkout.session.completed':
+        case 'checkout.session.async_payment_succeeded':
+          await stripeService.processCheckoutCompleted(event.data.object as any);
+          break;
+
+        case 'checkout.session.async_payment_failed':
+        case 'payment_intent.payment_failed':
+          await stripeService.processPaymentFailed(event.data.object as any);
+          break;
+
+        case 'payment_intent.succeeded':
+          console.log(`PaymentIntent succeeded: ${(event.data.object as any).id}`);
+          break;
+
+        default:
+          console.log(`Unhandled Stripe event type: ${event.type}`);
+      }
+
+      res.status(200).json({ received: true });
     } catch (error) {
       console.error('Webhook error:', error);
       next(error);

@@ -10,24 +10,24 @@ import { CartSidebar } from "@/components/CartSidebar";
 import { CatalogSidebar } from "@/components/CatalogSidebar";
 import { MobileNav } from "@/components/MobileNav";
 import { ChatLauncher } from "@/components/ChatLauncher";
+import { SEO } from "@/components/SEO";
 
 export default function Index() {
   return (
     <div className="min-h-screen bg-background">
+      <SEO
+        title="Главная"
+        description="Качественная мебель из массива дерева в Махачкале. Кровати, шкафы, столы, кресла, беседки. Доставка по Дагестану."
+        keywords={['мебель', 'массив', 'Махачкала', 'Дагестан', 'кровати', 'шкафы']}
+        url="/"
+      />
       <Navbar />
       <main>
-        <div className="bg-background">
-          <Hero />
-        </div>
-        <div className="bg-surface">
-          <Promotions />
-        </div>
-        {/* Products has its own bg-surface-alt */}
+        <Hero />
+        <Promotions />
         <Products />
         <RecentlyViewed />
-        <div className="bg-surface">
-          <ContactUs />
-        </div>
+        <ContactUs />
       </main>
       <Footer />
       <CartSidebar />

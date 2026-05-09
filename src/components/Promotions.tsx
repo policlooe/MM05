@@ -112,7 +112,7 @@ export const Promotions = memo(function Promotions() {
         {/* Заголовок секции */}
         <div className="flex items-center justify-between mb-6 md:mb-8">
           <div>
-            <h2 className="font-serif text-3xl font-bold tracking-tight mb-2">
+            <h2 className="text-3xl font-semibold tracking-tight mb-2">
               Акции и скидки
             </h2>
             <p className="text-sm text-muted-foreground">
@@ -132,7 +132,7 @@ export const Promotions = memo(function Promotions() {
           ref={scrollRef}
           onMouseEnter={() => setIsPaused(true)}
           onMouseLeave={() => setIsPaused(false)}
-          className="flex gap-3 md:gap-5 overflow-x-hidden scroll-smooth"
+          className="ios-gpu-optimized flex gap-3 md:gap-5 overflow-x-hidden scroll-smooth"
           style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
         >
           {/* Дублируем товары для бесшовного скролла */}
@@ -143,7 +143,7 @@ export const Promotions = memo(function Promotions() {
               <Link
                 key={`${product.id}-${index}`}
                 to={`/product/${product.slug}`}
-                className="group bg-surface border border-border rounded-xl overflow-hidden hover:shadow-[var(--shadow-hover)] transition-all duration-150 flex-shrink-0 w-[280px]"
+                className="ios-gpu-optimized group bg-surface border border-border rounded-xl overflow-hidden hover:shadow-[var(--shadow-hover)] transition-all duration-150 flex-shrink-0 w-[280px]"
               >
                 {/* Изображение товара */}
                 <div className="relative aspect-square bg-secondary overflow-hidden">

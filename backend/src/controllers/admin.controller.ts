@@ -1,6 +1,8 @@
 import { Request, Response } from 'express';
 import { PrismaClient } from '@prisma/client';
-import { createProductSchema, updateProductSchema, updateOrderStatusSchema, paginationSchema } from '../validators/product.validator';
+import { createProductSchema, updateProductSchema } from '../validators/product.validator.js';
+import { updateOrderStatusSchema } from '../validators/order.validator.js';
+import { paginationSchema } from '../validators/admin.validator.js';
 import { z } from 'zod';
 
 const prisma = new PrismaClient();

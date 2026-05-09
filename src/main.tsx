@@ -1,7 +1,12 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
+import { HelmetProvider } from 'react-helmet-async';
 import App from "./App.tsx";
 import "./index.css";
+import { initCsrfProtection } from "./lib/csrf";
+
+// Initialize CSRF protection
+initCsrfProtection();
 
 // Register service worker for caching
 if ('serviceWorker' in navigator && import.meta.env.PROD) {
@@ -19,6 +24,8 @@ if ('serviceWorker' in navigator && import.meta.env.PROD) {
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <App />
+    <HelmetProvider>
+      <App />
+    </HelmetProvider>
   </StrictMode>
 );

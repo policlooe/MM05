@@ -23,7 +23,7 @@ export const Products = memo(function Products() {
           transition={{ duration: 0.5 }}
           className="flex items-end justify-between gap-4 mb-6 md:mb-8"
         >
-          <h2 className="font-serif text-2xl md:text-3xl lg:text-4xl font-bold">Популярные товары</h2>
+          <h2 className="text-3xl font-semibold tracking-tight">Популярные товары</h2>
         </motion.div>
 
         {/* Фильтры — улучшенный дизайн */}

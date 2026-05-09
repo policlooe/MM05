@@ -303,6 +303,27 @@
   .label-nav {
     @apply text-sm font-medium tracking-tight;
   }
+
+  /* iOS GPU оптимизация для устранения мерцания */
+  .ios-gpu-optimized {
+    /* Форсируем 3D-трансформацию для GPU-акселерации */
+    transform: translate3d(0, 0, 0);
+    -webkit-transform: translate3d(0, 0, 0);
+    
+    /* Скрываем обратную сторону элемента, убирает артефакты WebKit */
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    
+    /* Подсказываем браузеру, что элемент может меняться */
+    will-change: transform;
+  }
+
+  /* Для мобильных устройств - отключаем background-attachment: fixed */
+  @media (max-width: 1024px) {
+    * {
+      background-attachment: scroll !important;
+    }
+  }
   
   /* КРИТИЧНО: Правильный контейнер без overflow */
   .container-x {

@@ -16,7 +16,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
     } catch (error) {
       console.error('Logout error:', error);
     } finally {
-      localStorage.removeItem('accessToken');
+      // Удаляем только данные пользователя, cookies очищаются на backend
       localStorage.removeItem('user');
       navigate('/login');
     }

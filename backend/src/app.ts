@@ -4,6 +4,7 @@ import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import { apiLimiter } from './middleware/rateLimiter.middleware.js';
 import { errorHandler } from './middleware/error.middleware.js';
+import { csrfTokenGenerator, csrfProtection } from './middleware/csrf.middleware.js';
 import { validateEnv } from './utils/validateEnv.js';
 import { initSentry, captureError } from './lib/sentry.js';
 import { HealthController } from './controllers/health.controller.js';
@@ -41,7 +42,7 @@ app.use(cors({
   origin: FRONTEND_URL,
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-CSRF-Token'],
 }));
 
 app.use(cookieParser());
@@ -64,8 +65,22 @@ app.use('/api/webhook', express.raw({ type: 'application/json' }), webhookRoutes
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
+// CSRF token generator (must be after cookieParser and before routes)
+app.use(csrfTokenGenerator);
+
 // Rate limiting
 app.use('/api', apiLimiter);
+
+// CSRF token endpoint (must be before CSRF protection)
+app.get('/api/csrf-token', (req: Request, res: Response) => {
+  res.json({ 
+    success: true,
+    csrfToken: res.locals.csrfToken 
+  });
+});
+
+// CSRF protection for state-changing operations
+app.use('/api', csrfProtection);
 
 // Routes
 app.use('/api/auth', authRoutes);

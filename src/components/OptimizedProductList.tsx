@@ -57,7 +57,7 @@ export const OptimizedProductCard = memo(({
         delay: Math.min(index * 0.03, 0.15),
         ease: [0.22, 1, 0.36, 1]
       }}
-      className="group bg-surface rounded-xl overflow-hidden border border-border hover:shadow-md transition-shadow duration-150 flex flex-col relative"
+      className="ios-gpu-optimized group bg-surface rounded-xl overflow-hidden border border-border hover:shadow-md transition-shadow duration-150 flex flex-col relative"
       style={{
         transform: 'translateZ(0)',
         willChange: 'auto',

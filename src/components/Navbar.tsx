@@ -55,10 +55,21 @@ export const Navbar = memo(function Navbar() {
     };
   }, []);
 
-  const handleLogout = () => {
-    localStorage.removeItem('user');
-    setUser(null);
-    navigate('/');
+  const handleLogout = async () => {
+    try {
+      // Вызываем API для очистки cookies на backend
+      await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3000/api'}/auth/logout`, {
+        method: 'POST',
+        credentials: 'include',
+      });
+    } catch (error) {
+      console.error('Logout error:', error);
+    } finally {
+      // Очищаем данные пользователя из localStorage
+      localStorage.removeItem('user');
+      setUser(null);
+      navigate('/');
+    }
   };
 
   const submit = (e: React.FormEvent) => {
@@ -101,7 +112,7 @@ export const Navbar = memo(function Navbar() {
       {/* Лого + Поиск + Действия */}
       <div className="w-full overflow-hidden">
         <div className="container-x">
-          <div className="flex items-center gap-2 md:gap-3 py-2 md:pb-3">
+          <nav className="flex items-center gap-2 md:gap-3 py-2 md:pb-3" aria-label="Основная навигация">
             <Link to="/" className="text-xl md:text-2xl font-semibold tracking-tight whitespace-nowrap shrink-0">
               MM05
             </Link>
@@ -115,7 +126,7 @@ export const Navbar = memo(function Navbar() {
               Каталог
             </motion.button>
 
-            <form onSubmit={submit} className="flex-1 min-w-0 relative">
+            <form onSubmit={submit} className="flex-1 min-w-0 relative" role="search">
               <Search className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 stroke-2 text-muted-foreground/90 z-10" />
               <input
                 type="search"
@@ -123,6 +134,7 @@ export const Navbar = memo(function Navbar() {
                 onChange={(e) => setQ(e.target.value)}
                 placeholder="Найти мебель..."
                 maxLength={100}
+                aria-label="Поиск товаров"
                 className="w-full bg-secondary border border-border/60 focus:!border-border rounded-lg pl-10 pr-3 py-2 text-sm outline-none focus:!ring-0 focus:!shadow-none transition-all h-9"
               />
             </form>
@@ -147,6 +159,7 @@ export const Navbar = memo(function Navbar() {
                 <Link
                   to="/login"
                   className="inline-flex items-center justify-center h-9 w-9 rounded-lg bg-accent hover:bg-accent-hover transition-colors"
+                  aria-label="Войти"
                 >
                   <User className="w-5 h-5 stroke-[1.5] text-white" aria-hidden="true" />
                 </Link>
@@ -155,6 +168,7 @@ export const Navbar = memo(function Navbar() {
               <Link
                 to="/favorites"
                 className="relative inline-flex items-center justify-center h-9 w-9 rounded-lg text-foreground hover:bg-muted/80 transition-colors"
+                aria-label={`Избранное${favorites.length > 0 ? ` (${favorites.length})` : ''}`}
               >
                 <Heart className={`w-5 h-5 stroke-[1.5] ${favorites.length > 0 ? 'fill-current text-red-500' : ''}`} aria-hidden="true" />
                 {favorites.length > 0 && (
@@ -162,6 +176,7 @@ export const Navbar = memo(function Navbar() {
                     initial={{ scale: 0 }}
                     animate={{ scale: 1 }}
                     className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-semibold min-w-[16px] h-[16px] px-0.5 rounded-full flex items-center justify-center"
+                    aria-hidden="true"
                   >
                     {favorites.length}
                   </motion.span>
@@ -174,6 +189,7 @@ export const Navbar = memo(function Navbar() {
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 className="relative inline-flex items-center justify-center h-9 w-9 rounded-lg text-foreground hover:bg-muted/80 transition-colors"
+                aria-label={`Корзина${count > 0 ? ` (${count})` : ''}`}
               >
                 <ShoppingBag className={`w-5 h-5 stroke-[1.5] ${count > 0 ? 'text-accent' : 'text-foreground'}`} aria-hidden="true" />
                 {count > 0 && (
@@ -181,13 +197,14 @@ export const Navbar = memo(function Navbar() {
                     initial={{ scale: 0 }}
                     animate={{ scale: 1 }}
                     className="absolute -top-1 -right-1 bg-accent text-accent-foreground text-xs font-semibold min-w-[16px] h-[16px] px-0.5 rounded-full flex items-center justify-center"
+                    aria-hidden="true"
                   >
                     {count}
                   </motion.span>
                 )}
               </motion.button>
             </div>
-          </div>
+          </nav>
         </div>
       </div>
     </header>
