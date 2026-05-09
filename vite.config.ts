@@ -2,11 +2,21 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
 import { componentTagger } from "lovable-tagger";
+import { visualizer } from "rollup-plugin-visualizer";
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
   base: '/',
-  plugins: [react(), mode === "development" && componentTagger()].filter(Boolean),
+  plugins: [
+    react(), 
+    mode === "development" && componentTagger(),
+    visualizer({
+      open: false,
+      gzipSize: true,
+      brotliSize: true,
+      filename: 'dist/stats.html',
+    })
+  ].filter(Boolean),
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
@@ -15,12 +25,30 @@ export default defineConfig(({ mode }) => ({
   },
   build: {
     // Оптимизация production сборки
-    minify: "esbuild",
+    minify: "terser",
     target: "es2015",
+    terserOptions: {
+      compress: {
+        drop_console: mode === 'production',
+        drop_debugger: mode === 'production',
+      },
+    },
     rollupOptions: {
       output: {
-        // Упрощенное разделение кода - убираем сложную логику
-        manualChunks: undefined,
+        // Разделение кода по вендорам для лучшего кеширования
+        manualChunks: {
+          'react-vendor': ['react', 'react-dom', 'react-router-dom'],
+          'ui-vendor': ['framer-motion', 'lucide-react'],
+          'form-vendor': ['react-hook-form', '@hookform/resolvers', 'zod'],
+          'query-vendor': ['@tanstack/react-query'],
+          'radix-vendor': [
+            '@radix-ui/react-dialog',
+            '@radix-ui/react-dropdown-menu',
+            '@radix-ui/react-select',
+            '@radix-ui/react-toast',
+            '@radix-ui/react-tabs',
+          ],
+        },
         // Оптимизация имен файлов для кеширования
         entryFileNames: "assets/[name]-[hash].js",
         chunkFileNames: "assets/[name]-[hash].js",
@@ -35,7 +63,7 @@ export default defineConfig(({ mode }) => ({
     // Source maps только для production debugging
     sourcemap: false,
     // Оптимизация для production
-    reportCompressedSize: false,
+    reportCompressedSize: true,
     // Оптимизация ассетов
     assetsInlineLimit: 4096, // 4kb
   },

@@ -78,7 +78,7 @@ export function CatalogSidebar() {
           isOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
         }`}
         onClick={close}
-        aria-hidden
+        aria-hidden="true"
       />
 
       {/* Sidebar - СЛЕВА */}
@@ -86,7 +86,8 @@ export function CatalogSidebar() {
         className={`fixed top-0 left-0 h-full w-full sm:w-[520px] bg-surface z-[70] shadow-lg flex flex-col transition-transform duration-300 ${
           isOpen ? "translate-x-0" : "-translate-x-full"
         }`}
-        aria-label="Каталог"
+        role="complementary"
+        aria-label="Каталог товаров"
       >
         {/* Header */}
         <header className="flex items-center justify-between px-6 py-5 border-b border-border bg-gradient-to-r from-muted/25 to-transparent">
@@ -99,7 +100,7 @@ export function CatalogSidebar() {
             className="p-2 hover:bg-muted rounded-lg transition-colors"
             aria-label="Закрыть каталог"
           >
-            <X className="w-5 h-5" />
+            <X className="w-5 h-5 stroke-[1.5]" aria-hidden="true" />
           </button>
         </header>
 
@@ -111,12 +112,13 @@ export function CatalogSidebar() {
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Поиск товаров..."
             className="w-full px-4 py-2.5 bg-secondary border border-border/60 focus:border-accent/35 rounded-lg text-sm outline-none focus:ring-2 focus:ring-accent/18 transition-all"
+            aria-label="Поиск товаров"
           />
         </div>
 
         {/* Filters Toggle */}
         <div className="px-6 pb-3 flex items-center justify-between">
-          <div className="flex gap-2 overflow-x-auto scrollbar-thin flex-1">
+          <div className="flex gap-2 overflow-x-auto scrollbar-thin flex-1" role="group" aria-label="Быстрые фильтры категорий">
             {filters.slice(0, 4).map((f) => (
               <button
                 key={f}
@@ -126,6 +128,8 @@ export function CatalogSidebar() {
                     ? "border-primary bg-primary text-primary-foreground shadow-sm"
                     : "border-transparent bg-secondary text-foreground hover:bg-muted hover:border-border"
                 }`}
+                aria-pressed={active === f}
+                aria-label={`Фильтр: ${f}`}
               >
                 {f}
               </button>
@@ -134,9 +138,10 @@ export function CatalogSidebar() {
           <button
             onClick={() => setShowFilters(!showFilters)}
             className="ml-2 p-2 hover:bg-muted rounded-lg transition-colors"
-            aria-label="Фильтры"
+            aria-label={showFilters ? "Скрыть фильтры" : "Показать фильтры"}
+            aria-expanded={showFilters}
           >
-            <SlidersHorizontal className="w-4 h-4" />
+            <SlidersHorizontal className="w-4 h-4 stroke-2" aria-hidden="true" />
           </button>
         </div>
 
@@ -152,8 +157,8 @@ export function CatalogSidebar() {
             >
               <div className="px-6 pb-4 space-y-4">
                 {/* All Categories */}
-                <div>
-                  <p className="text-xs font-medium text-muted-foreground mb-2">Все категории</p>
+                <div role="group" aria-labelledby="category-filter">
+                  <h3 id="category-filter" className="text-xs font-medium text-muted-foreground mb-2">Все категории</h3>
                   <div className="flex flex-wrap gap-2">
                     {filters.map((f) => (
                       <button
@@ -164,6 +169,8 @@ export function CatalogSidebar() {
                             ? "border-primary bg-primary text-primary-foreground"
                             : "border-border bg-secondary text-foreground hover:bg-muted"
                         }`}
+                        aria-pressed={active === f}
+                        aria-label={`Категория: ${f}`}
                       >
                         {f}
                       </button>
@@ -172,12 +179,13 @@ export function CatalogSidebar() {
                 </div>
 
                 {/* Sort */}
-                <div>
-                  <p className="text-xs font-medium text-muted-foreground mb-2">Сортировка</p>
+                <div role="group" aria-labelledby="sort-filter">
+                  <h3 id="sort-filter" className="text-xs font-medium text-muted-foreground mb-2">Сортировка</h3>
                   <select
                     value={sort}
                     onChange={(e) => setSort(e.target.value as Sort)}
                     className="w-full px-3 py-2 bg-secondary border border-border rounded-lg text-sm outline-none focus:ring-2 focus:ring-accent/18"
+                    aria-label="Выберите сортировку"
                   >
                     <option value="popular">Популярные</option>
                     <option value="price_asc">Цена: по возрастанию</option>
@@ -186,10 +194,10 @@ export function CatalogSidebar() {
                 </div>
 
                 {/* Price Range */}
-                <div>
-                  <p className="text-xs font-medium text-muted-foreground mb-2">
+                <div role="group" aria-labelledby="price-filter">
+                  <h3 id="price-filter" className="text-xs font-medium text-muted-foreground mb-2">
                     Цена до: {formatPrice(maxPrice)}
-                  </p>
+                  </h3>
                   <input
                     type="range"
                     min="10000"
@@ -198,6 +206,10 @@ export function CatalogSidebar() {
                     value={maxPrice}
                     onChange={(e) => setMaxPrice(Number(e.target.value))}
                     className="w-full"
+                    aria-label={`Максимальная цена: ${formatPrice(maxPrice)}`}
+                    aria-valuemin={10000}
+                    aria-valuemax={200000}
+                    aria-valuenow={maxPrice}
                   />
                 </div>
 
@@ -205,6 +217,7 @@ export function CatalogSidebar() {
                 <button
                   onClick={reset}
                   className="text-xs text-accent hover:text-accent-hover font-medium"
+                  aria-label="Сбросить все фильтры"
                 >
                   Сбросить фильтры
                 </button>

@@ -160,7 +160,7 @@ export default function Checkout() {
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
-      <main className="container-x py-6 pb-24 md:pb-10 max-w-4xl">
+      <main id="main-content" className="container-x py-6 pb-24 md:pb-10 max-w-4xl">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}

@@ -172,7 +172,7 @@ export default function ProductPage() {
       )}
       <Navbar />
       <Breadcrumbs />
-      <main className="container-x py-3 pb-20 md:pb-10">
+      <main id="main-content" className="container-x py-3 pb-20 md:pb-10">
         <div className="w-full max-w-[480px] mx-auto px-3 md:max-w-6xl md:px-4">
           <div className="flex flex-col md:grid md:grid-cols-2 gap-4">
             <div className="flex flex-col w-full">

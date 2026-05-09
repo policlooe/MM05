@@ -57,6 +57,8 @@ export const OptimizedProductCard = memo(({
         delay: Math.min(index * 0.03, 0.15),
         ease: [0.22, 1, 0.36, 1]
       }}
+      role="article"
+      aria-label={`Товар: ${product.name}, цена ${formatPrice(product.price)}`}
       className="ios-gpu-optimized group bg-surface rounded-xl overflow-hidden border border-border hover:shadow-md transition-shadow duration-150 flex flex-col relative"
       style={{
         transform: 'translateZ(0)',
@@ -64,7 +66,11 @@ export const OptimizedProductCard = memo(({
         contain: 'layout style paint'
       }}
     >
-      <Link to={`/product/${product.slug}`} className="block">
+      <Link 
+        to={`/product/${product.slug}`} 
+        className="block"
+        aria-label={`Перейти к товару ${product.name}`}
+      >
         <div className="relative aspect-square bg-secondary overflow-hidden">
           <OptimizedImage
             src={product.image}
@@ -108,9 +114,14 @@ export const OptimizedProductCard = memo(({
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
             className="absolute top-2 right-2 w-9 h-9 bg-background/95 backdrop-blur-sm border border-border rounded-full flex items-center justify-center shadow-md hover:bg-accent hover:text-white transition-all duration-300 z-10"
+            aria-label={isInFavorites 
+              ? `Удалить ${product.name} из избранного` 
+              : `Добавить ${product.name} в избранное`}
+            aria-pressed={isInFavorites}
           >
             <Heart 
-              className={`w-4 h-4 transition-all ${isInFavorites ? 'fill-current text-red-500' : ''}`} 
+              className={`w-4 h-4 stroke-2 transition-all ${isInFavorites ? 'fill-current text-red-500' : ''}`}
+              aria-hidden="true"
             />
           </motion.button>
         </div>
@@ -138,8 +149,9 @@ export const OptimizedProductCard = memo(({
           whileTap={{ scale: 0.98 }}
           transition={{ duration: 0.15, type: "spring", stiffness: 400 }}
           className="mt-auto w-full bg-accent hover:bg-accent-hover text-white text-sm font-medium py-2 rounded-lg transition-all flex items-center justify-center gap-1.5"
+          aria-label={`Добавить ${product.name} в корзину за ${formatPrice(product.price)}`}
         >
-          <ShoppingCart className="w-4 h-4 stroke-2" />
+          <ShoppingCart className="w-4 h-4 stroke-2" aria-hidden="true" />
           В корзину
         </motion.button>
       </div>

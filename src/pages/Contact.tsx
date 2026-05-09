@@ -56,7 +56,7 @@ const ContactPage = () => {
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
-      <main className="pb-24 md:pb-10">
+      <main id="main-content" className="pb-24 md:pb-10">
         <div className="container-x pt-6">
           <Breadcrumbs />
           <h1 className="font-serif text-3xl md:text-4xl font-bold mb-2">Контакты</h1>

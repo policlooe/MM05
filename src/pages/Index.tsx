@@ -22,7 +22,7 @@ export default function Index() {
         url="/"
       />
       <Navbar />
-      <main>
+      <main id="main-content">
         <Hero />
         <Promotions />
         <Products />

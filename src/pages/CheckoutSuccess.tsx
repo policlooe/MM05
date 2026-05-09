@@ -58,7 +58,7 @@ export default function CheckoutSuccess() {
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
-      <main className="container-x py-10 pb-24 md:pb-10 max-w-2xl">
+      <main id="main-content" className="container-x py-10 pb-24 md:pb-10 max-w-2xl">
         <Breadcrumbs />
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}

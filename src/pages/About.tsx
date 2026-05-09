@@ -18,7 +18,7 @@ const About = () => {
     <div className="min-h-screen bg-background">
       <Navbar />
       <Breadcrumbs />
-      <main className="container-x py-10">
+      <main id="main-content" className="container-x py-10">
         {/* Заголовок */}
         <div className="text-center mb-12">
           <h1 className="font-serif text-3xl md:text-4xl font-bold mb-4">О нас</h1>

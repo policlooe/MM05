@@ -4,6 +4,7 @@ import { Suspense, lazy } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { CartProvider } from "@/store/cart";
+import { SkipLink } from "@/components/SkipLink";
 
 // Lazy load pages
 const Index = lazy(() => import("./pages/Index"));
@@ -46,6 +47,7 @@ const queryClient = new QueryClient({
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
+      <SkipLink />
       <CartProvider>
         <TooltipProvider>
           <Toaster />

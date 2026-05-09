@@ -75,7 +75,7 @@ export default function Register() {
     <div className="min-h-screen bg-background flex flex-col">
       <Navbar />
       
-      <main className="flex-1 flex items-center justify-center px-4 py-12">
+      <main id="main-content" className="flex-1 flex items-center justify-center px-4 py-12">
         <div className="w-full max-w-md">
           <div className="bg-surface border border-border rounded-xl p-8 shadow-lg">
             <h1 className="text-2xl font-bold mb-2">Регистрация</h1>

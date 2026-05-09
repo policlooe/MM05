@@ -33,7 +33,7 @@ export default function Favorites() {
       <Navbar />
       <Breadcrumbs />
       
-      <main className="container-x py-6 pb-24 md:pb-10">
+      <main id="main-content" className="container-x py-6 pb-24 md:pb-10">
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center gap-3 mb-3">

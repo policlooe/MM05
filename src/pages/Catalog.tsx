@@ -84,7 +84,7 @@ export default function Catalog() {
       />
       <Navbar />
       <Breadcrumbs />
-      <main className="container-x py-6 pb-24 md:pb-10">
+      <main id="main-content" className="container-x py-6 pb-24 md:pb-10">
         <div className="flex items-center justify-between mb-4">
           <h1 className="text-4xl md:text-5xl font-bold tracking-tight">Каталог</h1>
           <button
