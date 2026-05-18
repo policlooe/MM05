@@ -3,8 +3,17 @@ import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
-const JWT_ACCESS_SECRET = process.env.JWT_ACCESS_SECRET || 'your-super-secret-access-key-change-in-production';
-const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || 'your-super-secret-refresh-key-change-in-production';
+// Fail-fast: JWT secrets are required
+if (!process.env.JWT_ACCESS_SECRET) {
+  throw new Error('CRITICAL: JWT_ACCESS_SECRET environment variable is not set. Application cannot start without it.');
+}
+
+if (!process.env.JWT_REFRESH_SECRET) {
+  throw new Error('CRITICAL: JWT_REFRESH_SECRET environment variable is not set. Application cannot start without it.');
+}
+
+const JWT_ACCESS_SECRET = process.env.JWT_ACCESS_SECRET;
+const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET;
 const JWT_ACCESS_EXPIRES_IN = process.env.JWT_ACCESS_EXPIRES_IN || '15m';
 const JWT_REFRESH_EXPIRES_IN = process.env.JWT_REFRESH_EXPIRES_IN || '7d';
 

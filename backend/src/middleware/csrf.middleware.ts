@@ -1,12 +1,17 @@
 import { Request, Response, NextFunction } from 'express';
 import { doubleCsrf } from 'csrf-csrf';
 
+// Fail-fast: CSRF secret is required
+if (!process.env.CSRF_SECRET) {
+  throw new Error('CRITICAL: CSRF_SECRET environment variable is not set. Application cannot start without it.');
+}
+
 // Configure CSRF protection
 const {
   generateCsrfToken,
   doubleCsrfProtection,
 } = doubleCsrf({
-  getSecret: () => process.env.CSRF_SECRET || 'default-csrf-secret-change-in-production',
+  getSecret: () => process.env.CSRF_SECRET as string,
   cookieName: '__Host-csrf',
   cookieOptions: {
     httpOnly: true,

@@ -2,8 +2,23 @@ import express from 'express';
 import cors from 'cors';
 import { products } from './data/products.js';
 
+// SECURITY: Block simple-server in production
+if (process.env.NODE_ENV === 'production') {
+  console.error('❌ CRITICAL SECURITY ERROR: simple-server.ts cannot be used in production!');
+  console.error('❌ This server lacks essential security middleware:');
+  console.error('   - No authentication');
+  console.error('   - No CSRF protection');
+  console.error('   - No helmet security headers');
+  console.error('   - No rate limiting');
+  console.error('❌ Use the main server (src/index.ts) instead.');
+  process.exit(1);
+}
+
 const app = express();
 const PORT = 3000;
+
+console.warn('⚠️  WARNING: Running simple-server in development mode only!');
+console.warn('⚠️  This server is NOT secure and should NEVER be used in production.');
 
 // Middleware
 app.use(cors({

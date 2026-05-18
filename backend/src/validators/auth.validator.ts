@@ -39,9 +39,8 @@ export const loginSchema = z.object({
 
 /**
  * Схема валидации для refresh токена
+ * Примечание: Токен берется из httpOnly cookie, а не из body
  */
 export const refreshSchema = z.object({
-  refreshToken: z
-    .string()
-    .min(1, 'Refresh token is required'),
+  // Пустая схема, так как токен берется из cookie
 });

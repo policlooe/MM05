@@ -54,3 +54,10 @@ backend/.env.local
 # OS files
 Thumbs.db
 .DS_Store
+
+# Security: Exclude insecure development servers
+backend/src/simple-server.ts
+backend/dist/src/simple-server.js
+backend/dist/src/simple-server.d.ts
+backend/dist/src/simple-server.js.map
+backend/dist/src/simple-server.d.ts.map

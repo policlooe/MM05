@@ -65,23 +65,47 @@ const ChartStyle = ({ id, config }: { id: string; config: ChartConfig }) => {
     return null;
   }
 
+  // Sanitize and validate CSS values
+  const sanitizeColor = (color: string): string => {
+    // Allow only hex colors, rgb/rgba, hsl/hsla, and CSS color names
+    const colorRegex = /^(#[0-9A-Fa-f]{3,8}|rgb\([\d\s,]+\)|rgba\([\d\s,]+,[\d\s.]+\)|hsl\([\d\s,]+\)|hsla\([\d\s,]+,[\d\s.]+\)|[a-z]+)$/;
+    return colorRegex.test(color.trim()) ? color.trim() : '';
+  };
+
+  const sanitizeId = (id: string): string => {
+    // Allow only alphanumeric characters, hyphens, and underscores
+    return id.replace(/[^a-zA-Z0-9-_]/g, '');
+  };
+
+  const sanitizedId = sanitizeId(id);
+
+  const cssContent = Object.entries(THEMES)
+    .map(([theme, prefix]) => {
+      const themeColors = colorConfig
+        .map(([key, itemConfig]) => {
+          const color = itemConfig.theme?.[theme as keyof typeof itemConfig.theme] || itemConfig.color;
+          if (!color) return null;
+          
+          const sanitizedColor = sanitizeColor(color);
+          if (!sanitizedColor) return null;
+          
+          const sanitizedKey = key.replace(/[^a-zA-Z0-9-_]/g, '');
+          return `  --color-${sanitizedKey}: ${sanitizedColor};`;
+        })
+        .filter(Boolean)
+        .join('\n');
+
+      if (!themeColors) return null;
+
+      return `${prefix} [data-chart=${sanitizedId}] {\n${themeColors}\n}`;
+    })
+    .filter(Boolean)
+    .join('\n');
+
   return (
     <style
       dangerouslySetInnerHTML={{
-        __html: Object.entries(THEMES)
-          .map(
-            ([theme, prefix]) => `
-${prefix} [data-chart=${id}] {
-${colorConfig
-  .map(([key, itemConfig]) => {
-    const color = itemConfig.theme?.[theme as keyof typeof itemConfig.theme] || itemConfig.color;
-    return color ? `  --color-${key}: ${color};` : null;
-  })
-  .join("\n")}
-}
-`,
-          )
-          .join("\n"),
+        __html: cssContent,
       }}
     />
   );
