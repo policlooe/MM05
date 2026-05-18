@@ -140,31 +140,6 @@ export const Navbar = memo(function Navbar() {
             </form>
 
             <div className="flex items-center gap-1.5 shrink-0">
-              {user ? (
-                <div className="flex items-center gap-1">
-                  <div className="hidden lg:flex items-center gap-2 px-3 py-2 rounded-xl border border-border bg-secondary/50 max-w-[150px]">
-                    <User className="w-5 h-5 stroke-[1.5] text-muted-foreground shrink-0" />
-                    <span className="text-xs font-medium text-foreground truncate">
-                      {user.fullName || user.email}
-                    </span>
-                  </div>
-                  <button
-                    onClick={handleLogout}
-                    className="text-xs text-muted-foreground hover:text-accent transition-colors px-2"
-                  >
-                    Выйти
-                  </button>
-                </div>
-              ) : (
-                <Link
-                  to="/login"
-                  className="inline-flex items-center justify-center h-9 w-9 rounded-lg bg-accent hover:bg-accent-hover transition-colors"
-                  aria-label="Войти"
-                >
-                  <User className="w-5 h-5 stroke-[1.5] text-white" aria-hidden="true" />
-                </Link>
-              )}
-
               <Link
                 to="/favorites"
                 className="relative inline-flex items-center justify-center h-9 w-9 rounded-lg text-foreground hover:bg-muted/80 transition-colors"
@@ -203,6 +178,31 @@ export const Navbar = memo(function Navbar() {
                   </motion.span>
                 )}
               </motion.button>
+
+              {user ? (
+                <div className="flex items-center gap-1">
+                  <div className="hidden lg:flex items-center gap-2 px-3 py-2 rounded-xl border border-border bg-secondary/50 max-w-[150px]">
+                    <User className="w-5 h-5 stroke-[1.5] text-muted-foreground shrink-0" />
+                    <span className="text-xs font-medium text-foreground truncate">
+                      {user.fullName || user.email}
+                    </span>
+                  </div>
+                  <button
+                    onClick={handleLogout}
+                    className="text-xs text-muted-foreground hover:text-accent transition-colors px-2"
+                  >
+                    Выйти
+                  </button>
+                </div>
+              ) : (
+                <Link
+                  to="/login"
+                  className="inline-flex items-center justify-center h-9 w-9 rounded-lg bg-accent hover:bg-accent-hover transition-colors"
+                  aria-label="Войти"
+                >
+                  <User className="w-5 h-5 stroke-[1.5] text-white" aria-hidden="true" />
+                </Link>
+              )}
             </div>
           </nav>
         </div>

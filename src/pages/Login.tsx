@@ -1,9 +1,11 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, lazy, Suspense } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Eye, EyeOff } from 'lucide-react';
 import { Navbar } from '@/components/Navbar';
-import { Footer } from '@/components/Footer';
 import api from '@/services/api';
+
+// Lazy load heavy components
+const Footer = lazy(() => import('@/components/Footer').then(m => ({ default: m.Footer })));
 
 export default function Login() {
   const navigate = useNavigate();
@@ -136,7 +138,9 @@ export default function Login() {
         </div>
       </main>
 
-      <Footer />
+      <Suspense fallback={<div className="min-h-[200px]" />}>
+        <Footer />
+      </Suspense>
     </div>
   );
 }

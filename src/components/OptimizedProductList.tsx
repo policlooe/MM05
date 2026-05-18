@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import { useCart, formatPrice } from '@/store/cart';
 import { useFavorites } from '@/store/favorites';
 import { toast } from 'sonner';
-import { Heart, ShoppingCart } from 'lucide-react';
+import { Heart, ShoppingBag } from 'lucide-react';
 import { OptimizedImage } from './OptimizedImage';
 import type { Product } from '@/data/products';
 
@@ -151,7 +151,7 @@ export const OptimizedProductCard = memo(({
           className="mt-auto w-full bg-accent hover:bg-accent-hover text-white text-sm font-medium py-2 rounded-lg transition-all flex items-center justify-center gap-1.5"
           aria-label={`Добавить ${product.name} в корзину за ${formatPrice(product.price)}`}
         >
-          <ShoppingCart className="w-4 h-4 stroke-2" aria-hidden="true" />
+          <ShoppingBag className="w-4 h-4 stroke-2" aria-hidden="true" />
           В корзину
         </motion.button>
       </div>

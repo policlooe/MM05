@@ -1,14 +1,16 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, lazy, Suspense } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { ChevronLeft, CreditCard, Loader2, ShoppingCart, Shield } from "lucide-react";
+import { ChevronLeft, CreditCard, Loader2, ShoppingBag, Shield } from "lucide-react";
 import { Navbar } from "@/components/Navbar";
-import { Footer } from "@/components/Footer";
-import { ChatLauncher } from "@/components/ChatLauncher";
 import { MobileNav } from "@/components/MobileNav";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { useCart, formatPrice } from "@/store/cart";
 import { paymentService } from "@/services/payment";
 import { toast } from "sonner";
+
+// Lazy load heavy components
+const Footer = lazy(() => import("@/components/Footer").then(m => ({ default: m.Footer })));
+const ChatLauncher = lazy(() => import("@/components/ChatLauncher").then(m => ({ default: m.ChatLauncher })));
 
 export default function Payment() {
   const navigate = useNavigate();
@@ -66,7 +68,7 @@ export default function Payment() {
         {/* Товары в корзине */}
         <div className="bg-surface border border-border rounded-xl p-5 mb-5">
           <h2 className="font-semibold text-base mb-4 flex items-center gap-2">
-            <ShoppingCart className="w-5 h-5" />
+            <ShoppingBag className="w-5 h-5 stroke-[1.5]" aria-hidden="true" />
             Ваш заказ ({count} {count === 1 ? 'товар' : count < 5 ? 'товара' : 'товаров'})
           </h2>
           <div className="space-y-3">
@@ -142,9 +144,13 @@ export default function Payment() {
           Нажимая кнопку, вы соглашаетесь с условиями обработки персональных данных
         </p>
       </main>
-      <Footer />
+      <Suspense fallback={<div className="min-h-[200px]" />}>
+        <Footer />
+      </Suspense>
       <MobileNav />
-      <ChatLauncher />
+      <Suspense fallback={null}>
+        <ChatLauncher />
+      </Suspense>
     </div>
   );
 }

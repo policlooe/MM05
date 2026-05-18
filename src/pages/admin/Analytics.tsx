@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { AdminLayout } from '@/components/AdminLayout';
-import { TrendingUp, DollarSign, ShoppingCart, Users, Package } from 'lucide-react';
+import { TrendingUp, DollarSign, ShoppingBag, Users, Package } from 'lucide-react';
 import {
   LineChart,
   Line,
@@ -96,7 +96,7 @@ export default function Analytics() {
     {
       title: 'Всего заказов',
       value: data.orders.total,
-      icon: ShoppingCart,
+      icon: ShoppingBag,
       color: 'text-blue-500',
       bgColor: 'bg-blue-500/10',
     },

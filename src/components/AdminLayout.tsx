@@ -1,5 +1,5 @@
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Package, ShoppingCart, Users, LogOut } from 'lucide-react';
+import { LayoutDashboard, Package, ShoppingBag, Users, LogOut } from 'lucide-react';
 import api from '@/services/api';
 
 interface AdminLayoutProps {
@@ -25,7 +25,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
   const menuItems = [
     { path: '/admin/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
     { path: '/admin/products', icon: Package, label: 'Товары' },
-    { path: '/admin/orders', icon: ShoppingCart, label: 'Заказы' },
+    { path: '/admin/orders', icon: ShoppingBag, label: 'Заказы' },
     { path: '/admin/users', icon: Users, label: 'Пользователи' },
   ];
 

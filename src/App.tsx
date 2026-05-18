@@ -29,7 +29,13 @@ const ProductEdit = lazy(() => import("./pages/admin/ProductEdit"));
 
 const PageLoader = () => (
   <div className="flex items-center justify-center min-h-screen">
-    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-accent"></div>
+    <div className="text-center space-y-4">
+      <div className="relative">
+        <div className="animate-spin rounded-full h-16 w-16 border-4 border-muted"></div>
+        <div className="animate-spin rounded-full h-16 w-16 border-4 border-accent border-t-transparent absolute inset-0"></div>
+      </div>
+      <p className="text-sm text-muted-foreground animate-pulse">Загрузка...</p>
+    </div>
   </div>
 );
 

@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { 
   Package, 
-  ShoppingCart, 
+  ShoppingBag, 
   Users, 
   DollarSign,
   TrendingUp,
@@ -63,7 +63,7 @@ export default function AdminDashboard() {
     {
       title: "Заказы",
       value: stats.totalOrders,
-      icon: ShoppingCart,
+      icon: ShoppingBag,
       color: "text-green-600",
       bgColor: "bg-green-50",
       link: "/admin/orders",
@@ -167,7 +167,7 @@ export default function AdminDashboard() {
                 to="/admin/orders"
                 className="flex items-center justify-center gap-2 px-4 py-3 bg-secondary hover:bg-muted border border-border rounded-lg font-medium text-sm transition-colors"
               >
-                <ShoppingCart className="w-4 h-4" />
+                <ShoppingBag className="w-4 h-4 stroke-2" aria-hidden="true" />
                 Заказы
               </Link>
               <Link

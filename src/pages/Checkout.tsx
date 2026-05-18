@@ -1,17 +1,19 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, lazy, Suspense } from "react";
 import { useNavigate } from "react-router-dom";
 import { z } from "zod";
-import { Loader2, ShoppingCart, CheckCircle2, AlertCircle } from "lucide-react";
+import { Loader2, ShoppingBag, CheckCircle2, AlertCircle } from "lucide-react";
 import { Navbar } from "@/components/Navbar";
-import { Footer } from "@/components/Footer";
 import { MobileNav } from "@/components/MobileNav";
-import { ChatLauncher } from "@/components/ChatLauncher";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { useCart, formatPrice } from "@/store/cart";
 import { orderService } from "@/services/order";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import { ecommerce } from "@/lib/web-vitals";
+
+// Lazy load heavy components
+const Footer = lazy(() => import("@/components/Footer").then(m => ({ default: m.Footer })));
+const ChatLauncher = lazy(() => import("@/components/ChatLauncher").then(m => ({ default: m.ChatLauncher })));
 
 // Схема валидации формы
 const checkoutSchema = z.object({
@@ -354,7 +356,7 @@ export default function Checkout() {
             <div className="md:col-span-1">
               <div className="bg-surface border border-border rounded-xl p-5 sticky top-20">
                 <h2 className="font-semibold text-base mb-4 flex items-center gap-2">
-                  <ShoppingCart className="w-5 h-5" />
+                  <ShoppingBag className="w-5 h-5 stroke-[1.5]" aria-hidden="true" />
                   Ваш заказ
                 </h2>
                 
@@ -395,9 +397,13 @@ export default function Checkout() {
           </div>
         </motion.div>
       </main>
-      <Footer />
+      <Suspense fallback={<div className="min-h-[200px]" />}>
+        <Footer />
+      </Suspense>
       <MobileNav />
-      <ChatLauncher />
+      <Suspense fallback={null}>
+        <ChatLauncher />
+      </Suspense>
     </div>
   );
 }

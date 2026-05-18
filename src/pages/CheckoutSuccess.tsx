@@ -1,14 +1,16 @@
-import { useEffect } from "react";
+import { useEffect, lazy, Suspense } from "react";
 import { useLocation, useNavigate, Link } from "react-router-dom";
 import { CheckCircle2, FileText, MessageCircle, Home, Printer } from "lucide-react";
 import { Navbar } from "@/components/Navbar";
-import { Footer } from "@/components/Footer";
 import { MobileNav } from "@/components/MobileNav";
-import { ChatLauncher } from "@/components/ChatLauncher";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { formatPrice } from "@/store/cart";
 import { motion } from "framer-motion";
 import { ecommerce } from "@/lib/web-vitals";
+
+// Lazy load heavy components
+const Footer = lazy(() => import("@/components/Footer").then(m => ({ default: m.Footer })));
+const ChatLauncher = lazy(() => import("@/components/ChatLauncher").then(m => ({ default: m.ChatLauncher })));
 
 export default function CheckoutSuccess() {
   const location = useLocation();
@@ -206,9 +208,13 @@ export default function CheckoutSuccess() {
           </Link>
         </motion.div>
       </main>
-      <Footer />
+      <Suspense fallback={<div className="min-h-[200px]" />}>
+        <Footer />
+      </Suspense>
       <MobileNav />
-      <ChatLauncher />
+      <Suspense fallback={null}>
+        <ChatLauncher />
+      </Suspense>
     </div>
   );
 }

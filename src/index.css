@@ -532,6 +532,15 @@
 }
 .animate-fade-in-up { animation: fade-in-up 0.7s ease forwards; }
 
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
 /* Mobile safe area support for notch devices (iPhone X+) */
 .pb-safe-area {
   padding-bottom: env(safe-area-inset-bottom);

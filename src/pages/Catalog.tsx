@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect } from "react";
+import { useMemo, useState, useEffect, lazy, Suspense } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { Search, SlidersHorizontal, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -6,12 +6,15 @@ import { products, allCategories, type Category } from "@/data/products";
 import { formatPrice } from "@/store/cart";
 import { Navbar } from "@/components/Navbar";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
-import { Footer } from "@/components/Footer";
 import { CartSidebar } from "@/components/CartSidebar";
-import { CatalogSidebar } from "@/components/CatalogSidebar";
 import { MobileNav } from "@/components/MobileNav";
-import { ChatLauncher } from "@/components/ChatLauncher";
 import { SEO } from "@/components/SEO";
+import { CatalogSidebarSkeleton } from "@/components/skeletons";
+
+// Lazy load heavy components
+const Footer = lazy(() => import("@/components/Footer").then(m => ({ default: m.Footer })));
+const CatalogSidebar = lazy(() => import("@/components/CatalogSidebar").then(m => ({ default: m.CatalogSidebar })));
+const ChatLauncher = lazy(() => import("@/components/ChatLauncher").then(m => ({ default: m.ChatLauncher })));
 
 type Sort = "popular" | "price_asc" | "price_desc";
 
@@ -254,11 +257,17 @@ export default function Catalog() {
           </div>
         </div>
       </main>
-      <Footer />
+      <Suspense fallback={<div className="min-h-[200px]" />}>
+        <Footer />
+      </Suspense>
       <CartSidebar />
-      <CatalogSidebar />
+      <Suspense fallback={<CatalogSidebarSkeleton />}>
+        <CatalogSidebar />
+      </Suspense>
       <MobileNav />
-      <ChatLauncher />
+      <Suspense fallback={null}>
+        <ChatLauncher />
+      </Suspense>
     </div>
   );
 }

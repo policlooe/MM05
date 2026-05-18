@@ -1,12 +1,15 @@
+import { lazy, Suspense } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { XCircle, ArrowLeft, CreditCard } from 'lucide-react';
 import { Navbar } from '@/components/Navbar';
-import { Footer } from '@/components/Footer';
 import { MobileNav } from '@/components/MobileNav';
-import { ChatLauncher } from '@/components/ChatLauncher';
 import { Breadcrumbs } from '@/components/Breadcrumbs';
+
+// Lazy load heavy components
+const Footer = lazy(() => import('@/components/Footer').then(m => ({ default: m.Footer })));
+const ChatLauncher = lazy(() => import('@/components/ChatLauncher').then(m => ({ default: m.ChatLauncher })));
 
 export default function PaymentCancel() {
   const [searchParams] = useSearchParams();
@@ -73,9 +76,13 @@ export default function PaymentCancel() {
       </Card>
         </div>
       </main>
-      <Footer />
+      <Suspense fallback={<div className="min-h-[200px]" />}>
+        <Footer />
+      </Suspense>
       <MobileNav />
-      <ChatLauncher />
+      <Suspense fallback={null}>
+        <ChatLauncher />
+      </Suspense>
     </div>
   );
 }
