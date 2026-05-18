@@ -59,7 +59,7 @@ export const OptimizedProductCard = memo(({
       }}
       role="article"
       aria-label={`Товар: ${product.name}, цена ${formatPrice(product.price)}`}
-      className="ios-gpu-optimized group bg-surface rounded-xl overflow-hidden border border-border hover:shadow-md transition-shadow duration-150 flex flex-col relative"
+      className="ios-gpu-optimized group bg-surface rounded-xl overflow-hidden border border-border hover:shadow-md transition-shadow duration-150 flex flex-col relative h-full"
       style={{
         transform: 'translateZ(0)',
         willChange: 'auto',
@@ -127,8 +127,9 @@ export const OptimizedProductCard = memo(({
         </div>
       </Link>
       
-      <div className="p-2.5 flex flex-col flex-1">
-        <div className="flex items-baseline gap-2 mb-1.5">
+      <div className="p-2.5 flex flex-col flex-1 min-h-0">
+        {/* Цены - фиксированная высота */}
+        <div className="flex items-baseline gap-2 mb-1.5 min-h-[24px]">
           <p className="font-semibold text-base">{formatPrice(product.price)}</p>
           {product.oldPrice && (
             <p className="text-xs text-muted-foreground line-through">
@@ -137,18 +138,20 @@ export const OptimizedProductCard = memo(({
           )}
         </div>
         
-        <Link to={`/product/${product.slug}`} className="block mb-2.5">
+        {/* Название - фиксированная высота (2 строки) */}
+        <Link to={`/product/${product.slug}`} className="block mb-2.5 min-h-[36px]">
           <h3 className="text-sm text-foreground leading-[1.3] line-clamp-2 hover:text-accent transition-colors font-normal">
             {product.name}
           </h3>
         </Link>
         
+        {/* Кнопка - прижата к низу */}
         <motion.button
           onClick={handleAddToCart}
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
           transition={{ duration: 0.15, type: "spring", stiffness: 400 }}
-          className="mt-auto w-full bg-accent hover:bg-accent-hover text-white text-sm font-medium py-2 rounded-lg transition-all flex items-center justify-center gap-1.5"
+          className="mt-auto w-full bg-accent hover:bg-accent-hover text-white text-sm font-medium py-2 rounded-lg transition-all flex items-center justify-center gap-1.5 h-[36px]"
           aria-label={`Добавить ${product.name} в корзину за ${formatPrice(product.price)}`}
         >
           <ShoppingBag className="w-4 h-4 stroke-2" aria-hidden="true" />
