@@ -1,0 +1,65 @@
+# Frontend files (not needed for backend deployment)
+src/
+public/
+dist/
+index.html
+vite.config.ts
+tailwind.config.ts
+postcss.config.js
+components.json
+
+# Development files
+.vscode/
+.cursor/
+.kiro/
+agency-agents/
+MM05/
+
+# Documentation
+*.md
+!README.md
+
+# Scripts
+*.ps1
+*.bat
+*.sh
+collect-*.ps1
+
+# Test files
+*.test.ts
+*.spec.ts
+vitest.config.ts
+
+# Build artifacts
+tsconfig.app.json
+tsconfig.app.tsbuildinfo
+tsconfig.node.json
+tsconfig.node.tsbuildinfo
+
+# JSON exports
+*.json
+!package.json
+!package-lock.json
+!backend/package.json
+!backend/package-lock.json
+!backend/tsconfig.json
+
+# Environment files (use Railway variables)
+.env.local
+.env.production
+.env.production.example
+
+# Git
+.git/
+.github/
+.gitignore
+
+# Vercel
+.vercel/
+vercel.json
+.vercelignore
+
+# Other configs
+railway.toml
+render.yaml
+docker-compose.yml

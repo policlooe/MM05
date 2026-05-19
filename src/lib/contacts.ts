@@ -6,7 +6,7 @@ export const CONTACTS = {
   phoneFormatted: "+7 (928) 833-15-32",
   phoneTel: "+79288331532",
   whatsapp: "https://wa.me/79288331532",
-  telegram: "https://t.me/gotcharescuemenow",
+  telegram: "https://t.me/mebel_Muhammad_05",
   vk: "https://vk.ru/mmuhammad05",
   address: "Дагестан, г. Махачкала, п. Шамхал, ул. Сулеймана Стальского, 1",
   addressShort: "п. Шамхал, ул. Сулеймана Стальского, 1",
