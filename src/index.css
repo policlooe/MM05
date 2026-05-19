@@ -194,88 +194,51 @@
     stroke-width: 1.5;
   }
 
-  /* ========================================
-     КРИТИЧНО: Safari/iOS/macOS оптимизация - устранение мерцания
-     ======================================== */
-  
+  /* Safari / iOS / macOS — устранение мерцания при скролле */
   * {
     -webkit-tap-highlight-color: transparent;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
 
-  /* GPU acceleration для всех изображений и баннеров */
   img,
   .banner,
-  [class*="banner"],
-  [class*="Banner"],
-  .card,
-  [class*="card"],
-  [class*="Card"],
-  article {
+  .card {
     transform: translateZ(0);
-    -webkit-transform: translateZ(0);
     backface-visibility: hidden;
-    -webkit-backface-visibility: hidden;
-    will-change: transform;
-    /* CSS containment для изоляции layout */
-    contain: layout style paint;
   }
 
-  /* Оптимизация для секций и контейнеров */
-  section,
+  .banner {
+    aspect-ratio: 16 / 9;
+    overflow: hidden;
+  }
+
   .section,
   .container,
-  [class*="container"] {
+  .container-x {
     contain: paint;
-    transform: translateZ(0);
-    -webkit-transform: translateZ(0);
   }
 
-  /* Оптимизация для кнопок и ссылок */
   button,
   a[href],
   [role="button"] {
-    transform: translateZ(0);
-    -webkit-transform: translateZ(0);
     -webkit-tap-highlight-color: transparent;
-    touch-action: manipulation; /* Убирает 300ms задержку на мобильных */
+    touch-action: manipulation;
   }
 
-  /* Оптимизация для изображений - предотвращение мерцания */
-  img {
-    image-rendering: -webkit-optimize-contrast;
-    image-rendering: crisp-edges;
-    /* Lazy loading hint */
-    content-visibility: auto;
+  img[width][height] {
+    height: auto;
   }
 
-  /* Content visibility для off-screen секций */
-  section,
-  .lazy-section {
-    content-visibility: auto;
-    contain-intrinsic-size: 0 500px;
-  }
-
-  /* КРИТИЧНО: Убираем backdrop-filter на scroll элементах */
-  .scroll-container,
-  [class*="scroll"] {
-    backdrop-filter: none !important;
-    -webkit-backdrop-filter: none !important;
-  }
-
-  /* КРИТИЧНО: Убираем fixed background images */
   * {
     background-attachment: scroll !important;
   }
 
-  /* Оптимизация анимаций - только transform и opacity */
-  @media (prefers-reduced-motion: no-preference) {
-    * {
-      animation-duration: 0.01ms !important;
-      animation-iteration-count: 1 !important;
-      transition-duration: 0.01ms !important;
-    }
+  nav[class*="fixed"],
+  .scroll-container,
+  [data-scroll-overlay="true"] {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -289,38 +252,8 @@
     }
   }
 
-  /* Предотвращение layout shift */
-  img[width][height] {
-    height: auto;
-  }
-
-  /* Оптимизация для скролла */
-  * {
-    scroll-behavior: smooth;
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    * {
-      scroll-behavior: auto;
-    }
-  }
-
-  /* Оптимизация рендеринга текста */
-  body,
-  h1, h2, h3, h4, h5, h6,
-  p, span, a, button {
-    text-rendering: optimizeSpeed;
-  }
-
-  /* Оптимизация для списков */
   ul, ol {
     list-style: none;
-  }
-
-  /* Предотвращение FOUC (Flash of Unstyled Content) */
-  html {
-    visibility: visible;
-    opacity: 1;
   }
 }
 
@@ -355,25 +288,11 @@
     @apply text-sm font-medium tracking-tight;
   }
 
-  /* iOS GPU оптимизация для устранения мерцания */
-  .ios-gpu-optimized {
-    /* Форсируем 3D-трансформацию для GPU-акселерации */
-    transform: translate3d(0, 0, 0);
-    -webkit-transform: translate3d(0, 0, 0);
-    
-    /* Скрываем обратную сторону элемента, убирает артефакты WebKit */
+  .ios-gpu-optimized,
+  .banner {
+    transform: translateZ(0);
     backface-visibility: hidden;
-    -webkit-backface-visibility: hidden;
-    
-    /* Подсказываем браузеру, что элемент может меняться */
     will-change: transform;
-  }
-
-  /* Для мобильных устройств - отключаем background-attachment: fixed */
-  @media (max-width: 1024px) {
-    * {
-      background-attachment: scroll !important;
-    }
   }
   
   /* КРИТИЧНО: Правильный контейнер без overflow */

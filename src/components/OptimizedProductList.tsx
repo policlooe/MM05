@@ -87,7 +87,7 @@ export const OptimizedProductCard = memo(({
                 initial={{ opacity: 0, scale: 0.5, x: -10 }}
                 animate={{ opacity: 1, scale: 1, x: 0 }}
                 transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
-                className="bg-background/95 backdrop-blur-sm border border-border text-muted-foreground text-xs font-medium px-2.5 py-1 rounded-md shadow-sm"
+                className="bg-background/95 border border-border text-muted-foreground text-xs font-medium px-2.5 py-1 rounded-md shadow-sm"
               >
                 {product.badge}
               </motion.span>
@@ -97,7 +97,7 @@ export const OptimizedProductCard = memo(({
                 initial={{ opacity: 0, scale: 0.5, x: -10 }}
                 animate={{ opacity: 1, scale: 1, x: 0 }}
                 transition={{ delay: 0.3, type: "spring", stiffness: 200 }}
-                className="bg-accent/90 backdrop-blur-sm text-white text-xs font-medium px-2 py-0.5 rounded-md shadow-sm flex items-center gap-1"
+                className="bg-accent/90 text-white text-xs font-medium px-2 py-0.5 rounded-md shadow-sm flex items-center gap-1"
               >
                 <span className="w-1.5 h-1.5 bg-white rounded-full"></span>
                 В наличии
@@ -113,7 +113,7 @@ export const OptimizedProductCard = memo(({
             transition={{ delay: 0.15 }}
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
-            className="absolute top-2 right-2 w-9 h-9 bg-background/95 backdrop-blur-sm border border-border rounded-full flex items-center justify-center shadow-md hover:bg-accent hover:text-white transition-all duration-300 z-10"
+            className="absolute top-2 right-2 w-9 h-9 bg-background/95 border border-border rounded-full flex items-center justify-center shadow-md hover:bg-accent hover:text-white transition-all duration-300 z-10"
             aria-label={isInFavorites 
               ? `Удалить ${product.name} из избранного` 
               : `Добавить ${product.name} в избранное`}

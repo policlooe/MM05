@@ -236,7 +236,7 @@ export default function Catalog() {
                             initial={{ opacity: 0, scale: 0.8 }}
                             animate={{ opacity: 1, scale: 1 }}
                             transition={{ delay: 0.2 }}
-                            className="absolute top-2 left-2 bg-background/90 backdrop-blur-sm border border-border text-muted-foreground text-xs font-medium px-2 py-0.5 rounded-md"
+                            className="absolute top-2 left-2 bg-background border border-border text-muted-foreground text-xs font-medium px-2 py-0.5 rounded-md"
                           >
                             {p.badge}
                           </motion.span>

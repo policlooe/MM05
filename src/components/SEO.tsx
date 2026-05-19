@@ -12,7 +12,7 @@ interface SEOProps {
 export const SEO = ({ 
   title, 
   description, 
-  image = '/og-image.jpg',
+  image = '/og.png',
   url = 'https://mm05.vercel.app',
   type = 'website',
   keywords = []

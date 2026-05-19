@@ -110,9 +110,9 @@ export const Hero = memo(function Hero() {
   return (
     <section className="container-x pt-2 md:pt-3 px-3 md:px-0" aria-label="Главный баннер">
       <motion.div
-        initial={{ opacity: 0, y: 40, scale: 0.95 }}
-        animate={{ opacity: 1, y: 0, scale: 1 }}
-        transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.4, ease: "easeOut" }}
         className="relative"
       >
         <div className="sr-only" role="status" aria-live="polite" aria-atomic="true">
@@ -124,8 +124,8 @@ export const Hero = memo(function Hero() {
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMoveWithPrevent}
           onTouchEnd={handleTouchEnd}
-          className="ios-gpu-optimized relative block rounded-xl md:rounded-3xl overflow-hidden bg-secondary group transition-all shadow-sm hover:shadow-lg touch-pan-y"
-          style={{ aspectRatio: '16/11' }}
+          className="banner ios-gpu-optimized relative block rounded-xl md:rounded-3xl overflow-hidden bg-secondary group transition-shadow shadow-sm hover:shadow-lg touch-pan-y"
+          style={{ aspectRatio: "16 / 9" }}
           aria-label={currentBanner.cta}
         >
           <AnimatePresence mode="wait">
@@ -135,8 +135,7 @@ export const Hero = memo(function Hero() {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.3 }}
-              className="ios-gpu-optimized absolute inset-0"
-              style={{ aspectRatio: '16/9' }}
+              className="banner ios-gpu-optimized absolute inset-0"
             >
               <OptimizedImage
                 src={currentBanner.image}
@@ -160,10 +159,10 @@ export const Hero = memo(function Hero() {
             <AnimatePresence mode="wait">
               <motion.div
                 key={currentBanner.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                transition={{ duration: 0.5 }}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.35 }}
               >
                 <p className="text-xs md:text-sm font-semibold tracking-wider uppercase text-white/80 mb-1.5 md:mb-3">
                   {currentBanner.badge}

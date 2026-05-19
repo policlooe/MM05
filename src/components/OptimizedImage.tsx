@@ -9,6 +9,7 @@ interface OptimizedImageProps {
   loading?: 'lazy' | 'eager';
   priority?: boolean;
   fetchPriority?: 'high' | 'low' | 'auto';
+  decoding?: 'async' | 'sync' | 'auto';
   style?: React.CSSProperties;
 }
 
@@ -21,14 +22,16 @@ export const OptimizedImage = memo(function OptimizedImage({
   loading = 'lazy',
   priority = false,
   fetchPriority = 'auto',
+  decoding = 'async',
   style,
 }: OptimizedImageProps) {
-  const [isLoaded, setIsLoaded] = useState(false);
-  const [isInView, setIsInView] = useState(priority);
+  const [isLoaded, setIsLoaded] = useState(priority || loading === 'eager');
+  const [isInView, setIsInView] = useState(priority || loading === 'eager');
   const imgRef = useRef<HTMLImageElement>(null);
+  const isLcp = priority || loading === 'eager';
 
   useEffect(() => {
-    if (priority || loading === 'eager') {
+    if (isLcp) {
       setIsInView(true);
       return;
     }
@@ -42,19 +45,15 @@ export const OptimizedImage = memo(function OptimizedImage({
           }
         });
       },
-      {
-        rootMargin: '50px', // Start loading 50px before entering viewport
-      }
+      { rootMargin: '50px' }
     );
 
     if (imgRef.current) {
       observer.observe(imgRef.current);
     }
 
-    return () => {
-      observer.disconnect();
-    };
-  }, [priority, loading]);
+    return () => observer.disconnect();
+  }, [isLcp]);
 
   return (
     <img
@@ -65,16 +64,10 @@ export const OptimizedImage = memo(function OptimizedImage({
       height={height}
       loading={loading}
       fetchPriority={fetchPriority}
-      decoding="async"
-      className={`${className} ${!isLoaded ? 'opacity-0' : 'opacity-100'} transition-opacity duration-300`}
+      decoding={decoding}
+      className={`${className}${!isLcp && !isLoaded ? ' opacity-0 transition-opacity duration-300' : ''}`}
       onLoad={() => setIsLoaded(true)}
-      style={{
-        transform: 'translateZ(0)',
-        backfaceVisibility: 'hidden',
-        WebkitBackfaceVisibility: 'hidden',
-        willChange: 'transform',
-        ...style,
-      }}
+      style={style}
     />
   );
 });

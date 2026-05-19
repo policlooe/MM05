@@ -96,7 +96,7 @@ export default function Favorites() {
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                       />
                       {product.badge && (
-                        <span className="absolute top-2 left-2 bg-background/95 backdrop-blur-sm border border-border text-muted-foreground text-xs font-semibold px-2.5 py-1 rounded-md shadow-sm">
+                        <span className="absolute top-2 left-2 bg-background border border-border text-muted-foreground text-xs font-semibold px-2.5 py-1 rounded-md shadow-sm">
                           {product.badge}
                         </span>
                       )}

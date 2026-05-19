@@ -74,10 +74,11 @@ export function CatalogSidebar() {
     <>
       {/* Overlay */}
       <div
-        className={`fixed inset-0 bg-black/40 backdrop-blur-sm z-[60] transition-opacity ${
+        className={`fixed inset-0 bg-black/50 z-[60] transition-opacity ${
           isOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
         }`}
         onClick={close}
+        data-scroll-overlay="true"
         aria-hidden="true"
       />
 
@@ -267,7 +268,7 @@ export function CatalogSidebar() {
                           className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                         />
                         {p.badge && (
-                          <span className="absolute top-1.5 left-1.5 bg-background/90 backdrop-blur-sm border border-border text-muted-foreground text-xs font-medium px-1.5 py-0.5 rounded-md">
+                          <span className="absolute top-1.5 left-1.5 bg-background border border-border text-muted-foreground text-xs font-medium px-1.5 py-0.5 rounded-md">
                             {p.badge}
                           </span>
                         )}

@@ -31,7 +31,8 @@ export function CartSidebar() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={close}
-            className="fixed inset-0 bg-black/40 backdrop-blur-[2px] z-[60]"
+            className="fixed inset-0 bg-black/50 z-[60]"
+            data-scroll-overlay="true"
             aria-hidden="true"
           />
           <motion.div

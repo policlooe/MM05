@@ -1,0 +1,14 @@
+---
+description: MM05 project conventions and agency agent skill paths
+globs:
+  - "**/*"
+alwaysApply: true
+---
+
+# MM05
+
+Read `AGENTS.md` for stack and agent skill paths under `.kiro/skills/`.
+
+For frontend performance/Safari work, apply rules in `AGENTS.md` (no backdrop-blur on scroll UI, banner aspect-ratio, no Lovable assets).
+
+When the user asks for a specialist role, read the corresponding file in `.kiro/skills/` before implementing.

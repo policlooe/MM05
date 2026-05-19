@@ -87,7 +87,7 @@ export const Navbar = memo(function Navbar() {
     <header 
       ref={headerRef}
       className={cn(
-        "fixed top-0 left-0 right-0 z-50 w-full backdrop-blur-2xl transition-all duration-500 border-b bg-surface",
+        "fixed top-0 left-0 right-0 z-50 w-full transition-colors duration-300 border-b bg-surface",
         scrolled ? 'border-border shadow-sm' : 'border-border/50'
       )}
       style={{ paddingTop: 'env(safe-area-inset-top)' }}
