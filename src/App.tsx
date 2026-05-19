@@ -5,6 +5,8 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { CartProvider } from "@/store/cart";
 import { SkipLink } from "@/components/SkipLink";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { AdminGuard } from "@/components/AdminGuard";
 
 // Lazy load pages
 const Index = lazy(() => import("./pages/Index"));
@@ -26,6 +28,9 @@ const NotFound = lazy(() => import("./pages/NotFound"));
 const AdminDashboard = lazy(() => import("./pages/admin/Dashboard"));
 const ProductsManagement = lazy(() => import("./pages/admin/ProductsManagement"));
 const ProductEdit = lazy(() => import("./pages/admin/ProductEdit"));
+const AdminOrders = lazy(() => import("./pages/admin/Orders"));
+const AdminOrderDetail = lazy(() => import("./pages/admin/OrderDetail"));
+const AdminUsers = lazy(() => import("./pages/admin/Users"));
 
 const PageLoader = () => (
   <div className="flex items-center justify-center min-h-screen">
@@ -52,6 +57,7 @@ const queryClient = new QueryClient({
 
 function App() {
   return (
+    <ErrorBoundary>
     <QueryClientProvider client={queryClient}>
       <SkipLink />
       <CartProvider>
@@ -80,10 +86,13 @@ function App() {
                 <Route path="/favorites" element={<Favorites />} />
                 
                 {/* Admin Routes */}
-                <Route path="/admin" element={<AdminDashboard />} />
-                <Route path="/admin/products" element={<ProductsManagement />} />
-                <Route path="/admin/products/new" element={<ProductEdit />} />
-                <Route path="/admin/products/edit/:id" element={<ProductEdit />} />
+                <Route path="/admin" element={<AdminGuard><AdminDashboard /></AdminGuard>} />
+                <Route path="/admin/products" element={<AdminGuard><ProductsManagement /></AdminGuard>} />
+                <Route path="/admin/products/new" element={<AdminGuard><ProductEdit /></AdminGuard>} />
+                <Route path="/admin/products/edit/:id" element={<AdminGuard><ProductEdit /></AdminGuard>} />
+                <Route path="/admin/orders" element={<AdminGuard><AdminOrders /></AdminGuard>} />
+                <Route path="/admin/orders/:id" element={<AdminGuard><AdminOrderDetail /></AdminGuard>} />
+                <Route path="/admin/users" element={<AdminGuard><AdminUsers /></AdminGuard>} />
                 
                 <Route path="*" element={<NotFound />} />
               </Routes>
@@ -92,6 +101,7 @@ function App() {
         </TooltipProvider>
       </CartProvider>
     </QueryClientProvider>
+    </ErrorBoundary>
   );
 }
 

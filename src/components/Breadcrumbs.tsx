@@ -2,80 +2,58 @@ import { Link, useLocation } from "react-router-dom";
 import { ChevronRight, Home } from "lucide-react";
 import { products } from "@/data/products";
 
-interface BreadcrumbItem {
-  label: string;
-  path: string;
-}
+const ROUTE_LABELS: Record<string, string> = {
+  catalog: "Каталог",
+  about: "О нас",
+  contact: "Контакты",
+  checkout: "Оформление заказа",
+  favorites: "Избранное",
+  admin: "Админ-панель",
+  products: "Товары",
+  payment: "Оплата",
+  success: "Успешно",
+  cancel: "Отменено",
+  login: "Вход",
+  register: "Регистрация",
+  orders: "Заказы",
+  users: "Пользователи",
+  settings: "Настройки",
+  analytics: "Аналитика",
+  new: "Создание",
+  edit: "Редактирование",
+};
 
 export function Breadcrumbs() {
   const location = useLocation();
-  const pathnames = location.pathname.split("/").filter((x) => x);
+  const pathnames = location.pathname.split("/").filter(Boolean);
 
-  // Если на главной странице, не показываем хлебные крошки
-  if (pathnames.length === 0) {
-    return null;
-  }
+  if (pathnames.length === 0) return null;
 
-  const breadcrumbs: BreadcrumbItem[] = [
-    { label: "Главная", path: "/" },
-  ];
-
-  // Генерируем хлебные крошки на основе пути
+  const breadcrumbs: { label: string; path: string }[] = [{ label: "Главная", path: "/" }];
   let currentPath = "";
-  pathnames.forEach((segment, index) => {
+
+  for (let i = 0; i < pathnames.length; i++) {
+    const segment = pathnames[i];
     currentPath += `/${segment}`;
-    
-    // Определяем название для сегмента
-    let label = segment;
-    
-    // Специальные случаи
-    if (segment === "catalog") {
-      label = "Каталог";
-    } else if (segment === "about") {
-      label = "О нас";
-    } else if (segment === "contact") {
-      label = "Контакты";
-    } else if (segment === "checkout") {
-      label = "Оформление заказа";
-    } else if (segment === "favorites") {
-      label = "Избранное";
-    } else if (segment === "admin") {
-      label = "Админ-панель";
-    } else if (segment === "products") {
-      label = "Товары";
-    } else if (segment === "product") {
-      // Следующий сегмент - это slug товара
-      const nextSegment = pathnames[index + 1];
-      if (nextSegment) {
-        const product = products.find(p => p.slug === nextSegment);
-        if (product) {
-          label = product.name;
-        }
-      }
-    } else if (segment === "payment") {
-      label = "Оплата";
-    } else if (segment === "success") {
-      label = "Успешно";
-    } else if (segment === "cancel") {
-      label = "Отменено";
-    } else if (segment === "login") {
-      label = "Вход";
-    } else if (segment === "register") {
-      label = "Регистрация";
+
+    if (segment === "product") continue;
+
+    let label = ROUTE_LABELS[segment] ?? segment;
+
+    if (i > 0 && pathnames[i - 1] === "product") {
+      const product = products.find((p) => p.slug === segment);
+      if (product) label = product.name;
     }
 
-    // Пропускаем slug товара, так как он уже обработан
-    if (pathnames[index - 1] !== "product") {
-      breadcrumbs.push({ label, path: currentPath });
-    }
-  });
+    breadcrumbs.push({ label, path: currentPath });
+  }
 
   return (
     <nav aria-label="Breadcrumb" className="container-x py-3">
       <ol className="flex items-center gap-2 text-sm flex-wrap">
         {breadcrumbs.map((crumb, index) => {
           const isLast = index === breadcrumbs.length - 1;
-          
+
           return (
             <li key={crumb.path} className="flex items-center gap-2">
               {index === 0 ? (
@@ -88,9 +66,9 @@ export function Breadcrumbs() {
                 </Link>
               ) : (
                 <>
-                  <ChevronRight className="w-4 h-4 text-muted-foreground" />
+                  <ChevronRight className="w-4 h-4 text-muted-foreground" aria-hidden />
                   {isLast ? (
-                    <span className="text-foreground font-medium line-clamp-1">
+                    <span className="text-foreground font-medium line-clamp-1" aria-current="page">
                       {crumb.label}
                     </span>
                   ) : (

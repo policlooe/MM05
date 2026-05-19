@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { X, LayoutGrid, SlidersHorizontal } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -7,6 +7,7 @@ import { formatPrice, useCart } from "@/store/cart";
 import { PremiumIconMark } from "@/components/PremiumIcon";
 import { toast } from "sonner";
 import { useCatalog } from "@/hooks/use-catalog";
+import { useScrollLock } from "@/hooks/useScrollLock";
 
 const filters = ["Все", ...allCategories] as const;
 type Sort = "popular" | "price_asc" | "price_desc";
@@ -20,24 +21,7 @@ export function CatalogSidebar() {
   const [maxPrice, setMaxPrice] = useState<number>(200000);
   const [showFilters, setShowFilters] = useState(false);
 
-  useEffect(() => {
-    if (isOpen) {
-      // Вычисляем ширину скроллбара
-      const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
-      // Устанавливаем CSS переменную для ширины скроллбара
-      document.documentElement.style.setProperty('--scrollbar-width', `${scrollbarWidth}px`);
-      // Блокируем прокрутку
-      document.body.classList.add('overflow-hidden');
-    } else {
-      // Восстанавливаем прокрутку
-      document.body.classList.remove('overflow-hidden');
-      document.documentElement.style.removeProperty('--scrollbar-width');
-    }
-    return () => {
-      document.body.classList.remove('overflow-hidden');
-      document.documentElement.style.removeProperty('--scrollbar-width');
-    };
-  }, [isOpen]);
+  useScrollLock(isOpen);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();

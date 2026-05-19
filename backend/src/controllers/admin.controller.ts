@@ -247,6 +247,51 @@ export class AdminController {
   }
 
   /**
+   * GET /api/admin/orders/:id
+   */
+  static async getOrderById(req: Request, res: Response) {
+    try {
+      const id = req.params.id as string;
+
+      const order = await prisma.order.findUnique({
+        where: { id },
+        include: {
+          user: {
+            select: {
+              id: true,
+              email: true,
+              fullName: true,
+              phone: true,
+            },
+          },
+          items: {
+            include: {
+              product: true,
+            },
+          },
+        },
+      });
+
+      if (!order) {
+        return res.status(404).json({
+          success: false,
+          error: 'Order not found',
+        });
+      }
+
+      res.status(200).json({
+        success: true,
+        data: order,
+      });
+    } catch (error: any) {
+      res.status(500).json({
+        success: false,
+        error: error.message || 'Failed to fetch order',
+      });
+    }
+  }
+
+  /**
    * PUT /api/admin/orders/:id/status
    * Обновление статуса заказа с валидацией
    */

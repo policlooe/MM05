@@ -19,6 +19,7 @@ router.delete('/products/:id', validateParams(idParamSchema), AdminController.de
 
 // Заказы
 router.get('/orders', validateQuery(paginationSchema), AdminController.getAllOrders);
+router.get('/orders/:id', validateParams(idParamSchema), AdminController.getOrderById);
 router.put('/orders/:id/status', validateParams(idParamSchema), validateBody(updateOrderStatusSchema), AdminController.updateOrderStatus);
 
 // Пользователи

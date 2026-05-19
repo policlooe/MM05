@@ -13,61 +13,70 @@ import { ru } from 'date-fns/locale';
 interface OrderItem {
   id: string;
   quantity: number;
-  price: number;
-  product: {
-    name: string;
-    slug: string;
-  };
+  price: number | string;
+  product?: { name: string; slug?: string } | null;
+  productSnapshot?: { name?: string };
 }
 
 interface Order {
   id: string;
   orderNumber: string;
   status: string;
-  totalAmount: number;
+  total: number | string;
   createdAt: string;
   updatedAt: string;
-  user: {
-    name: string;
-    email: string;
-    phone?: string;
-  };
-  shippingAddress: {
-    street: string;
-    city: string;
-    postalCode: string;
-    country: string;
-  };
-  paymentMethod: string;
+  customerName: string;
+  customerEmail?: string | null;
+  customerPhone: string;
+  deliveryAddress: string;
+  customerNote?: string | null;
+  adminNote?: string | null;
   paymentStatus: string;
+  user?: {
+    fullName?: string | null;
+    email: string;
+    phone?: string | null;
+  } | null;
   items: OrderItem[];
-  notes?: string;
 }
 
 const statusColors: Record<string, string> = {
-  PENDING: 'bg-yellow-500/10 text-yellow-500',
+  NEW: 'bg-yellow-500/10 text-yellow-500',
+  RESERVED: 'bg-amber-500/10 text-amber-500',
   CONFIRMED: 'bg-blue-500/10 text-blue-500',
   PROCESSING: 'bg-purple-500/10 text-purple-500',
   SHIPPED: 'bg-indigo-500/10 text-indigo-500',
   DELIVERED: 'bg-green-500/10 text-green-500',
+  COMPLETED: 'bg-green-500/10 text-green-500',
   CANCELLED: 'bg-red-500/10 text-red-500',
 };
 
 const statusLabels: Record<string, string> = {
-  PENDING: 'Ожидает',
+  NEW: 'Новый',
+  RESERVED: 'Зарезервирован',
   CONFIRMED: 'Подтвержден',
   PROCESSING: 'В обработке',
   SHIPPED: 'Отправлен',
   DELIVERED: 'Доставлен',
+  COMPLETED: 'Завершен',
   CANCELLED: 'Отменен',
 };
 
 const paymentStatusLabels: Record<string, string> = {
   PENDING: 'Ожидает оплаты',
-  PAID: 'Оплачен',
+  PROCESSING: 'Обрабатывается',
+  SUCCEEDED: 'Оплачен',
   FAILED: 'Ошибка оплаты',
   REFUNDED: 'Возврат',
 };
+
+function itemName(item: OrderItem): string {
+  return item.product?.name ?? item.productSnapshot?.name ?? 'Товар';
+}
+
+function formatMoney(value: number | string): string {
+  return Number(value).toLocaleString('ru-RU') + ' ₽';
+}
 
 export default function OrderDetail() {
   const { id } = useParams();
@@ -100,7 +109,7 @@ export default function OrderDetail() {
   const handleStatusChange = async (newStatus: string) => {
     try {
       setUpdating(true);
-      await api.patch(`/admin/orders/${id}/status`, { status: newStatus });
+      await api.put(`/admin/orders/${id}/status`, { status: newStatus });
       setOrder((prev) => (prev ? { ...prev, status: newStatus } : null));
       toast({
         title: 'Успешно',
@@ -178,13 +187,13 @@ export default function OrderDetail() {
                     className="flex items-center justify-between py-3 border-b border-border last:border-0"
                   >
                     <div className="flex-1">
-                      <p className="font-medium">{item.product.name}</p>
+                      <p className="font-medium">{itemName(item)}</p>
                       <p className="text-sm text-muted-foreground">
                         Количество: {item.quantity}
                       </p>
                     </div>
                     <p className="font-semibold">
-                      {((Number(item.price) * item.quantity) / 100).toLocaleString('ru-RU')} ₽
+                      {formatMoney(Number(item.price) * item.quantity)}
                     </p>
                   </div>
                 ))}
@@ -194,7 +203,7 @@ export default function OrderDetail() {
                 <div className="flex items-center justify-between text-lg font-bold">
                   <span>Итого:</span>
                   <span className="text-accent">
-                    {(Number(order.totalAmount) / 100).toLocaleString('ru-RU')} ₽
+                    {formatMoney(order.total)}
                   </span>
                 </div>
               </div>
@@ -208,19 +217,18 @@ export default function OrderDetail() {
               </div>
 
               <div className="space-y-2 text-foreground">
-                <p>{order.shippingAddress.street}</p>
-                <p>
-                  {order.shippingAddress.city}, {order.shippingAddress.postalCode}
-                </p>
-                <p>{order.shippingAddress.country}</p>
+                <p className="whitespace-pre-line">{order.deliveryAddress}</p>
               </div>
             </div>
 
             {/* Примечания */}
-            {order.notes && (
+            {(order.customerNote || order.adminNote) && (
               <div className="bg-surface border border-border rounded-xl p-6">
                 <h2 className="text-xl font-semibold mb-4">Примечания</h2>
-                <p className="text-foreground">{order.notes}</p>
+                {order.customerNote && <p className="text-foreground mb-2">{order.customerNote}</p>}
+                {order.adminNote && (
+                  <p className="text-sm text-muted-foreground">Админ: {order.adminNote}</p>
+                )}
               </div>
             )}
           </div>
@@ -276,18 +284,16 @@ export default function OrderDetail() {
               <div className="space-y-3">
                 <div>
                   <p className="text-sm text-muted-foreground">Имя</p>
-                  <p className="font-medium">{order.user.name}</p>
+                  <p className="font-medium">{order.customerName}</p>
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Email</p>
-                  <p className="font-medium">{order.user.email}</p>
+                  <p className="font-medium">{order.customerEmail ?? order.user?.email ?? '—'}</p>
                 </div>
-                {order.user.phone && (
-                  <div>
-                    <p className="text-sm text-muted-foreground">Телефон</p>
-                    <p className="font-medium">{order.user.phone}</p>
-                  </div>
-                )}
+                <div>
+                  <p className="text-sm text-muted-foreground">Телефон</p>
+                  <p className="font-medium">{order.customerPhone}</p>
+                </div>
               </div>
             </div>
 
@@ -300,14 +306,10 @@ export default function OrderDetail() {
 
               <div className="space-y-3">
                 <div>
-                  <p className="text-sm text-muted-foreground">Метод оплаты</p>
-                  <p className="font-medium">{order.paymentMethod}</p>
-                </div>
-                <div>
                   <p className="text-sm text-muted-foreground">Статус оплаты</p>
                   <Badge
                     className={
-                      order.paymentStatus === 'PAID'
+                      order.paymentStatus === 'SUCCEEDED'
                         ? 'bg-green-500/10 text-green-500'
                         : 'bg-yellow-500/10 text-yellow-500'
                     }
