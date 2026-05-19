@@ -124,18 +124,19 @@ export const Hero = memo(function Hero() {
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMoveWithPrevent}
           onTouchEnd={handleTouchEnd}
-          className="ios-gpu-optimized relative block rounded-xl md:rounded-3xl overflow-hidden bg-secondary aspect-[16/11] md:aspect-[21/8] group transition-all shadow-sm hover:shadow-lg touch-pan-y"
+          className="ios-gpu-optimized relative block rounded-xl md:rounded-3xl overflow-hidden bg-secondary group transition-all shadow-sm hover:shadow-lg touch-pan-y"
+          style={{ aspectRatio: '16/11' }}
           aria-label={currentBanner.cta}
         >
-          {/* Banner Images with AnimatePresence */}
           <AnimatePresence mode="wait">
             <motion.div
               key={currentBanner.id}
-              initial={{ opacity: 0, scale: 1.1 }}
-              animate={{ opacity: 1, scale: 1.01 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              transition={{ duration: 0.7, ease: "easeInOut" }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.3 }}
               className="ios-gpu-optimized absolute inset-0"
+              style={{ aspectRatio: '16/9' }}
             >
               <OptimizedImage
                 src={currentBanner.image}
@@ -144,12 +145,15 @@ export const Hero = memo(function Hero() {
                 height={900}
                 priority={true}
                 loading="eager"
-                className="w-full h-full object-cover transition-transform duration-1000 ease-out group-hover:scale-[1.08] group-hover:-translate-y-2 group-active:scale-100 group-active:opacity-90"
+                fetchPriority="high"
+                decoding="async"
+                className="w-full h-full object-cover"
+                style={{ aspectRatio: '16/9' }}
               />
             </motion.div>
           </AnimatePresence>
 
-          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent md:bg-gradient-to-r md:from-black/75 md:via-black/35 md:to-transparent transition-opacity duration-700 group-hover:opacity-95 group-active:opacity-100" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent md:bg-gradient-to-r md:from-black/75 md:via-black/35 md:to-transparent" />
 
           {/* Content */}
           <div className="relative z-10 h-full flex flex-col justify-end md:justify-center p-4 md:p-12 lg:p-16 max-w-2xl">

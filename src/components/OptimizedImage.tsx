@@ -8,6 +8,8 @@ interface OptimizedImageProps {
   className?: string;
   loading?: 'lazy' | 'eager';
   priority?: boolean;
+  fetchPriority?: 'high' | 'low' | 'auto';
+  style?: React.CSSProperties;
 }
 
 export const OptimizedImage = memo(function OptimizedImage({
@@ -18,6 +20,8 @@ export const OptimizedImage = memo(function OptimizedImage({
   className = '',
   loading = 'lazy',
   priority = false,
+  fetchPriority = 'auto',
+  style,
 }: OptimizedImageProps) {
   const [isLoaded, setIsLoaded] = useState(false);
   const [isInView, setIsInView] = useState(priority);
@@ -60,12 +64,16 @@ export const OptimizedImage = memo(function OptimizedImage({
       width={width}
       height={height}
       loading={loading}
+      fetchPriority={fetchPriority}
       decoding="async"
       className={`${className} ${!isLoaded ? 'opacity-0' : 'opacity-100'} transition-opacity duration-300`}
       onLoad={() => setIsLoaded(true)}
       style={{
         transform: 'translateZ(0)',
         backfaceVisibility: 'hidden',
+        WebkitBackfaceVisibility: 'hidden',
+        willChange: 'transform',
+        ...style,
       }}
     />
   );

@@ -81,7 +81,7 @@ export const Promotions = memo(function Promotions() {
 
     let animationId: number;
     let scrollPosition = 0;
-    const scrollSpeed = 0.5; // Скорость как у баннера (5 секунд на переход)
+    const scrollSpeed = 0.3; // Уменьшена скорость для плавности
 
     const scroll = () => {
       if (!isPaused && scrollContainer) {
@@ -143,14 +143,15 @@ export const Promotions = memo(function Promotions() {
               <Link
                 key={`${product.id}-${index}`}
                 to={`/product/${product.slug}`}
-                className="ios-gpu-optimized group bg-surface border border-border rounded-xl overflow-hidden hover:shadow-[var(--shadow-hover)] transition-all duration-150 flex-shrink-0 w-[280px]"
+                className="ios-gpu-optimized group bg-surface border border-border rounded-xl overflow-hidden transition-shadow duration-150 flex-shrink-0 w-[280px]"
+                style={{ contain: 'layout style paint' }}
               >
-                {/* Изображение товара */}
                 <div className="relative aspect-square bg-secondary overflow-hidden">
                   <OptimizedImage
                     src={product.image}
                     alt={product.name}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    className="w-full h-full object-cover"
+                    style={{ aspectRatio: '1/1' }}
                   />
 
                   {/* Бейдж скидки */}
@@ -167,7 +168,7 @@ export const Promotions = memo(function Promotions() {
                   )}
 
                   {/* Кнопка "В корзину" при hover */}
-                  <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent p-3 translate-y-full group-hover:translate-y-0 transition-transform duration-300">
+                  <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent p-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                     <button className="w-full bg-accent hover:bg-accent-hover text-white py-2.5 rounded-lg text-sm font-medium flex items-center justify-center gap-2 transition-colors shadow-lg">
                       <ShoppingBag className="w-4 h-4 stroke-2" />
                       В корзину

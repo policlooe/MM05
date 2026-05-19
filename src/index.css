@@ -195,23 +195,41 @@
   }
 
   /* ========================================
-     КРИТИЧНО: Анти-мерцание и оптимизация производительности
+     КРИТИЧНО: Safari/iOS/macOS оптимизация - устранение мерцания
      ======================================== */
   
   * {
     -webkit-tap-highlight-color: transparent;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 
-  /* GPU acceleration для карточек и интерактивных элементов */
+  /* GPU acceleration для всех изображений и баннеров */
+  img,
+  .banner,
+  [class*="banner"],
+  [class*="Banner"],
   .card,
   [class*="card"],
   [class*="Card"],
   article {
     transform: translateZ(0);
+    -webkit-transform: translateZ(0);
     backface-visibility: hidden;
     -webkit-backface-visibility: hidden;
+    will-change: transform;
     /* CSS containment для изоляции layout */
     contain: layout style paint;
+  }
+
+  /* Оптимизация для секций и контейнеров */
+  section,
+  .section,
+  .container,
+  [class*="container"] {
+    contain: paint;
+    transform: translateZ(0);
+    -webkit-transform: translateZ(0);
   }
 
   /* Оптимизация для кнопок и ссылок */
@@ -219,15 +237,13 @@
   a[href],
   [role="button"] {
     transform: translateZ(0);
+    -webkit-transform: translateZ(0);
     -webkit-tap-highlight-color: transparent;
     touch-action: manipulation; /* Убирает 300ms задержку на мобильных */
   }
 
   /* Оптимизация для изображений - предотвращение мерцания */
   img {
-    transform: translateZ(0);
-    backface-visibility: hidden;
-    -webkit-backface-visibility: hidden;
     image-rendering: -webkit-optimize-contrast;
     image-rendering: crisp-edges;
     /* Lazy loading hint */
@@ -239,6 +255,18 @@
   .lazy-section {
     content-visibility: auto;
     contain-intrinsic-size: 0 500px;
+  }
+
+  /* КРИТИЧНО: Убираем backdrop-filter на scroll элементах */
+  .scroll-container,
+  [class*="scroll"] {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+
+  /* КРИТИЧНО: Убираем fixed background images */
+  * {
+    background-attachment: scroll !important;
   }
 
   /* Оптимизация анимаций - только transform и opacity */
