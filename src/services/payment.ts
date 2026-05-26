@@ -33,7 +33,14 @@ export const paymentService = {
    * Redirect to Stripe Checkout
    */
   async redirectToCheckout(url: string): Promise<void> {
-    window.location.href = url;
+    const checkoutUrl = new URL(url);
+    const allowedHosts = new Set(['checkout.stripe.com', 'buy.stripe.com']);
+
+    if (checkoutUrl.protocol !== 'https:' || !allowedHosts.has(checkoutUrl.hostname)) {
+      throw new Error('Invalid checkout redirect URL');
+    }
+
+    window.location.assign(checkoutUrl.toString());
   },
 
   /**

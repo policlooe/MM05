@@ -20,8 +20,8 @@ router.post('/', validateBody(createOrderSchema), OrderCreateController.createOr
 router.get('/', authMiddleware, validateQuery(orderPaginationSchema), OrderController.getUserOrders);
 router.get('/:id', authMiddleware, validateParams(orderIdParamSchema), OrderController.getOrderById);
 
-// Накладная (доступна всем по ID заказа)
-router.get('/:id/invoice', validateParams(orderIdParamSchema), InvoiceController.generateInvoiceHTML);
+// Накладная доступна только владельцу заказа или администратору.
+router.get('/:id/invoice', authMiddleware, validateParams(orderIdParamSchema), InvoiceController.generateInvoiceHTML);
 
 // Админские роуты
 router.get('/admin/all', authMiddleware, adminMiddleware, validateQuery(orderPaginationSchema), OrderController.getAllOrders);

@@ -187,7 +187,7 @@ export function DeliveryCalculator() {
   };
 
   const routeUrl = distanceKm
-    ? `https://yandex.ru/maps/?rtext=${STORE_COORDS[0]},${STORE_COORDS[1]}~${toAddress}&rtt=auto`
+    ? `https://yandex.ru/maps/?rtext=${STORE_COORDS[0]},${STORE_COORDS[1]}~${encodeURIComponent(toAddress)}&rtt=auto`
     : '#';
 
   return (

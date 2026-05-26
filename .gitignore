@@ -38,6 +38,8 @@ backend/.env.local
 
 # Prisma
 /src/generated/prisma
+backend/prisma/*.db
+backend/prisma/*.db-journal
 
 # Deployment
 .vercel

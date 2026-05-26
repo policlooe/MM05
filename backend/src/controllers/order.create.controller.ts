@@ -1,5 +1,5 @@
 import { Response } from 'express';
-import { PrismaClient, Prisma } from '@prisma/client';
+import { OrderStatus, PrismaClient, Prisma } from '@prisma/client';
 import { z } from 'zod';
 import { AuthRequest } from '../middleware/auth.middleware.js';
 import { emailService } from '../services/email.service.js';
@@ -28,6 +28,11 @@ const createOrderSchema = z.object({
 });
 
 type CreateOrderInput = z.infer<typeof createOrderSchema>;
+type ReservedOrderItem = CreateOrderInput['items'][number] & {
+  productName: string;
+  serverPrice: number;
+  lineTotal: number;
+};
 
 export class OrderCreateController {
   /**
@@ -65,15 +70,16 @@ export class OrderCreateController {
   private static async reserveStock(
     items: CreateOrderInput['items'],
     tx: Prisma.TransactionClient
-  ): Promise<void> {
+  ): Promise<ReservedOrderItem[]> {
+    const reservedItems: ReservedOrderItem[] = [];
     for (const item of items) {
       // SELECT FOR UPDATE - блокирует строку до конца транзакции
       const product = await tx.product.findUnique({
         where: { id: item.productId },
-        select: { id: true, name: true, stockQuantity: true },
+        select: { id: true, name: true, price: true, stockQuantity: true, isActive: true },
       });
 
-      if (!product) {
+      if (!product || !product.isActive) {
         throw new Error(`Товар с ID ${item.productId} не найден`);
       }
 
@@ -85,15 +91,35 @@ export class OrderCreateController {
       }
 
       // Уменьшаем остаток (резервируем)
-      await tx.product.update({
-        where: { id: item.productId },
+      const updated = await tx.product.updateMany({
+        where: {
+          id: item.productId,
+          stockQuantity: { gte: item.quantity },
+        },
         data: {
           stockQuantity: {
             decrement: item.quantity,
           },
         },
       });
+
+      if (updated.count !== 1) {
+        throw new Error(
+          `Недостаточно товара "${product.name}". В наличии: ${product.stockQuantity}, запрошено: ${item.quantity}`
+        );
+      }
+
+      const serverPrice = Number(product.price);
+
+      reservedItems.push({
+        ...item,
+        productName: product.name,
+        serverPrice,
+        lineTotal: serverPrice * item.quantity,
+      });
     }
+
+    return reservedItems;
   }
 
   /**
@@ -147,7 +173,12 @@ export class OrderCreateController {
       // Выполняем всё в транзакции для атомарности
       const order = await prisma.$transaction(async (tx) => {
         // 1. Резервируем товар (с проверкой наличия и блокировкой)
-        await OrderCreateController.reserveStock(validatedData.items, tx);
+        const reservedItems = await OrderCreateController.reserveStock(validatedData.items, tx);
+        const serverTotal = reservedItems.reduce((sum, item) => sum + item.lineTotal, 0);
+
+        if (Math.abs(serverTotal - validatedData.totalPrice) > 0.01) {
+          throw new Error('Итоговая сумма заказа не совпадает с актуальными ценами');
+        }
 
         // 2. Создаем заказ
         const newOrder = await tx.order.create({
@@ -159,25 +190,26 @@ export class OrderCreateController {
             customerEmail: validatedData.customerEmail || undefined,
             deliveryAddress: validatedData.deliveryAddress,
             customerNote: validatedData.customerNote || undefined,
-            subtotal: validatedData.totalPrice,
-            total: validatedData.totalPrice,
-            status: 'NEW' as any,
-            isStockReserved: true as any,
+            subtotal: serverTotal,
+            total: serverTotal,
+            status: OrderStatus.NEW,
+            isStockReserved: true,
             reservedAt: new Date(),
           },
         });
 
         // 3. Создаем позиции заказа
-        const orderItems = validatedData.items.map((item) => ({
+        const orderItems = reservedItems.map((item) => ({
           orderId: newOrder.id,
           productId: item.productId,
           quantity: item.quantity,
-          price: item.finalPrice,
-          total: item.finalPrice * item.quantity,
+          price: item.serverPrice,
+          total: item.lineTotal,
           productSnapshot: {
             productId: item.productId,
-            price: item.price,
-            finalPrice: item.finalPrice,
+            name: item.productName,
+            price: item.serverPrice,
+            finalPrice: item.serverPrice,
             configuration: item.configuration || null,
           },
           options: item.options || {},
@@ -201,7 +233,7 @@ export class OrderCreateController {
       });
 
       // Логируем успешное создание заказа
-      console.log(`✅ Order created: ${orderNumber}, Total: ${validatedData.totalPrice} ₽`);
+      console.log(`✅ Order created: ${orderNumber}, Total: ${order!.total} ₽`);
 
       // Отправляем email подтверждение (если email указан)
       if (order!.customerEmail && emailService.isAvailable()) {

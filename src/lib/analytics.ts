@@ -5,10 +5,12 @@
 
 declare global {
   interface Window {
-    gtag?: (...args: any[]) => void;
-    dataLayer?: any[];
+    gtag?: (...args: unknown[]) => void;
+    dataLayer?: unknown[][];
   }
 }
+
+const GA_MEASUREMENT_ID_PATTERN = /^G-[A-Z0-9]{4,}$/;
 
 /**
  * Инициализация Google Analytics
@@ -21,6 +23,11 @@ export function initGoogleAnalytics() {
     return;
   }
 
+  if (!GA_MEASUREMENT_ID_PATTERN.test(measurementId)) {
+    console.warn('Google Analytics Measurement ID имеет неверный формат');
+    return;
+  }
+
   // Загружаем скрипт Google Analytics
   const script = document.createElement('script');
   script.async = true;
@@ -29,8 +36,8 @@ export function initGoogleAnalytics() {
 
   // Инициализируем dataLayer
   window.dataLayer = window.dataLayer || [];
-  window.gtag = function gtag() {
-    window.dataLayer?.push(arguments);
+  window.gtag = (...args: unknown[]) => {
+    window.dataLayer?.push(args);
   };
 
   window.gtag('js', new Date());
@@ -63,7 +70,7 @@ export function trackEvent(
     category?: string;
     label?: string;
     value?: number;
-    [key: string]: any;
+    [key: string]: unknown;
   }
 ) {
   if (!window.gtag) return;
@@ -98,7 +105,7 @@ export function trackAddToCart(product: {
 /**
  * Отслеживание начала оформления заказа
  */
-export function trackBeginCheckout(items: any[], total: number) {
+export function trackBeginCheckout(items: unknown[], total: number) {
   trackEvent('begin_checkout', {
     currency: 'RUB',
     value: total,
@@ -109,7 +116,7 @@ export function trackBeginCheckout(items: any[], total: number) {
 /**
  * Отслеживание покупки
  */
-export function trackPurchase(orderId: string, total: number, items: any[]) {
+export function trackPurchase(orderId: string, total: number, items: unknown[]) {
   trackEvent('purchase', {
     transaction_id: orderId,
     currency: 'RUB',

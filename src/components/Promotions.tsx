@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { useEffect, useRef, useState, memo } from "react";
+import { useState, memo } from "react";
 import { ShoppingBag, Clock } from "lucide-react";
 import { formatPrice } from "@/store/cart";
 import { OptimizedImage } from "./OptimizedImage";
@@ -72,39 +72,7 @@ const getDaysLeft = (endDate: string): number => {
 };
 
 export const Promotions = memo(function Promotions() {
-  const scrollRef = useRef<HTMLDivElement>(null);
   const [isPaused, setIsPaused] = useState(false);
-
-  useEffect(() => {
-    const scrollContainer = scrollRef.current;
-    if (!scrollContainer) return;
-
-    let animationId: number;
-    let scrollPosition = 0;
-    const scrollSpeed = 0.3; // Уменьшена скорость для плавности
-
-    const scroll = () => {
-      if (!isPaused && scrollContainer) {
-        scrollPosition += scrollSpeed;
-        
-        // Проверяем, достигли ли конца
-        if (scrollPosition >= scrollContainer.scrollWidth / 2) {
-          scrollPosition = 0;
-        }
-        
-        scrollContainer.scrollLeft = scrollPosition;
-      }
-      animationId = requestAnimationFrame(scroll);
-    };
-
-    animationId = requestAnimationFrame(scroll);
-
-    return () => {
-      if (animationId) {
-        cancelAnimationFrame(animationId);
-      }
-    };
-  }, [isPaused]);
 
   return (
     <section id="promotions" className="py-8 md:py-12">
@@ -128,87 +96,92 @@ export const Promotions = memo(function Promotions() {
         </div>
 
         {/* Сетка карточек акций с автоскроллом */}
-        <div 
-          ref={scrollRef}
+        <div
           onMouseEnter={() => setIsPaused(true)}
           onMouseLeave={() => setIsPaused(false)}
-          className="ios-gpu-optimized flex gap-3 md:gap-5 overflow-x-hidden scroll-smooth"
+          onFocus={() => setIsPaused(true)}
+          onBlur={() => setIsPaused(false)}
+          className="promotion-marquee overflow-hidden"
           style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
         >
-          {/* Дублируем товары для бесшовного скролла */}
-          {[...promotionProducts, ...promotionProducts].map((product, index) => {
-            const daysLeft = product.endsAt ? getDaysLeft(product.endsAt) : null;
+          <div
+            className="promotion-marquee-track flex w-max gap-3 md:gap-5"
+            style={{ animationPlayState: isPaused ? 'paused' : 'running' }}
+          >
+            {[...promotionProducts, ...promotionProducts].map((product, index) => {
+              const daysLeft = product.endsAt ? getDaysLeft(product.endsAt) : null;
 
-            return (
-              <Link
-                key={`${product.id}-${index}`}
-                to={`/product/${product.slug}`}
-                className="ios-gpu-optimized group bg-surface border border-border rounded-xl overflow-hidden transition-shadow duration-150 flex-shrink-0 w-[280px]"
-                style={{ contain: 'layout style paint' }}
-              >
-                <div className="relative aspect-square bg-secondary overflow-hidden">
-                  <OptimizedImage
-                    src={product.image}
-                    alt={product.name}
-                    className="w-full h-full object-cover"
-                    style={{ aspectRatio: '1/1' }}
-                  />
+              return (
+                <Link
+                  key={`${product.id}-${index}`}
+                  to={`/product/${product.slug}`}
+                  className="promotion-card group bg-surface border border-border rounded-xl overflow-hidden transition-shadow duration-150 flex-shrink-0 w-[280px]"
+                  style={{ contain: 'layout style paint' }}
+                >
+                  <div className="relative aspect-square bg-secondary overflow-hidden">
+                    <OptimizedImage
+                      src={product.image}
+                      alt={product.name}
+                      className="w-full h-full object-cover"
+                      style={{ aspectRatio: '1/1' }}
+                    />
 
-                  {/* Бейдж скидки */}
-                  <div className="absolute top-2 left-2 bg-destructive text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-lg">
-                    −{product.discount}%
-                  </div>
-
-                  {/* Таймер акции (если есть) */}
-                  {daysLeft !== null && daysLeft > 0 && daysLeft <= 7 && (
-                    <div className="absolute top-2 right-2 bg-accent text-white text-xs font-semibold px-2.5 py-1.5 rounded-full shadow-lg flex items-center gap-1">
-                      <Clock className="w-3 h-3 stroke-2" />
-                      {daysLeft}д
+                    {/* Бейдж скидки */}
+                    <div className="absolute top-2 left-2 bg-destructive text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-lg">
+                      −{product.discount}%
                     </div>
-                  )}
 
-                  {/* Кнопка "В корзину" при hover */}
-                  <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent p-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                    <button className="w-full bg-accent hover:bg-accent-hover text-white py-2.5 rounded-lg text-sm font-medium flex items-center justify-center gap-2 transition-colors shadow-lg">
-                      <ShoppingBag className="w-4 h-4 stroke-2" />
-                      В корзину
-                    </button>
+                    {/* Таймер акции (если есть) */}
+                    {daysLeft !== null && daysLeft > 0 && daysLeft <= 7 && (
+                      <div className="absolute top-2 right-2 bg-accent text-white text-xs font-semibold px-2.5 py-1.5 rounded-full shadow-lg flex items-center gap-1">
+                        <Clock className="w-3 h-3 stroke-2" />
+                        {daysLeft}д
+                      </div>
+                    )}
+
+                    {/* Кнопка "В корзину" при hover */}
+                    <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent p-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                      <span className="w-full bg-accent text-white py-2.5 rounded-lg text-sm font-medium flex items-center justify-center gap-2 transition-colors shadow-lg">
+                        <ShoppingBag className="w-4 h-4 stroke-2" />
+                        В корзину
+                      </span>
+                    </div>
                   </div>
-                </div>
 
-                {/* Информация о товаре */}
-                <div className="p-3.5 md:p-4">
-                  {/* Категория */}
-                  <p className="text-xs text-muted-foreground mb-1.5">
-                    {product.category}
-                  </p>
-
-                  {/* Название */}
-                  <h3 className="text-sm font-medium mb-3 line-clamp-2 leading-snug min-h-[2.8rem]">
-                    {product.name}
-                  </h3>
-
-                  {/* Цены */}
-                  <div className="space-y-1.5">
-                    {/* Старая цена */}
-                    <p className="text-sm text-muted-foreground line-through">
-                      {formatPrice(product.oldPrice)}
+                  {/* Информация о товаре */}
+                  <div className="p-3.5 md:p-4">
+                    {/* Категория */}
+                    <p className="text-xs text-muted-foreground mb-1.5">
+                      {product.category}
                     </p>
 
-                    {/* Новая цена */}
-                    <div className="flex items-baseline gap-2">
-                      <p className="text-base font-bold text-accent">
-                        {formatPrice(product.newPrice)}
+                    {/* Название */}
+                    <h3 className="text-sm font-medium mb-3 line-clamp-2 leading-snug min-h-[2.8rem]">
+                      {product.name}
+                    </h3>
+
+                    {/* Цены */}
+                    <div className="space-y-1.5">
+                      {/* Старая цена */}
+                      <p className="text-sm text-muted-foreground line-through">
+                        {formatPrice(product.oldPrice)}
                       </p>
-                      <p className="text-xs text-accent font-semibold">
-                        −{formatPrice(product.oldPrice - product.newPrice)}
-                      </p>
+
+                      {/* Новая цена */}
+                      <div className="flex items-baseline gap-2">
+                        <p className="text-base font-bold text-accent">
+                          {formatPrice(product.newPrice)}
+                        </p>
+                        <p className="text-xs text-accent font-semibold">
+                          −{formatPrice(product.oldPrice - product.newPrice)}
+                        </p>
+                      </div>
                     </div>
                   </div>
-                </div>
-              </Link>
-            );
-          })}
+                </Link>
+              );
+            })}
+          </div>
         </div>
 
         {/* Кнопка "Все товары" для мобильных */}

@@ -33,6 +33,17 @@ export class InvoiceController {
         return;
       }
 
+      const isOwner = req.user?.userId && order.userId === req.user.userId;
+      const isAdmin = req.user?.role === 'ADMIN';
+
+      if (!isOwner && !isAdmin) {
+        res.status(403).json({
+          success: false,
+          error: 'Доступ запрещен',
+        });
+        return;
+      }
+
       // Генерируем HTML
       const html = InvoiceController.generateHTML(order);
 
@@ -52,6 +63,15 @@ export class InvoiceController {
    * Генерация HTML шаблона накладной
    */
   private static generateHTML(order: any): string {
+    const escapeHtml = (value: unknown): string => {
+      return String(value ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    };
+
     const formatPrice = (price: number) => {
       return new Intl.NumberFormat('ru-RU', {
         minimumFractionDigits: 2,
@@ -80,13 +100,22 @@ export class InvoiceController {
       CANCELLED: 'Отменен',
     };
 
+    const invoiceNumber = escapeHtml(order.orderNumber);
+    const orderStatus = escapeHtml(statusLabels[order.status] || order.status);
+    const customerName = escapeHtml(order.customerName);
+    const customerPhone = escapeHtml(order.customerPhone);
+    const customerEmail = escapeHtml(order.customerEmail);
+    const deliveryAddress = escapeHtml(order.deliveryAddress);
+    const customerNote = escapeHtml(order.customerNote);
+    const adminNote = escapeHtml(order.adminNote);
+
     return `
 <!DOCTYPE html>
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Накладная №${order.orderNumber}</title>
+  <title>Накладная №${invoiceNumber}</title>
   <style>
     * {
       margin: 0;
@@ -321,9 +350,9 @@ export class InvoiceController {
       </div>
     </div>
     <div class="invoice-info">
-      <div class="invoice-number">Накладная №${order.orderNumber}</div>
+      <div class="invoice-number">Накладная №${invoiceNumber}</div>
       <div class="invoice-date">от ${formatDate(order.createdAt)}</div>
-      <div class="status-badge">${statusLabels[order.status] || order.status}</div>
+      <div class="status-badge">${orderStatus}</div>
     </div>
   </div>
 
@@ -332,21 +361,21 @@ export class InvoiceController {
     <div class="customer-info">
       <div class="info-row">
         <div class="info-label">ФИО:</div>
-        <div class="info-value">${order.customerName}</div>
+        <div class="info-value">${customerName}</div>
       </div>
       <div class="info-row">
         <div class="info-label">Телефон:</div>
-        <div class="info-value">${order.customerPhone}</div>
+        <div class="info-value">${customerPhone}</div>
       </div>
       ${order.customerEmail ? `
       <div class="info-row">
         <div class="info-label">Email:</div>
-        <div class="info-value">${order.customerEmail}</div>
+        <div class="info-value">${customerEmail}</div>
       </div>
       ` : ''}
       <div class="info-row">
         <div class="info-label">Адрес доставки:</div>
-        <div class="info-value">${order.deliveryAddress}</div>
+        <div class="info-value">${deliveryAddress}</div>
       </div>
     </div>
   </div>
@@ -354,7 +383,7 @@ export class InvoiceController {
   ${order.customerNote ? `
   <div class="note">
     <div class="note-title">Комментарий клиента:</div>
-    <div>${order.customerNote}</div>
+    <div>${customerNote}</div>
   </div>
   ` : ''}
 
@@ -375,11 +404,11 @@ export class InvoiceController {
         <tr>
           <td class="text-center">${index + 1}</td>
           <td>
-            <strong>${item.product?.name || 'Товар'}</strong>
+            <strong>${escapeHtml(item.product?.name || 'Товар')}</strong>
             ${item.options && Object.keys(item.options).length > 0 ? `
               <br><small style="color: #666;">
                 ${Object.entries(item.options).map(([key, value]) => 
-                  `${key}: ${value}`
+                  `${escapeHtml(key)}: ${escapeHtml(value)}`
                 ).join(', ')}
               </small>
             ` : ''}
@@ -419,7 +448,7 @@ export class InvoiceController {
   ${order.adminNote ? `
   <div class="note">
     <div class="note-title">Примечание менеджера:</div>
-    <div>${order.adminNote}</div>
+    <div>${adminNote}</div>
   </div>
   ` : ''}
 

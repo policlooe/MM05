@@ -201,22 +201,29 @@
     -moz-osx-font-smoothing: grayscale;
   }
 
-  img,
-  .banner,
-  .card {
-    transform: translateZ(0);
+  .hero-composite-layer,
+  .hero-frame,
+  .hero-slide,
+  .hero-image,
+  .promotion-marquee-track {
     backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    transform: translate3d(0, 0, 0);
+    -webkit-transform: translate3d(0, 0, 0);
   }
 
-  .banner {
-    aspect-ratio: 16 / 9;
-    overflow: hidden;
+  .hero-frame,
+  .promotion-marquee {
+    contain: layout paint;
+    isolation: isolate;
   }
 
-  .section,
-  .container,
-  .container-x {
-    contain: paint;
+  .hero-slide {
+    will-change: opacity;
+  }
+
+  .hero-image {
+    display: block;
   }
 
   button,
@@ -288,11 +295,24 @@
     @apply text-sm font-medium tracking-tight;
   }
 
-  .ios-gpu-optimized,
-  .banner {
-    transform: translateZ(0);
+  .ios-gpu-optimized {
     backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+  }
+
+  .promotion-marquee {
+    mask-image: linear-gradient(to right, transparent, black 24px, black calc(100% - 24px), transparent);
+    -webkit-mask-image: linear-gradient(to right, transparent, black 24px, black calc(100% - 24px), transparent);
+  }
+
+  .promotion-marquee-track {
+    animation: promotion-marquee 36s linear infinite;
     will-change: transform;
+  }
+
+  .promotion-card {
+    transform: translateZ(0);
+    -webkit-transform: translateZ(0);
   }
   
   /* КРИТИЧНО: Правильный контейнер без overflow */
@@ -485,6 +505,26 @@
   }
   100% {
     transform: translateX(100%);
+  }
+}
+
+@keyframes promotion-marquee {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(calc(-50% - 0.375rem), 0, 0);
+  }
+}
+
+@media (min-width: 768px) {
+  @keyframes promotion-marquee {
+    from {
+      transform: translate3d(0, 0, 0);
+    }
+    to {
+      transform: translate3d(calc(-50% - 0.625rem), 0, 0);
+    }
   }
 }
 

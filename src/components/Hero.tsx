@@ -45,6 +45,13 @@ export const Hero = memo(function Hero() {
   const [touchStart, setTouchStart] = useState(0);
   const [touchEnd, setTouchEnd] = useState(0);
 
+  useEffect(() => {
+    banners.forEach((banner) => {
+      const img = new Image();
+      img.src = banner.image;
+    });
+  }, []);
+
   // Auto-rotate banners every 5 seconds
   useEffect(() => {
     if (!isAutoPlaying) return;
@@ -105,12 +112,11 @@ export const Hero = memo(function Hero() {
 
   return (
     <section className="container-x pt-2 md:pt-3 px-3 md:px-0" aria-label="Главный баннер">
-      {/* WebKit fix: transform-gpu + backface-hidden + isolate */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.4, ease: "easeOut" }}
-        className="relative transform-gpu backface-hidden isolate"
+        className="hero-composite-layer relative isolate"
       >
         <div className="sr-only" role="status" aria-live="polite" aria-atomic="true">
           Баннер {currentIndex + 1} из {banners.length}: {currentBanner.title}
@@ -121,34 +127,33 @@ export const Hero = memo(function Hero() {
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}
-          className="relative block rounded-xl md:rounded-3xl overflow-hidden bg-secondary group transition-shadow shadow-sm hover:shadow-lg touch-pan-y z-0"
+          className="hero-frame relative block rounded-xl md:rounded-3xl overflow-hidden bg-secondary group transition-shadow shadow-sm hover:shadow-lg touch-pan-y z-0"
           style={{ aspectRatio: "16 / 9" }}
           aria-label={currentBanner.cta}
         >
-          {/* Image container - flex-shrink-0 prevents text from pushing it out */}
           <div className="absolute inset-0 flex-shrink-0">
-            <AnimatePresence mode="wait">
+            {banners.map((banner, index) => (
               <motion.div
-                key={currentBanner.id}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.3 }}
-                className="absolute inset-0 transform-gpu backface-hidden"
+                key={banner.id}
+                initial={false}
+                animate={{ opacity: index === currentIndex ? 1 : 0 }}
+                transition={{ duration: 0.32, ease: "easeOut" }}
+                className="hero-slide absolute inset-0"
+                aria-hidden={index !== currentIndex}
               >
                 <OptimizedImage
-                  src={currentBanner.image}
-                  alt={currentBanner.title}
+                  src={banner.image}
+                  alt={banner.title}
                   width={1200}
                   height={675}
                   priority={true}
                   loading="eager"
                   fetchPriority="high"
-                  decoding="async"
-                  className="w-full h-full object-cover flex-shrink-0"
+                  decoding="sync"
+                  className="hero-image w-full h-full object-cover flex-shrink-0"
                 />
               </motion.div>
-            </AnimatePresence>
+            ))}
           </div>
 
           {/* Gradient overlay */}
