@@ -1,17 +1,9 @@
 import { MapPin, Phone, MessageCircle, Send, Clock, Users, Package, Wrench } from "lucide-react";
-import { CONTACTS } from "@/lib/contacts";
+import { buildMapsUrl, CONTACTS } from "@/lib/contacts";
 import { PremiumIconMark } from "@/components/PremiumIcon";
 
-// Координаты склада для Google Maps
-const WAREHOUSE_COORDS = { lat: 43.055698, lng: 47.329950 };
-const WAREHOUSE_ADDRESS = "Дагестан, г. Махачкала, п. Шамхал, ул. Сулеймана Стальского, 1";
-
 export function ContactUs() {
-  // Google Maps embed URL
-  const googleMapsEmbedUrl = `https://www.google.com/maps/embed/v1/place?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&q=${WAREHOUSE_COORDS.lat},${WAREHOUSE_COORDS.lng}&zoom=16`;
-  
-  // Google Maps link URL
-  const googleMapsUrl = `https://www.google.com/maps?q=${WAREHOUSE_COORDS.lat},${WAREHOUSE_COORDS.lng}`;
+  const mapsUrl = buildMapsUrl();
 
   return (
     <section id="contact-us" className="py-8 md:py-12">
@@ -35,12 +27,12 @@ export function ContactUs() {
                     {CONTACTS.address}
                   </p>
                   <a
-                    href={googleMapsUrl}
+                    href={mapsUrl}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-sm text-accent hover:underline inline-block font-semibold"
                   >
-                    Открыть в Google Maps →
+                    Открыть в картах →
                   </a>
                 </div>
               </div>
@@ -70,18 +62,23 @@ export function ContactUs() {
               </div>
             </div>
 
-            {/* Google Maps */}
-            <div className="bg-surface border border-border rounded-xl overflow-hidden shadow-md h-[300px] lg:h-[350px]">
-              <iframe
-                src={googleMapsEmbedUrl}
-                width="100%"
-                height="100%"
-                style={{ border: 0 }}
-                allowFullScreen
-                loading="lazy"
-                referrerPolicy="no-referrer-when-downgrade"
-                title="Местоположение склада MM05"
-              />
+            <div className="bg-surface border border-border rounded-xl p-5 shadow-md min-h-[300px] lg:min-h-[350px] flex items-center justify-center">
+              <a
+                href={mapsUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group flex max-w-sm flex-col items-center text-center gap-4"
+              >
+                <PremiumIconMark icon={MapPin} size="lg" tone="accent" />
+                <div>
+                  <p className="text-sm font-bold mb-2 group-hover:text-accent transition-colors">
+                    Построить маршрут до шоурума
+                  </p>
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    {CONTACTS.address}
+                  </p>
+                </div>
+              </a>
             </div>
           </div>
 
