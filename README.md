@@ -18,7 +18,7 @@ npm run build
 ## ✨ Возможности
 
 - 🛒 **E-commerce**: Полная корзина, оформление заказов, оплата Stripe
-- 📊 **Analytics**: Google Analytics 4 + Web Vitals мониторинг
+- 📊 **Analytics**: Google Analytics 4 + Web Vitals мониторинг + GDPR consent
 - ♿ **Accessibility**: WCAG 2.1 Level AA
 - 🎨 **UI/UX**: Современный дизайн, адаптивная верстка
 - 🔐 **Auth**: JWT авторизация, роли пользователей
@@ -27,6 +27,10 @@ npm run build
 - 🔍 **SEO**: Meta tags, Open Graph, sitemap
 - 💾 **Database**: PostgreSQL + Prisma ORM
 - 🔄 **Backups**: Автоматические бэкапы (30 дней)
+- 🧪 **Testing**: Unit тесты с Vitest + Testing Library
+- 🛡️ **Error Handling**: Error Boundary + Sentry integration
+- 🍪 **GDPR**: Cookie consent banner + analytics consent management
+- 🔒 **Security**: Rate limiting, URL validation, custom error types
 
 ## 📁 Структура проекта
 
@@ -121,6 +125,8 @@ railway up
 
 ## 📚 Документация
 
+- `docs/IMPROVEMENTS.md` - Последние улучшения и новые возможности
+- `docs/TESTING.md` - Руководство по тестированию
 - `ACCESSIBILITY_ANALYTICS_COMPLETE.md` - Accessibility & Analytics
 - `MONITORING_SETUP_GUIDE.md` - Настройка мониторинга
 - `FINAL_CHECKLIST.md` - Чеклист перед запуском
@@ -135,6 +141,10 @@ railway up
 - [x] Performance Optimization
 - [x] SEO Optimization
 - [x] Security (Helmet, CORS, Rate Limiting)
+- [x] Unit Testing (Vitest)
+- [x] Error Boundaries
+- [x] GDPR Compliance (Cookie Consent)
+- [x] Payment Security (Rate Limiting, URL Validation)
 
 ## 📄 Лицензия
 

@@ -11,7 +11,7 @@ if (!process.env.STRIPE_SECRET_KEY) {
 
 // Единый инстанс Stripe для всего приложения
 export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-  apiVersion: '2024-11-20.acacia' as any,
+  apiVersion: '2024-11-20.acacia',
   typescript: true,
 });
 
@@ -31,7 +31,7 @@ export class StripeService {
   /**
    * Генерация сессии оплаты
    */
-  async createCheckoutSession(data: CreateCheckoutSessionData): Promise<Stripe.Checkout.Session> {
+  async createCheckoutSession(data: CreateCheckoutSessionData): Promise<Stripe.Response<Stripe.Checkout.Session>> {
     try {
       const session = await stripe.checkout.sessions.create({
         payment_method_types: ['card'],
@@ -88,7 +88,7 @@ export class StripeService {
           data: {
             paymentStatus: PaymentStatus.SUCCEEDED,
             status: OrderStatus.CONFIRMED,
-            stripePaymentId: session.payment_intent as string,
+            stripePaymentId: typeof session.payment_intent === 'string' ? session.payment_intent : session.payment_intent?.id,
             paidAt: new Date(),
           },
           include: { items: { include: { product: true } } },
@@ -173,11 +173,11 @@ export class StripeService {
     }
   }
 
-  async getCheckoutSession(sessionId: string): Promise<Stripe.Checkout.Session> {
+  async getCheckoutSession(sessionId: string): Promise<Stripe.Response<Stripe.Checkout.Session>> {
     return stripe.checkout.sessions.retrieve(sessionId);
   }
 
-  async createRefund(paymentIntentId: string, amount?: number): Promise<Stripe.Refund> {
+  async createRefund(paymentIntentId: string, amount?: number): Promise<Stripe.Response<Stripe.Refund>> {
     return stripe.refunds.create({
       payment_intent: paymentIntentId,
       amount: amount ? Math.round(amount * 100) : undefined,
