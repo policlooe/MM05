@@ -1,14 +1,11 @@
 [phases.setup]
-nixPkgs = ["nodejs_20"]
+nixPkgs = ["nodejs-22_x"]
 
 [phases.install]
 cmds = ["npm ci"]
 
 [phases.build]
-cmds = [
-  "npm run prisma:generate",
-  "npm run backend:build"
-]
+cmds = ["npm run prisma:generate", "npm run backend:build"]
 
 [start]
 cmd = "npm run backend:start"

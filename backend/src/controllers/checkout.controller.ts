@@ -8,7 +8,7 @@ const prisma = new PrismaClient();
 // Инициализируем Stripe только если есть валидный ключ
 const stripeKey = process.env.STRIPE_SECRET_KEY;
 const stripe = stripeKey && stripeKey.startsWith('sk_') 
-  ? new Stripe(stripeKey, { apiVersion: '2024-11-20.acacia' })
+  ? new Stripe(stripeKey, { apiVersion: '2025-02-24.acacia' })
   : null;
 
 export class CheckoutController {
