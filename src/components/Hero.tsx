@@ -42,8 +42,9 @@ const banners = [
 export const Hero = memo(function Hero() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isAutoPlaying, setIsAutoPlaying] = useState(true);
-  const [touchStart, setTouchStart] = useState(0);
-  const [touchEnd, setTouchEnd] = useState(0);
+  // КРИТИЧНО: Используем refs вместо state для touch координат - избегаем stale closure
+  const touchStartRef = useRef(0);
+  const touchEndRef = useRef(0);
 
   useEffect(() => {
     banners.forEach((banner) => {
@@ -55,7 +56,7 @@ export const Hero = memo(function Hero() {
   // Auto-rotate banners every 5 seconds
   useEffect(() => {
     if (!isAutoPlaying) return;
-    
+
     const interval = setInterval(() => {
       setCurrentIndex((prev) => (prev + 1) % banners.length);
     }, 5000);
@@ -78,18 +79,21 @@ export const Hero = memo(function Hero() {
     setIsAutoPlaying(false);
   }, []);
 
-  // Passive touch handlers for swipe navigation
+  // КРИТИЧНО: Touch handlers с refs - стабильные ссылки, нет stale closure
   const handleTouchStart = useCallback((e: React.TouchEvent) => {
-    setTouchStart(e.targetTouches[0].clientX);
+    touchStartRef.current = e.targetTouches[0].clientX;
   }, []);
 
   const handleTouchMove = useCallback((e: React.TouchEvent) => {
-    setTouchEnd(e.targetTouches[0].clientX);
+    touchEndRef.current = e.targetTouches[0].clientX;
   }, []);
 
   const handleTouchEnd = useCallback(() => {
+    const touchStart = touchStartRef.current;
+    const touchEnd = touchEndRef.current;
+
     if (!touchStart || !touchEnd) return;
-    
+
     const distance = touchStart - touchEnd;
     const isLeftSwipe = distance > 50;
     const isRightSwipe = distance < -50;
@@ -104,9 +108,9 @@ export const Hero = memo(function Hero() {
     }
 
     // Reset
-    setTouchStart(0);
-    setTouchEnd(0);
-  }, [touchStart, touchEnd]);
+    touchStartRef.current = 0;
+    touchEndRef.current = 0;
+  }, []); // КРИТИЧНО: Пустые deps - стабильная ссылка
 
   const currentBanner = banners[currentIndex];
 

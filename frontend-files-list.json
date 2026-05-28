@@ -1,0 +1,202 @@
+﻿[
+    {
+        "FullName":  "C:\\Users\\johnv\\OneDrive\\Рабочий стол\\MM\\mebel-project\\src\\App.tsx",
+        "Length":  4826
+    },
+    {
+        "FullName":  "C:\\Users\\johnv\\OneDrive\\Рабочий стол\\MM\\mebel-project\\src\\index.css",
+        "Length":  13508
+    },
+    {
+        "FullName":  "C:\\Users\\johnv\\OneDrive\\Рабочий стол\\MM\\mebel-project\\src\\main.tsx",
+        "Length":  835
+    },
+    {
+        "FullName":  "C:\\Users\\johnv\\OneDrive\\Рабочий стол\\MM\\mebel-project\\src\\vite-env.d.ts",
+        "Length":  38
+    },
+    {
+        "FullName":  "C:\\Users\\johnv\\OneDrive\\Рабочий стол\\MM\\mebel-project\\src\\assets\\hero-banner.jpg",
+        "Length":  121630
+    },
+    {
+        "FullName":  "C:\\Users\\johnv\\OneDrive\\Рабочий стол\\MM\\mebel-project\\src\\assets\\p-bed-1.jpg",
+        "Length":  33372
+    },
+    {
+        "FullName":  "C:\\Users\\johnv\\OneDrive\\Рабочий стол\\MM\\mebel-project\\src\\assets\\p-bed-2.jpg",
+        "Length":  32417
+    },
+    {
+        "FullName":  "C:\\Users\\johnv\\OneDrive\\Рабочий стол\\MM\\mebel-project\\src\\assets\\p-desk.jpg",
+        "Length":  35673
+    },
+    {
+        "FullName":  "C:\\Users\\johnv\\OneDrive\\Рабочий стол\\MM\\mebel-project\\src\\assets\\p-gazebo.jpg",
+        "Length":  217590
+    },
+    {
+        "FullName":  "C:\\Users\\johnv\\OneDrive\\Рабочий стол\\MM\\mebel-project\\src\\assets\\p-nightstand.jpg",
+        "Length":  29553
+    },
+    {
+        "FullName":  "C:\\Users\\johnv\\OneDrive\\Рабочий стол\\MM\\mebel-project\\src\\assets\\p-rocking.jpg",
+        "Length":  48955
+    },
+    {
+        "FullName":  "C:\\Users\\johnv\\OneDrive\\Рабочий стол\\MM\\mebel-project\\src\\assets\\p-table.jpg",
+        "Length":  53254
+    },
+    {
+        "FullName":  "C:\\Users\\johnv\\OneDrive\\Рабочий стол\\MM\\mebel-project\\src\\assets\\p-wardrobe.jpg",
+        "Length":  42347
+    },
+    {
+        "FullName":  "C:\\Users\\johnv\\OneDrive\\Рабочий стол\\MM\\mebel-project\\src\\components\\AddressLink.tsx",
+        "Length":  2070
+    },
+    {
+        "FullName":  "C:\\Users\\johnv\\OneDrive\\Рабочий стол\\MM\\mebel-project\\src\\components\\AdminGuard.tsx",
+        "Length":  177
+    },
+    {
+        "FullName":  "C:\\Users\\johnv\\OneDrive\\Рабочий стол\\MM\\mebel-project\\src\\components\\AdminLayout.tsx",
+        "Length":  4264
+    },
+    {
+        "FullName":  "C:\\Users\\johnv\\OneDrive\\Рабочий стол\\MM\\mebel-project\\src\\components\\AdminRoute.tsx",
+        "Length":  1203
+    },
+    {
+        "FullName":  "C:\\Users\\johnv\\OneDrive\\Рабочий стол\\MM\\mebel-project\\src\\components\\Breadcrumbs.tsx",
+        "Length":  3022
+    },
+    {
+        "FullName":  "C:\\Users\\johnv\\OneDrive\\Рабочий стол\\MM\\mebel-project\\src\\components\\CartSidebar.tsx",
+        "Length":  6391
+    },
+    {
+        "FullName":  "C:\\Users\\johnv\\OneDrive\\Рабочий стол\\MM\\mebel-project\\src\\components\\CatalogSidebar.tsx",
+        "Length":  13088
+    },
+    {
+        "FullName":  "C:\\Users\\johnv\\OneDrive\\Рабочий стол\\MM\\mebel-project\\src\\components\\Categories.tsx",
+        "Length":  4642
+    },
+    {
+        "FullName":  "C:\\Users\\johnv\\OneDrive\\Рабочий стол\\MM\\mebel-project\\src\\components\\ChatLauncher.tsx",
+        "Length":  4131
+    },
+    {
+        "FullName":  "C:\\Users\\johnv\\OneDrive\\Рабочий стол\\MM\\mebel-project\\src\\components\\ContactUs.tsx",
+        "Length":  9103
+    },
+    {
+        "FullName":  "C:\\Users\\johnv\\OneDrive\\Рабочий стол\\MM\\mebel-project\\src\\components\\CookieConsent.tsx",
+        "Length":  2716
+    },
+    {
+        "FullName":  "C:\\Users\\johnv\\OneDrive\\Рабочий стол\\MM\\mebel-project\\src\\components\\DeliveryCalculator.tsx",
+        "Length":  14706
+    },
+    {
+        "FullName":  "C:\\Users\\johnv\\OneDrive\\Рабочий стол\\MM\\mebel-project\\src\\components\\ErrorBoundary.tsx",
+        "Length":  4104
+    },
+    {
+        "FullName":  "C:\\Users\\johnv\\OneDrive\\Рабочий стол\\MM\\mebel-project\\src\\components\\Footer.tsx",
+        "Length":  5109
+    },
+    {
+        "FullName":  "C:\\Users\\johnv\\OneDrive\\Рабочий стол\\MM\\mebel-project\\src\\components\\Hero.tsx",
+        "Length":  10141
+    },
+    {
+        "FullName":  "C:\\Users\\johnv\\OneDrive\\Рабочий стол\\MM\\mebel-project\\src\\components\\ImageViewer.tsx",
+        "Length":  2459
+    },
+    {
+        "FullName":  "C:\\Users\\johnv\\OneDrive\\Рабочий стол\\MM\\mebel-project\\src\\components\\MobileNav.tsx",
+        "Length":  2023
+    },
+    {
+        "FullName":  "C:\\Users\\johnv\\OneDrive\\Рабочий стол\\MM\\mebel-project\\src\\components\\Navbar.tsx",
+        "Length":  8741
+    },
+    {
+        "FullName":  "C:\\Users\\johnv\\OneDrive\\Рабочий стол\\MM\\mebel-project\\src\\components\\NavLink.tsx",
+        "Length":  751
+    },
+    {
+        "FullName":  "C:\\Users\\johnv\\OneDrive\\Рабочий стол\\MM\\mebel-project\\src\\components\\OptimizedImage.tsx",
+        "Length":  1806
+    },
+    {
+        "FullName":  "C:\\Users\\johnv\\OneDrive\\Рабочий стол\\MM\\mebel-project\\src\\components\\OptimizedProductList.tsx",
+        "Length":  6883
+    },
+    {
+        "FullName":  "C:\\Users\\johnv\\OneDrive\\Рабочий стол\\MM\\mebel-project\\src\\components\\PremiumIcon.tsx",
+        "Length":  2061
+    },
+    {
+        "FullName":  "C:\\Users\\johnv\\OneDrive\\Рабочий стол\\MM\\mebel-project\\src\\components\\ProductConfiguratorCollapsible.tsx",
+        "Length":  24006
+    },
+    {
+        "FullName":  "C:\\Users\\johnv\\OneDrive\\Рабочий стол\\MM\\mebel-project\\src\\components\\ProductConfiguratorV2.tsx",
+        "Length":  9424
+    },
+    {
+        "FullName":  "C:\\Users\\johnv\\OneDrive\\Рабочий стол\\MM\\mebel-project\\src\\components\\ProductReviews.tsx",
+        "Length":  15046
+    },
+    {
+        "FullName":  "C:\\Users\\johnv\\OneDrive\\Рабочий стол\\MM\\mebel-project\\src\\components\\Products.tsx",
+        "Length":  2547
+    },
+    {
+        "FullName":  "C:\\Users\\johnv\\OneDrive\\Рабочий стол\\MM\\mebel-project\\src\\components\\Promotions.tsx",
+        "Length":  7989
+    },
+    {
+        "FullName":  "C:\\Users\\johnv\\OneDrive\\Рабочий стол\\MM\\mebel-project\\src\\components\\RecentlyViewed.tsx",
+        "Length":  1645
+    },
+    {
+        "FullName":  "C:\\Users\\johnv\\OneDrive\\Рабочий стол\\MM\\mebel-project\\src\\components\\ReviewUploader.tsx",
+        "Length":  9141
+    },
+    {
+        "FullName":  "C:\\Users\\johnv\\OneDrive\\Рабочий стол\\MM\\mebel-project\\src\\components\\SEO.tsx",
+        "Length":  1702
+    },
+    {
+        "FullName":  "C:\\Users\\johnv\\OneDrive\\Рабочий стол\\MM\\mebel-project\\src\\components\\SimilarProducts.tsx",
+        "Length":  2280
+    },
+    {
+        "FullName":  "C:\\Users\\johnv\\OneDrive\\Рабочий стол\\MM\\mebel-project\\src\\components\\SkipLink.tsx",
+        "Length":  368
+    },
+    {
+        "FullName":  "C:\\Users\\johnv\\OneDrive\\Рабочий стол\\MM\\mebel-project\\src\\components\\skeletons\\CatalogSidebarSkeleton.tsx",
+        "Length":  387
+    },
+    {
+        "FullName":  "C:\\Users\\johnv\\OneDrive\\Рабочий стол\\MM\\mebel-project\\src\\components\\skeletons\\HeroSkeleton.tsx",
+        "Length":  281
+    },
+    {
+        "FullName":  "C:\\Users\\johnv\\OneDrive\\Рабочий стол\\MM\\mebel-project\\src\\components\\skeletons\\index.ts",
+        "Length":  240
+    },
+    {
+        "FullName":  "C:\\Users\\johnv\\OneDrive\\Рабочий стол\\MM\\mebel-project\\src\\components\\skeletons\\ProductCardSkeleton.tsx",
+        "Length":  505
+    },
+    {
+        "FullName":  "C:\\Users\\johnv\\OneDrive\\Рабочий стол\\MM\\mebel-project\\src\\components\\skeletons\\ProductListSkeleton.tsx",
+        "Length":  353
+    }
+]

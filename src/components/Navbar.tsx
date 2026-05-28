@@ -20,6 +20,7 @@ export const Navbar = memo(function Navbar() {
   const headerRef = useRef<HTMLElement>(null);
   const navigate = useNavigate();
 
+  // КРИТИЧНО: Scroll handler с requestAnimationFrame throttle
   useEffect(() => {
     try {
       const userData = localStorage.getItem('user');
@@ -30,12 +31,22 @@ export const Navbar = memo(function Navbar() {
       console.error('Failed to parse user data:', error);
     }
 
-    const handleScroll = () => setScrolled(window.scrollY > 10);
-    window.addEventListener('scroll', handleScroll);
+    let ticking = false;
+    const handleScroll = () => {
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          setScrolled(window.scrollY > 10);
+          ticking = false;
+        });
+        ticking = true;
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Add dynamic padding to body based on header height
+  // КРИТИЧНО: ResizeObserver вместо resize event - ловит изменения контента
   useEffect(() => {
     const updateBodyPadding = () => {
       if (headerRef.current) {
@@ -44,13 +55,16 @@ export const Navbar = memo(function Navbar() {
       }
     };
 
-    // Update on mount and when window resizes
     updateBodyPadding();
-    window.addEventListener('resize', updateBodyPadding);
 
-    // Cleanup
+    // ResizeObserver для отслеживания изменений высоты header
+    const resizeObserver = new ResizeObserver(updateBodyPadding);
+    if (headerRef.current) {
+      resizeObserver.observe(headerRef.current);
+    }
+
     return () => {
-      window.removeEventListener('resize', updateBodyPadding);
+      resizeObserver.disconnect();
       document.body.style.paddingTop = '0';
     };
   }, []);

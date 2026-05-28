@@ -3,7 +3,8 @@
  * Tracks Core Web Vitals and sends to Google Analytics
  */
 
-import { onCLS, onFID, onFCP, onLCP, onTTFB, type Metric } from 'web-vitals';
+// КРИТИЧНО: onFID устарел в web-vitals v4, заменён на onINP
+import { onCLS, onINP, onFCP, onLCP, onTTFB, type Metric } from 'web-vitals';
 
 /**
  * Send metric to Google Analytics
@@ -34,7 +35,7 @@ function sendToAnalytics(metric: Metric) {
  */
 export function initWebVitals() {
   onCLS(sendToAnalytics);
-  onFID(sendToAnalytics);
+  onINP(sendToAnalytics); // КРИТИЧНО: onINP вместо onFID (web-vitals v4)
   onFCP(sendToAnalytics);
   onLCP(sendToAnalytics);
   onTTFB(sendToAnalytics);

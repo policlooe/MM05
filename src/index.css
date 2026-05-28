@@ -80,19 +80,20 @@
     min-width: 0; /* Критично для flex элементов */
   }
 
-  /* Предотвращение горизонтального скролла на всех уровнях */
-  html,
-  body {
-    overflow-x: hidden;
-    width: 100%;
-    max-width: 100vw;
-    position: relative;
-    background-color: #ffffff; /* Белый фон для status bar iOS */
+  /* КРИТИЧНО: iOS viewport fix - предотвращение jump при показе/скрытии address bar */
+  html {
+    height: -webkit-fill-available;
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
   }
 
-  html {
-    scroll-behavior: smooth;
-    -webkit-overflow-scrolling: touch; /* Плавный скролл на iOS */
+  /* Предотвращение горизонтального скролла - используем clip вместо hidden */
+  html,
+  body {
+    overflow-x: clip;
+    width: 100%;
+    position: relative;
+    background-color: #ffffff;
   }
 
   body {
@@ -102,12 +103,14 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
-    min-height: 100vh;
+    /* КРИТИЧНО: iOS viewport fix */
+    min-height: 100dvh;
+    min-height: -webkit-fill-available;
     position: relative;
-    font-size: 16px; /* КРИТИЧНО: Базовый размер 16px для читаемости */
+    font-size: 16px;
     line-height: 1.6;
-    padding-top: env(safe-area-inset-top); /* iOS safe area */
-    touch-action: pan-y pinch-zoom; /* Оптимизация touch events */
+    padding-top: env(safe-area-inset-top);
+    touch-action: pan-y pinch-zoom;
   }
 
   /* Предотвращение сдвига при скрытии скроллбара */
@@ -119,10 +122,9 @@
   /* Защита всех контейнеров от переполнения */
   #root {
     width: 100%;
-    max-width: 100vw;
-    overflow-x: hidden;
+    overflow-x: clip;
     position: relative;
-    isolation: isolate; /* Создаем новый stacking context */
+    isolation: isolate;
   }
 
   .font-serif {
@@ -199,27 +201,31 @@
     -webkit-tap-highlight-color: transparent;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    -webkit-touch-callout: none;
   }
 
+  /* КРИТИЧНО: Оптимизация GPU layers для Safari - убираем агрессивный translate3d */
   .hero-composite-layer,
   .hero-frame,
   .hero-slide,
   .hero-image,
-  .promotion-marquee-track {
+  .promotion-marquee-track,
+  .promotion-card {
     backface-visibility: hidden;
     -webkit-backface-visibility: hidden;
-    transform: translate3d(0, 0, 0);
-    -webkit-transform: translate3d(0, 0, 0);
+    transform: translateZ(0);
+    transform-style: preserve-3d;
   }
 
+  /* КРИТИЧНО: Убираем contain: layout paint - ломает Safari compositor */
   .hero-frame,
   .promotion-marquee {
-    contain: layout paint;
     isolation: isolate;
   }
 
+  /* КРИТИЧНО: Ограничиваем will-change - Safari держит GPU layers слишком долго */
   .hero-slide {
-    will-change: opacity;
+    will-change: auto;
   }
 
   .hero-image {
@@ -237,10 +243,9 @@
     height: auto;
   }
 
-  * {
-    background-attachment: scroll !important;
-  }
+  /* КРИТИЧНО: Удалено глобальное background-attachment - вызывает forced repaint в Safari */
 
+  /* КРИТИЧНО: Убираем backdrop-filter на fixed/sticky - вызывает flicker в Safari */
   nav[class*="fixed"],
   .scroll-container,
   [data-scroll-overlay="true"] {
@@ -256,6 +261,11 @@
       animation-iteration-count: 1 !important;
       transition-duration: 0.01ms !important;
       scroll-behavior: auto !important;
+    }
+
+    /* КРИТИЧНО: Отключаем marquee animation при prefers-reduced-motion */
+    .promotion-marquee-track {
+      animation: none !important;
     }
   }
 
@@ -305,9 +315,13 @@
     -webkit-mask-image: linear-gradient(to right, transparent, black 24px, black calc(100% - 24px), transparent);
   }
 
+  /* КРИТИЧНО: Оптимизация marquee animation для Safari */
   .promotion-marquee-track {
     animation: promotion-marquee 36s linear infinite;
-    will-change: transform;
+    will-change: auto;
+    transform: translateX(0);
+    backface-visibility: hidden;
+    perspective: 1000px;
   }
 
   .promotion-card {

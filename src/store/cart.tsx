@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, ReactNode, useCallback, useEffect } from "react";
+import { createContext, useContext, useState, ReactNode, useCallback, useEffect, useMemo } from "react";
 import type { Product } from "@/data/products";
 import { SelectedConfiguration } from "@/types/product-config";
 import { toast } from "sonner";
@@ -10,17 +10,23 @@ export type CartItem = {
   name: string;
   slug: string;
   basePrice: number;
-  finalPrice: number; // ВАЖНО: итоговая цена с учетом конфигурации
+  finalPrice: number;
   image: string;
   category: string;
   qty: number;
-  // Конфигурация товара
   configuration?: SelectedConfiguration;
-  // Для отображения в UI
   assemblySelected?: boolean;
   assemblyPrice?: number;
-  cartItemId?: string; // Для backend
+  cartItemId?: string;
+  // КРИТИЧНО: Уникальный ключ для позиции в корзине
+  cartItemKey: string;
 };
+
+// КРИТИЧНО: Генерация уникального ключа для позиции корзины
+function generateCartItemKey(productId: string, config?: SelectedConfiguration): string {
+  if (!config) return productId;
+  return `${productId}_${JSON.stringify(config)}`;
+}
 
 type CartCtx = {
   items: CartItem[];
@@ -67,24 +73,19 @@ export function CartProvider({ children }: { children: ReactNode }) {
     config?: SelectedConfiguration, 
     finalPrice?: number
   ) => {
-    // КРИТИЧНО: finalPrice ОБЯЗАТЕЛЕН
-    if (!finalPrice) {
+    // КРИТИЧНО: Правильная проверка finalPrice (не срабатывает при 0)
+    if (finalPrice === undefined || finalPrice === null) {
       console.error("finalPrice is required for addToCart");
-      finalPrice = p.price; // fallback
+      finalPrice = p.price;
     }
 
+    const cartItemKey = generateCartItemKey(p.id, config);
+
     setItems((prev) => {
-      // Проверяем, есть ли уже такой товар с такой же конфигурацией
-      const existingIndex = prev.findIndex((i) => {
-        if (i.id !== p.id) return false;
-        // Если нет конфигурации, сравниваем только по ID
-        if (!config && !i.configuration) return true;
-        // Если есть конфигурация, сравниваем её
-        return JSON.stringify(i.configuration) === JSON.stringify(config);
-      });
+      // КРИТИЧНО: Ищем по уникальному ключу, а не только по ID
+      const existingIndex = prev.findIndex((i) => i.cartItemKey === cartItemKey);
 
       if (existingIndex >= 0) {
-        // Увеличиваем количество существующего товара
         const updated = [...prev];
         updated[existingIndex] = {
           ...updated[existingIndex],
@@ -93,33 +94,31 @@ export function CartProvider({ children }: { children: ReactNode }) {
         return updated;
       }
 
-      // Извлекаем данные о сборке из конфигурации
       const assemblySelected = (config?.options?.assembly as boolean) || false;
       const assemblyPrice = assemblySelected ? (p.assemblyPrice || 0) : 0;
 
-      // Добавляем новый товар
       const newItem: CartItem = {
         id: p.id,
         name: p.name,
         slug: p.slug,
         basePrice: p.price,
-        finalPrice: finalPrice, // ВСЕГДА используем переданную finalPrice
+        finalPrice: finalPrice!,
         image: p.image,
         category: p.category,
         qty: 1,
-        configuration: config, // Сохраняем полную конфигурацию
+        configuration: config,
         assemblySelected: assemblySelected,
         assemblyPrice: assemblyPrice,
+        cartItemKey: cartItemKey, // КРИТИЧНО: Сохраняем уникальный ключ
       };
 
       return [...prev, newItem];
     });
 
-    // Track add to cart event
     ecommerce.addToCart({
       id: p.id,
       name: p.name,
-      price: finalPrice,
+      price: finalPrice!,
       quantity: 1,
     });
 
@@ -129,28 +128,22 @@ export function CartProvider({ children }: { children: ReactNode }) {
     });
   }, []);
 
-  const remove = useCallback((id: string) => {
-    setItems((prev) => {
-      const filtered = prev.filter((i) => i.id !== id);
-      return filtered;
-    });
+  // КРИТИЧНО: Удаление и изменение количества по уникальному ключу
+  const remove = useCallback((cartItemKey: string) => {
+    setItems((prev) => prev.filter((i) => i.cartItemKey !== cartItemKey));
     toast.success("Товар удален из корзины");
   }, []);
 
-  const setQty = useCallback((id: string, qty: number) => {
+  const setQty = useCallback((cartItemKey: string, qty: number) => {
     if (qty <= 0) {
-      setItems((prev) => {
-        const filtered = prev.filter((i) => i.id !== id);
-        return filtered;
-      });
+      setItems((prev) => prev.filter((i) => i.cartItemKey !== cartItemKey));
       toast.success("Товар удален из корзины");
       return;
     }
     
-    setItems((prev) => {
-      const updated = prev.map((i) => (i.id === id ? { ...i, qty: Math.min(qty, 99) } : i));
-      return updated;
-    });
+    setItems((prev) =>
+      prev.map((i) => (i.cartItemKey === cartItemKey ? { ...i, qty: Math.min(qty, 99) } : i))
+    );
   }, []);
 
   const clear = useCallback(() => {
@@ -158,8 +151,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
     localStorage.removeItem(CART_STORAGE_KEY);
   }, []);
 
-  const count = items.reduce((s, i) => s + i.qty, 0);
-  const total = items.reduce((s, i) => s + i.qty * i.finalPrice, 0); // Используем finalPrice!
+  // КРИТИЧНО: Мемоизация count и total - пересчёт только при изменении items
+  const count = useMemo(() => items.reduce((s, i) => s + i.qty, 0), [items]);
+  const total = useMemo(() => items.reduce((s, i) => s + i.qty * i.finalPrice, 0), [items]);
 
   return (
     <Ctx.Provider
