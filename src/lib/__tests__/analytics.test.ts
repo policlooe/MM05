@@ -5,6 +5,7 @@ import {
   trackEvent,
   trackAddToCart,
   trackPurchase,
+  setAnalyticsConsent,
 } from '../analytics';
 
 describe('Analytics', () => {
@@ -15,6 +16,7 @@ describe('Analytics', () => {
     
     // Clear document head scripts
     document.head.innerHTML = '';
+    localStorage.clear();
     
     // Mock console methods
     vi.spyOn(console, 'warn').mockImplementation(() => {});
@@ -72,6 +74,8 @@ describe('Analytics', () => {
     it('should track page view with gtag', () => {
       const mockGtag = vi.fn();
       window.gtag = mockGtag;
+      setAnalyticsConsent(true);
+      mockGtag.mockClear();
       
       trackPageView('/test-page', 'Test Page');
       
@@ -86,6 +90,8 @@ describe('Analytics', () => {
     it('should track add to cart event', () => {
       const mockGtag = vi.fn();
       window.gtag = mockGtag;
+      setAnalyticsConsent(true);
+      mockGtag.mockClear();
       
       const product = {
         id: 'prod-123',

@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { randomBytes } from 'node:crypto';
 
 /**
  * Environment variables schema with strict validation
@@ -175,5 +176,5 @@ export function validateEnv(): ValidatedEnv {
  * Use this to generate JWT secrets
  */
 export function generateSecret(): string {
-  return require('crypto').randomBytes(32).toString('hex');
+  return randomBytes(32).toString('hex');
 }

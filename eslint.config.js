@@ -31,6 +31,8 @@ export default tseslint.config(
       // shadcn/ui и store часто экспортируют варианты и хелперы рядом с компонентами
       "react-refresh/only-export-components": "off",
       "@typescript-eslint/no-unused-vars": "off",
+      "@typescript-eslint/no-explicit-any": "warn",
+      "@typescript-eslint/no-namespace": "off",
     },
   },
 );

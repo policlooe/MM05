@@ -7,13 +7,10 @@ import { MobileNav } from "@/components/MobileNav";
 import { ChatLauncher } from "@/components/ChatLauncher";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { MapPin, Phone, MessageCircle, Send, Users, Clock, Loader2, CheckCircle2 } from "lucide-react";
-import { CONTACTS } from "@/lib/contacts";
+import { buildMapsUrl, CONTACTS } from "@/lib/contacts";
 import { PremiumIconMark } from "@/components/PremiumIcon";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
-
-// Координаты склада для Google Maps
-const WAREHOUSE_COORDS = { lat: 43.055698, lng: 47.329950 };
 
 const ContactPage = () => {
   const [formData, setFormData] = useState({
@@ -27,8 +24,7 @@ const ContactPage = () => {
     window.scrollTo(0, 0);
   }, []);
 
-  const googleMapsEmbedUrl = `https://www.google.com/maps/embed/v1/place?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&q=${WAREHOUSE_COORDS.lat},${WAREHOUSE_COORDS.lng}&zoom=16`;
-  const googleMapsUrl = `https://www.google.com/maps?q=${WAREHOUSE_COORDS.lat},${WAREHOUSE_COORDS.lng}`;
+  const mapsUrl = buildMapsUrl();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -81,7 +77,7 @@ const ContactPage = () => {
                         {CONTACTS.address}
                       </p>
                       <a
-                        href={googleMapsUrl}
+                        href={mapsUrl}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="text-xs text-accent hover:underline"
@@ -164,18 +160,23 @@ const ContactPage = () => {
                 </div>
               </div>
 
-              {/* Google Maps */}
-              <div className="bg-surface border border-border rounded-xl overflow-hidden shadow-sm h-[400px]">
-                <iframe
-                  src={googleMapsEmbedUrl}
-                  width="100%"
-                  height="100%"
-                  style={{ border: 0 }}
-                  allowFullScreen
-                  loading="lazy"
-                  referrerPolicy="no-referrer-when-downgrade"
-                  title="Местоположение склада MM05"
-                />
+              <div className="bg-surface border border-border rounded-xl p-6 shadow-sm min-h-[320px] lg:min-h-[400px] flex items-center justify-center">
+                <a
+                  href={mapsUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="group flex max-w-sm flex-col items-center text-center gap-4"
+                >
+                  <PremiumIconMark icon={MapPin} size="lg" tone="accent" />
+                  <div>
+                    <p className="text-sm font-bold mb-2 group-hover:text-accent transition-colors">
+                      Построить маршрут до шоурума
+                    </p>
+                    <p className="text-sm text-muted-foreground leading-relaxed">
+                      {CONTACTS.address}
+                    </p>
+                  </div>
+                </a>
               </div>
             </div>
 

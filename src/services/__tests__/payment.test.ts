@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { paymentService } from '../payment';
 import api from '../api';
 
@@ -15,8 +15,17 @@ vi.mock('@stripe/stripe-js', () => ({
 }));
 
 describe('PaymentService', () => {
+  let currentTime = new Date('2026-01-01T00:00:00.000Z').getTime();
+
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.useFakeTimers();
+    currentTime += 4000;
+    vi.setSystemTime(currentTime);
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
   });
 
   describe('createCheckoutSession', () => {
@@ -71,7 +80,7 @@ describe('PaymentService', () => {
 
       await expect(
         paymentService.redirectToCheckout(invalidUrl)
-      ).rejects.toThrow('Invalid checkout redirect URL');
+      ).rejects.toMatchObject({ code: 'INVALID_URL' });
     });
 
     it('should reject invalid hostname', async () => {
@@ -79,7 +88,7 @@ describe('PaymentService', () => {
 
       await expect(
         paymentService.redirectToCheckout(invalidUrl)
-      ).rejects.toThrow('Invalid checkout redirect URL');
+      ).rejects.toMatchObject({ code: 'INVALID_URL' });
     });
 
     it('should accept buy.stripe.com URLs', async () => {

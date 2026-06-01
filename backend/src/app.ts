@@ -2,6 +2,7 @@ import express, { Express, Request, Response, NextFunction } from 'express';
 import helmet from 'helmet';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
+import morgan from 'morgan';
 import { apiLimiter } from './middleware/rateLimiter.middleware.js';
 import { errorHandler } from './middleware/error.middleware.js';
 import { csrfTokenGenerator, csrfProtection } from './middleware/csrf.middleware.js';
@@ -49,7 +50,6 @@ app.use(cookieParser());
 
 // Request logging (skip health checks to reduce noise)
 if (process.env.NODE_ENV !== 'test') {
-  const morgan = require('morgan');
   app.use(morgan('combined', {
     skip: (req: Request) => req.url.startsWith('/health'),
     stream: {
