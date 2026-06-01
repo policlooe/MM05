@@ -1,74 +1,35 @@
 import { z } from 'zod';
 
-/**
- * Схема валидации для создания товара
- */
 export const createProductSchema = z.object({
-  name: z
-    .string()
-    .min(1, 'Название обязательно')
-    .max(200, 'Название слишком длинное'),
+  name: z.string().min(1, 'Name is required').max(200, 'Name is too long'),
   slug: z
     .string()
-    .min(1, 'Slug обязателен')
-    .max(200, 'Slug слишком длинный')
-    .regex(/^[a-z0-9-]+$/, 'Slug должен содержать только строчные буквы, цифры и дефисы'),
-  description: z
-    .string()
-    .min(10, 'Описание должно содержать минимум 10 символов')
-    .max(5000, 'Описание слишком длинное')
-    .optional(),
-  shortDescription: z
-    .string()
-    .max(500, 'Краткое описание слишком длинное')
-    .optional(),
-  price: z
-    .number()
-    .positive('Цена должна быть положительной')
-    .max(10000000, 'Цена слишком большая'),
-  oldPrice: z
-    .number()
-    .positive('Старая цена должна быть положительной')
-    .max(10000000, 'Старая цена слишком большая')
-    .optional()
-    .nullable(),
-  image: z
-    .string()
-    .url('Неверный формат URL изображения'),
-  categoryId: z
-    .string()
-    .uuid('Неверный формат ID категории'),
-  stock: z
-    .number()
-    .int('Количество должно быть целым числом')
-    .nonnegative('Количество не может быть отрицательным')
-    .max(99999, 'Количество слишком большое')
-    .default(0),
-  badge: z
-    .string()
-    .max(50, 'Badge слишком длинный')
-    .optional()
-    .nullable(),
-  featured: z
-    .boolean()
-    .default(false),
+    .min(1, 'Slug is required')
+    .max(200, 'Slug is too long')
+    .regex(/^[a-z0-9-]+$/, 'Slug can contain only lowercase letters, numbers, and hyphens'),
+  description: z.string().min(10, 'Description must be at least 10 characters').max(5000).optional(),
+  shortDescription: z.string().max(500).optional(),
+  price: z.number().positive('Price must be positive').max(10000000),
+  oldPrice: z.number().positive('Old price must be positive').max(10000000).optional().nullable(),
+  assemblyPrice: z.number().positive('Assembly price must be positive').max(10000000).optional().nullable(),
+  image: z.string().url('Image must be a valid URL').optional(),
+  thumbnailUrl: z.string().url('Thumbnail URL must be a valid URL').optional().nullable(),
+  images: z.array(z.string().url('Image must be a valid URL')).optional(),
+  categoryId: z.string().uuid('Category ID must be a valid UUID').optional().nullable(),
+  stock: z.number().int().nonnegative().max(99999).default(0),
+  stockQuantity: z.number().int().nonnegative().max(99999).optional(),
+  badge: z.string().max(50).optional().nullable(),
+  featured: z.boolean().default(false),
+  isFeatured: z.boolean().optional(),
+  isActive: z.boolean().optional(),
 });
 
-/**
- * Схема валидации для обновления товара
- */
 export const updateProductSchema = createProductSchema.partial();
 
-/**
- * Схема валидации для параметра ID товара
- */
 export const productIdParamSchema = z.object({
-  id: z.string().uuid('Некорректный ID товара'),
+  id: z.string().uuid('Invalid product ID'),
 });
 
-/**
- * Схема валидации для пагинации товаров
- */
 export const productPaginationSchema = z.object({
   page: z.coerce.number().int().positive().default(1),
   limit: z.coerce.number().int().positive().max(100).default(20),

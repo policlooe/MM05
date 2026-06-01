@@ -10,41 +10,42 @@ import {
 } from "lucide-react";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
+import api from "@/services/api";
 
 interface DashboardStats {
   totalProducts: number;
   totalOrders: number;
-  totalCustomers: number;
+  totalUsers: number;
   totalRevenue: number;
-  recentOrders: number;
-  lowStockProducts: number;
+  pendingOrders: number;
 }
 
 export default function AdminDashboard() {
   const [stats, setStats] = useState<DashboardStats>({
     totalProducts: 0,
     totalOrders: 0,
-    totalCustomers: 0,
+    totalUsers: 0,
     totalRevenue: 0,
-    recentOrders: 0,
-    lowStockProducts: 0,
+    pendingOrders: 0,
   });
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   useEffect(() => {
-    // TODO: Fetch stats from API
-    // Временные данные для демонстрации
-    setTimeout(() => {
-      setStats({
-        totalProducts: 8,
-        totalOrders: 45,
-        totalCustomers: 120,
-        totalRevenue: 2450000,
-        recentOrders: 12,
-        lowStockProducts: 2,
-      });
-      setLoading(false);
-    }, 500);
+    const fetchStats = async () => {
+      try {
+        setLoading(true);
+        const response = await api.get("/admin/stats");
+        setStats(response.data.data);
+      } catch (err) {
+        console.error(err);
+        setError("Не удалось загрузить статистику");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchStats();
   }, []);
 
   const formatPrice = (price: number) => {
@@ -70,11 +71,11 @@ export default function AdminDashboard() {
     },
     {
       title: "Клиенты",
-      value: stats.totalCustomers,
+      value: stats.totalUsers,
       icon: Users,
       color: "text-purple-600",
       bgColor: "bg-purple-50",
-      link: "/admin/customers",
+      link: "/admin/users",
     },
     {
       title: "Выручка",
@@ -105,6 +106,12 @@ export default function AdminDashboard() {
             Добро пожаловать в админ-панель MM05
           </p>
         </div>
+
+        {error && (
+          <div className="mb-6 bg-destructive/10 border border-destructive/30 text-destructive rounded-xl p-4">
+            {error}
+          </div>
+        )}
 
         {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
@@ -140,12 +147,8 @@ export default function AdminDashboard() {
             </div>
             <div className="space-y-3">
               <div className="flex items-center justify-between py-2 border-b border-border">
-                <span className="text-sm">Новых заказов за сегодня</span>
-                <span className="font-semibold text-accent">{stats.recentOrders}</span>
-              </div>
-              <div className="flex items-center justify-between py-2">
-                <span className="text-sm">Товаров с низким остатком</span>
-                <span className="font-semibold text-orange-600">{stats.lowStockProducts}</span>
+                <span className="text-sm">Новых заказов в ожидании</span>
+                <span className="font-semibold text-accent">{stats.pendingOrders}</span>
               </div>
             </div>
           </div>
@@ -171,7 +174,7 @@ export default function AdminDashboard() {
                 Заказы
               </Link>
               <Link
-                to="/admin/customers"
+                to="/admin/users"
                 className="flex items-center justify-center gap-2 px-4 py-3 bg-secondary hover:bg-muted border border-border rounded-lg font-medium text-sm transition-colors"
               >
                 <Users className="w-4 h-4" />
@@ -189,17 +192,17 @@ export default function AdminDashboard() {
         </div>
 
         {/* Alerts */}
-        {stats.lowStockProducts > 0 && (
+        {stats.pendingOrders > 0 && (
           <div className="bg-orange-50 border border-orange-200 rounded-xl p-4 flex items-start gap-3">
             <AlertCircle className="w-5 h-5 text-orange-600 shrink-0 mt-0.5" />
             <div>
               <p className="font-semibold text-orange-900 mb-1">
-                Внимание: низкий остаток товаров
+                Внимание: есть новые заказы
               </p>
               <p className="text-sm text-orange-700">
-                У {stats.lowStockProducts} товаров заканчивается остаток на складе.{" "}
-                <Link to="/admin/products" className="underline font-medium">
-                  Проверить товары
+                {stats.pendingOrders} заказов ожидают обработки.{" "}
+                <Link to="/admin/orders" className="underline font-medium">
+                  Проверить заказы
                 </Link>
               </p>
             </div>

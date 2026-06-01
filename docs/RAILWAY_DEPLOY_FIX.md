@@ -177,7 +177,7 @@ STRIPE_SECRET_KEY=sk_live_...
 STRIPE_WEBHOOK_SECRET=whsec_...
 
 # Security
-JWT_SECRET=your-jwt-secret
+JWT_ACCESS_SECRET=your-access-secret-32-chars`nJWT_REFRESH_SECRET=your-refresh-secret-32-chars
 CSRF_SECRET=your-csrf-secret
 
 # Frontend

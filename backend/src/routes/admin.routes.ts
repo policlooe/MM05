@@ -13,6 +13,7 @@ router.use(authMiddleware, adminMiddleware);
 
 // Товары
 router.get('/products', validateQuery(paginationSchema), AdminController.getAllProducts);
+router.get('/products/:id', validateParams(idParamSchema), AdminController.getProductById);
 router.post('/products', validateBody(createProductSchema), AdminController.createProduct);
 router.put('/products/:id', validateParams(idParamSchema), validateBody(updateProductSchema), AdminController.updateProduct);
 router.delete('/products/:id', validateParams(idParamSchema), AdminController.deleteProduct);

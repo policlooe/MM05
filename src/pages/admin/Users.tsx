@@ -1,10 +1,9 @@
 import { useEffect, useState } from 'react';
 import { AdminLayout } from '@/components/AdminLayout';
-import { Search, Shield, Ban, CheckCircle, Mail, Calendar } from 'lucide-react';
+import { Calendar, Mail, Search, Shield } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Button } from '@/components/ui/button';
 import api from '@/services/api';
 import { toast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
@@ -13,12 +12,11 @@ import { ru } from 'date-fns/locale';
 interface User {
   id: string;
   email: string;
-  name: string;
-  fullName?: string;
-  phone?: string;
+  fullName?: string | null;
+  phone?: string | null;
   role: string;
-  isActive: boolean;
   createdAt: string;
+  lastLoginAt?: string | null;
   _count?: {
     orders: number;
   };
@@ -39,7 +37,6 @@ export default function Users() {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [roleFilter, setRoleFilter] = useState<string>('all');
-  const [statusFilter, setStatusFilter] = useState<string>('all');
 
   useEffect(() => {
     fetchUsers();
@@ -48,9 +45,10 @@ export default function Users() {
   const fetchUsers = async () => {
     try {
       setLoading(true);
-      const response = await api.get('/admin/users');
+      const response = await api.get('/admin/users?limit=100');
       setUsers(response.data.data);
     } catch (error) {
+      console.error(error);
       toast({
         title: 'Ошибка',
         description: 'Не удалось загрузить пользователей',
@@ -61,62 +59,22 @@ export default function Users() {
     }
   };
 
-  const handleRoleChange = async (userId: string, newRole: string) => {
-    try {
-      await api.patch(`/admin/users/${userId}/role`, { role: newRole });
-      setUsers(users.map((user) => (user.id === userId ? { ...user, role: newRole } : user)));
-      toast({
-        title: 'Успешно',
-        description: 'Роль пользователя изменена',
-      });
-    } catch (error) {
-      toast({
-        title: 'Ошибка',
-        description: 'Не удалось изменить роль',
-        variant: 'destructive',
-      });
-    }
-  };
-
-  const handleToggleStatus = async (userId: string, isActive: boolean) => {
-    try {
-      await api.patch(`/admin/users/${userId}/status`, { isActive: !isActive });
-      setUsers(
-        users.map((user) => (user.id === userId ? { ...user, isActive: !isActive } : user))
-      );
-      toast({
-        title: 'Успешно',
-        description: `Пользователь ${!isActive ? 'активирован' : 'заблокирован'}`,
-      });
-    } catch (error) {
-      toast({
-        title: 'Ошибка',
-        description: 'Не удалось изменить статус',
-        variant: 'destructive',
-      });
-    }
-  };
-
   const filteredUsers = users.filter((user) => {
+    const displayName = user.fullName || '';
     const matchesSearch =
       user.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      user.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      user.fullName?.toLowerCase().includes(searchQuery.toLowerCase());
+      displayName.toLowerCase().includes(searchQuery.toLowerCase());
 
     const matchesRole = roleFilter === 'all' || user.role === roleFilter;
-    const matchesStatus =
-      statusFilter === 'all' ||
-      (statusFilter === 'active' && user.isActive) ||
-      (statusFilter === 'blocked' && !user.isActive);
 
-    return matchesSearch && matchesRole && matchesStatus;
+    return matchesSearch && matchesRole;
   });
 
   if (loading) {
     return (
       <AdminLayout>
         <div className="flex items-center justify-center h-64">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-accent"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-accent" />
         </div>
       </AdminLayout>
     );
@@ -128,7 +86,7 @@ export default function Users() {
         <div>
           <h1 className="text-3xl font-bold">Пользователи</h1>
           <p className="text-muted-foreground mt-1">
-            Управление пользователями системы
+            Просмотр клиентов и администраторов системы
           </p>
         </div>
 
@@ -144,29 +102,16 @@ export default function Users() {
             />
           </div>
 
-          <div className="flex items-center gap-2">
-            <Select value={roleFilter} onValueChange={setRoleFilter}>
-              <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Все роли" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Все роли</SelectItem>
-                <SelectItem value="USER">Пользователи</SelectItem>
-                <SelectItem value="ADMIN">Администраторы</SelectItem>
-              </SelectContent>
-            </Select>
-
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Все статусы" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Все статусы</SelectItem>
-                <SelectItem value="active">Активные</SelectItem>
-                <SelectItem value="blocked">Заблокированные</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+          <Select value={roleFilter} onValueChange={setRoleFilter}>
+            <SelectTrigger className="w-full md:w-[200px]">
+              <SelectValue placeholder="Все роли" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Все роли</SelectItem>
+              <SelectItem value="USER">Пользователи</SelectItem>
+              <SelectItem value="ADMIN">Администраторы</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
 
         <div className="bg-surface border border-border rounded-xl overflow-hidden">
@@ -174,105 +119,66 @@ export default function Users() {
             <table className="w-full">
               <thead className="bg-muted">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                     Пользователь
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                     Роль
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                     Заказов
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                    Дата регистрации
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                    Регистрация
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                    Статус
-                  </th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                    Действия
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                    Последний вход
                   </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
-                {filteredUsers.map((user) => (
-                  <tr key={user.id} className="hover:bg-muted/50">
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-3">
-                        <div className="flex items-center justify-center w-10 h-10 rounded-full bg-accent/10 text-accent font-semibold">
-                          {(user.name || user.fullName || user.email)[0].toUpperCase()}
-                        </div>
-                        <div>
-                          <div className="text-sm font-medium text-foreground">
-                            {user.name || user.fullName || 'Без имени'}
+                {filteredUsers.map((user) => {
+                  const displayName = user.fullName || 'Без имени';
+
+                  return (
+                    <tr key={user.id} className="hover:bg-muted/50">
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-3">
+                          <div className="flex items-center justify-center w-10 h-10 rounded-full bg-accent/10 text-accent font-semibold">
+                            {(displayName || user.email)[0].toUpperCase()}
                           </div>
-                          <div className="text-sm text-muted-foreground flex items-center gap-1">
-                            <Mail className="w-3 h-3" />
-                            {user.email}
+                          <div>
+                            <div className="text-sm font-medium text-foreground">{displayName}</div>
+                            <div className="text-sm text-muted-foreground flex items-center gap-1">
+                              <Mail className="w-3 h-3" />
+                              {user.email}
+                            </div>
+                            {user.phone && <div className="text-xs text-muted-foreground">{user.phone}</div>}
                           </div>
                         </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <Select
-                        value={user.role}
-                        onValueChange={(value) => handleRoleChange(user.id, value)}
-                      >
-                        <SelectTrigger className="w-[150px]">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="USER">Пользователь</SelectItem>
-                          <SelectItem value="ADMIN">Администратор</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-foreground">
-                      {user._count?.orders || 0}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-foreground flex items-center gap-1">
-                        <Calendar className="w-3 h-3" />
-                        {format(new Date(user.createdAt), 'dd MMM yyyy', { locale: ru })}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <Badge
-                        className={
-                          user.isActive
-                            ? 'bg-green-500/10 text-green-500'
-                            : 'bg-red-500/10 text-red-500'
-                        }
-                      >
-                        {user.isActive ? 'Активен' : 'Заблокирован'}
-                      </Badge>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleToggleStatus(user.id, user.isActive)}
-                        className={
-                          user.isActive
-                            ? 'text-red-500 hover:text-red-700'
-                            : 'text-green-500 hover:text-green-700'
-                        }
-                      >
-                        {user.isActive ? (
-                          <>
-                            <Ban className="w-4 h-4 mr-1" />
-                            Заблокировать
-                          </>
-                        ) : (
-                          <>
-                            <CheckCircle className="w-4 h-4 mr-1" />
-                            Активировать
-                          </>
-                        )}
-                      </Button>
-                    </td>
-                  </tr>
-                ))}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <Badge className={roleColors[user.role] || roleColors.USER}>
+                          {roleLabels[user.role] || user.role}
+                        </Badge>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-foreground">
+                        {user._count?.orders || 0}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm text-foreground flex items-center gap-1">
+                          <Calendar className="w-3 h-3" />
+                          {format(new Date(user.createdAt), 'dd MMM yyyy', { locale: ru })}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground">
+                        {user.lastLoginAt
+                          ? format(new Date(user.lastLoginAt), 'dd MMM yyyy', { locale: ru })
+                          : 'Нет данных'}
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
@@ -297,15 +203,11 @@ export default function Users() {
             </div>
             <div className="p-4 bg-muted rounded-lg">
               <p className="text-sm text-muted-foreground mb-1">Администраторов</p>
-              <p className="text-2xl font-bold">
-                {users.filter((u) => u.role === 'ADMIN').length}
-              </p>
+              <p className="text-2xl font-bold">{users.filter((u) => u.role === 'ADMIN').length}</p>
             </div>
             <div className="p-4 bg-muted rounded-lg">
-              <p className="text-sm text-muted-foreground mb-1">Активных</p>
-              <p className="text-2xl font-bold">
-                {users.filter((u) => u.isActive).length}
-              </p>
+              <p className="text-sm text-muted-foreground mb-1">Клиентов</p>
+              <p className="text-2xl font-bold">{users.filter((u) => u.role === 'USER').length}</p>
             </div>
           </div>
         </div>

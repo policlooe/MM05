@@ -49,7 +49,7 @@
 
 - Нет e2e (Playwright) на checkout и admin flow.
 - `npm test` — только example; нет интеграционных тестов API.
-- Dashboard stats — `TODO: Fetch from API` (мок/нули).
+- Dashboard stats ���������� � `GET /api/admin/stats`.
 
 ### Accessibility (`testing-accessibility-auditor`)
 
@@ -71,7 +71,7 @@
 - Sentry подключён на backend; на фронте — проверить `VITE_SENTRY_DSN`.
 - Stripe webhook — обязателен на Railway URL.
 - Удалить неиспользуемый Supabase client или перевести auth на него целиком (сейчас гибрид).
-- `FRONTEND_CODE_PART2.json` в репо — удалить если есть (мусор).
+- ���������� JSON-������ ������� �� production-�����������.
 
 ---
 

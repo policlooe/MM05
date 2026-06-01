@@ -1,11 +1,27 @@
 import { Request, Response } from 'express';
-import { PrismaClient } from '@prisma/client';
+import { Prisma, PrismaClient } from '@prisma/client';
 import { createProductSchema, updateProductSchema } from '../validators/product.validator.js';
 import { updateOrderStatusSchema } from '../validators/order.validator.js';
 import { paginationSchema } from '../validators/admin.validator.js';
 import { z } from 'zod';
 
 const prisma = new PrismaClient();
+
+function normalizeProductData(data: Record<string, any>) {
+  const { image, stock, featured, ...rest } = data;
+
+  return {
+    ...rest,
+    ...(typeof stock !== 'undefined' && typeof rest.stockQuantity === 'undefined'
+      ? { stockQuantity: stock }
+      : {}),
+    ...(typeof featured !== 'undefined' && typeof rest.isFeatured === 'undefined'
+      ? { isFeatured: featured }
+      : {}),
+    ...(image && !rest.thumbnailUrl ? { thumbnailUrl: image } : {}),
+    ...(image && !rest.images ? { images: [image] } : {}),
+  };
+}
 
 export class AdminController {
   /**
@@ -58,6 +74,40 @@ export class AdminController {
   }
 
   /**
+   * GET /api/admin/products/:id
+   * Получение товара по ID для формы редактирования
+   */
+  static async getProductById(req: Request, res: Response) {
+    try {
+      const id = req.params.id as string;
+
+      const product = await prisma.product.findUnique({
+        where: { id },
+        include: {
+          category: true,
+        },
+      });
+
+      if (!product) {
+        return res.status(404).json({
+          success: false,
+          error: 'Product not found',
+        });
+      }
+
+      res.status(200).json({
+        success: true,
+        data: product,
+      });
+    } catch (error: any) {
+      res.status(500).json({
+        success: false,
+        error: error.message || 'Failed to fetch product',
+      });
+    }
+  }
+
+  /**
    * POST /api/admin/products
    * Создание нового товара с валидацией
    */
@@ -79,7 +129,7 @@ export class AdminController {
       }
 
       const product = await prisma.product.create({
-        data: validatedData,
+        data: normalizeProductData(validatedData) as Prisma.ProductUncheckedCreateInput,
         include: {
           category: true,
         },
@@ -135,7 +185,7 @@ export class AdminController {
 
       const product = await prisma.product.update({
         where: { id },
-        data: validatedData,
+        data: normalizeProductData(validatedData) as Prisma.ProductUncheckedUpdateInput,
         include: {
           category: true,
         },

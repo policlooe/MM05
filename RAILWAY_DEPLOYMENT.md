@@ -88,7 +88,7 @@ Add these in Railway dashboard:
 DATABASE_URL=postgresql://...  # Auto-provided by Railway
 
 # JWT
-JWT_SECRET=your-super-secret-jwt-key-min-32-chars
+JWT_ACCESS_SECRET=your-super-secret-access-key-min-32-chars`nJWT_REFRESH_SECRET=your-super-secret-refresh-key-min-32-chars
 JWT_REFRESH_SECRET=your-super-secret-refresh-key-min-32-chars
 
 # Frontend URL
