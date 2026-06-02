@@ -1,9 +1,8 @@
 import Stripe from 'stripe';
-import { PrismaClient, PaymentStatus, OrderStatus } from '@prisma/client';
+import { PaymentStatus, OrderStatus } from '@prisma/client';
 import { emailService } from './email.service';
 import { captureError, captureMessage } from '../lib/sentry';
-
-const prisma = new PrismaClient();
+import { prisma } from '../lib/prisma.js';
 
 if (!process.env.STRIPE_SECRET_KEY) {
   throw new Error('STRIPE_SECRET_KEY is not defined');

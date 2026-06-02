@@ -1,9 +1,8 @@
 import { Response } from 'express';
-import { PrismaClient, PaymentStatus, OrderStatus } from '@prisma/client';
+import { PaymentStatus, OrderStatus } from '@prisma/client';
 import Stripe from 'stripe';
 import { AuthRequest } from '../middleware/auth.middleware.js';
-
-const prisma = new PrismaClient();
+import { prisma } from '../lib/prisma.js';
 
 // Инициализируем Stripe только если есть валидный ключ
 const stripeKey = process.env.STRIPE_SECRET_KEY;

@@ -1,8 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { stripeService } from '../services/stripe.service';
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import { prisma } from '../lib/prisma.js';
 
 export class PaymentController {
   /**

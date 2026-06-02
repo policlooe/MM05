@@ -1,11 +1,10 @@
 import { Request, Response } from 'express';
-import { Prisma, PrismaClient } from '@prisma/client';
+import { Prisma } from '@prisma/client';
 import { createProductSchema, updateProductSchema } from '../validators/product.validator.js';
 import { updateOrderStatusSchema } from '../validators/order.validator.js';
 import { paginationSchema } from '../validators/admin.validator.js';
 import { z } from 'zod';
-
-const prisma = new PrismaClient();
+import { prisma } from '../lib/prisma.js';
 
 function normalizeProductData(data: Record<string, any>) {
   const { image, stock, featured, ...rest } = data;

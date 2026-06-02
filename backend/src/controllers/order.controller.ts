@@ -1,10 +1,9 @@
 import { Response } from 'express';
-import { PrismaClient, OrderStatus } from '@prisma/client';
+import { OrderStatus } from '@prisma/client';
 import { z } from 'zod';
 import { AuthRequest } from '../middleware/auth.middleware.js';
 import { emailService } from '../services/email.service.js';
-
-const prisma = new PrismaClient();
+import { prisma } from '../lib/prisma.js';
 
 const updateOrderStatusSchema = z.object({
   status: z.nativeEnum(OrderStatus),

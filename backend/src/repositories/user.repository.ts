@@ -1,6 +1,5 @@
-import { PrismaClient, User, UserRole } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import { User, UserRole } from '@prisma/client';
+import { prisma } from '../lib/prisma.js';
 
 export interface CreateUserData {
   email: string;
