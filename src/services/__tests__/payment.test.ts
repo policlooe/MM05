@@ -44,9 +44,11 @@ describe('PaymentService', () => {
 
       vi.mocked(api.post).mockResolvedValue(mockResponse);
 
-      const result = await paymentService.createCheckoutSession();
+      const result = await paymentService.createCheckoutSession('order_123');
 
-      expect(api.post).toHaveBeenCalledWith('/checkout/create-session');
+      expect(api.post).toHaveBeenCalledWith('/payment/create-checkout-session', {
+        orderId: 'order_123',
+      });
       expect(result).toEqual(mockResponse.data);
     });
 
@@ -54,7 +56,7 @@ describe('PaymentService', () => {
       const mockError = new Error('Network error');
       vi.mocked(api.post).mockRejectedValue(mockError);
 
-      await expect(paymentService.createCheckoutSession()).rejects.toThrow(
+      await expect(paymentService.createCheckoutSession('order_123')).rejects.toThrow(
         'Network error'
       );
     });
@@ -128,9 +130,11 @@ describe('PaymentService', () => {
         writable: true,
       });
 
-      await paymentService.checkoutAndRedirect();
+      await paymentService.checkoutAndRedirect('order_123');
 
-      expect(api.post).toHaveBeenCalledWith('/checkout/create-session');
+      expect(api.post).toHaveBeenCalledWith('/payment/create-checkout-session', {
+        orderId: 'order_123',
+      });
       expect(assignMock).toHaveBeenCalledWith(mockResponse.data.data.url);
     });
   });

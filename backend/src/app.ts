@@ -15,7 +15,7 @@ import adminRoutes from './routes/admin.routes.js';
 import productRoutes from './routes/product.routes.js';
 import cartRoutes from './routes/cart.routes.js';
 import orderRoutes from './routes/order.routes.js';
-import checkoutRoutes from './routes/checkout.routes.js';
+import paymentRoutes from './routes/payment.routes.js';
 import webhookRoutes from './routes/webhook.routes.js';
 
 // Validate environment variables before starting
@@ -89,7 +89,7 @@ app.use('/api/admin', adminRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/cart', cartRoutes);
 app.use('/api/orders', orderRoutes);
-app.use('/api/checkout', checkoutRoutes);
+app.use('/api/payment', paymentRoutes);
 
 // Health check endpoints
 app.get('/health', HealthController.check);

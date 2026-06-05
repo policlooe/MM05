@@ -4,6 +4,7 @@ import { CheckCircle2, Package, Home, ShoppingBag } from 'lucide-react';
 import { Navbar } from '@/components/Navbar';
 import { MobileNav } from '@/components/MobileNav';
 import { Breadcrumbs } from '@/components/Breadcrumbs';
+import { useCart } from '@/store/cart';
 
 // Lazy load heavy components
 const Footer = lazy(() => import('@/components/Footer').then(m => ({ default: m.Footer })));
@@ -11,11 +12,13 @@ const ChatLauncher = lazy(() => import('@/components/ChatLauncher').then(m => ({
 
 export default function PaymentSuccess() {
   const [searchParams] = useSearchParams();
+  const { clear } = useCart();
   const sessionId = searchParams.get('session_id');
 
   useEffect(() => {
     window.scrollTo(0, 0);
-  }, []);
+    clear();
+  }, [clear]);
 
   return (
     <div className="min-h-screen bg-background">

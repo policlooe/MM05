@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { paymentController } from '../controllers/payment.controller';
-import { authMiddleware, adminMiddleware } from '../middleware/auth.middleware';
+import { authMiddleware, adminMiddleware, optionalAuthMiddleware } from '../middleware/auth.middleware';
 import { validateBody, validateParams } from '../middleware/validation.middleware.js';
 import {
   createCheckoutSessionSchema,
@@ -17,20 +17,9 @@ const router = Router();
  */
 router.post(
   '/create-checkout-session',
-  authMiddleware,
+  optionalAuthMiddleware,
   validateBody(createCheckoutSessionSchema),
   (req, res, next) => paymentController.createCheckoutSession(req, res, next)
-);
-
-/**
- * @route   POST /api/payment/webhook
- * @desc    Handle Stripe webhook events
- * @access  Public (verified by Stripe signature)
- * @note    This endpoint receives raw body, not JSON
- */
-router.post(
-  '/webhook',
-  (req, res, next) => paymentController.handleWebhook(req, res, next)
 );
 
 /**

@@ -44,13 +44,31 @@ export function Categories() {
           // Единый класс для всех плиток - одинаковая высота и пропорции
           const tileClass = "ios-gpu-optimized group border border-border bg-surface rounded-xl md:rounded-2xl p-4 md:p-6 flex flex-col items-center justify-center transition-all hover:shadow-lg hover:-translate-y-1 active:translate-y-0 min-h-[140px] md:min-h-[160px]";
           
-          const MotionWrapper = motion(t.href.startsWith("/") ? Link : "a");
+          const isRouteLink = t.href.startsWith("/");
+          const MotionRouteLink = motion(Link);
+          const MotionAnchor = motion.a;
           
-          return (
-            <MotionWrapper
+          return isRouteLink ? (
+            <MotionRouteLink
               key={t.title}
-              to={t.href.startsWith("/") ? t.href : undefined}
-              href={!t.href.startsWith("/") ? t.href : undefined}
+              to={t.href}
+              className={tileClass}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{
+                duration: 0.5,
+                delay: index * 0.1,
+                ease: [0.22, 1, 0.36, 1]
+              }}
+              whileHover={{ y: -4 }}
+            >
+              {inner}
+            </MotionRouteLink>
+          ) : (
+            <MotionAnchor
+              key={t.title}
+              href={t.href}
               className={tileClass}
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -63,7 +81,7 @@ export function Categories() {
               whileHover={{ y: -4 }}
             >
               {inner}
-            </MotionWrapper>
+            </MotionAnchor>
           );
         })}
       </div>
@@ -103,4 +121,3 @@ export function Categories() {
     </section>
   );
 }
-

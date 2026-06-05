@@ -23,7 +23,7 @@ const {
   ignoredMethods: ['GET', 'HEAD', 'OPTIONS'],
   getSessionIdentifier: (req: Request) => {
     // Use user ID from JWT if available, otherwise use a default identifier
-    return (req as any).user?.id?.toString() || 'anonymous';
+    return req.user?.userId?.toString() || 'anonymous';
   },
 });
 

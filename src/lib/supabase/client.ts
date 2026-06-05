@@ -39,7 +39,7 @@ export async function isAdmin(): Promise<boolean> {
     .single();
 
   if (error || !data) return false;
-  return data.role === 'admin';
+  return (data as { role?: string }).role === 'admin';
 }
 
 // Хелпер для получения текущего пользователя

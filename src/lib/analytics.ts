@@ -5,7 +5,11 @@
 
 declare global {
   interface Window {
-    gtag?: (...args: unknown[]) => void;
+    gtag?: (
+      command: string,
+      eventName: string | Date,
+      params?: Record<string, unknown>
+    ) => void;
     dataLayer?: unknown[][];
   }
 }
@@ -77,7 +81,7 @@ export function initGoogleAnalytics() {
 
   // Инициализируем dataLayer
   window.dataLayer = window.dataLayer || [];
-  window.gtag = (...args: unknown[]) => {
+  window.gtag = (...args: [string, string | Date, Record<string, unknown>?]) => {
     window.dataLayer?.push(args);
   };
 

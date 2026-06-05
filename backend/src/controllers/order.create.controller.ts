@@ -23,7 +23,7 @@ const createOrderSchema = z.object({
     })
   ).min(1, 'Корзина пуста'),
   totalPrice: z.number().positive(),
-  idempotencyKey: z.string().optional(), // Для предотвращения дублирования заказов
+  idempotencyKey: z.string().min(8).max(200).optional(),
 });
 
 type CreateOrderInput = z.infer<typeof createOrderSchema>;
@@ -133,16 +133,9 @@ export class OrderCreateController {
       // Получаем userId если пользователь авторизован
       const userId = req.user?.userId || null;
 
-      // IDEMPOTENCY CHECK: Проверяем, не создан ли уже заказ с таким ключом
       if (validatedData.idempotencyKey) {
-        const existingOrder = await prisma.order.findFirst({
-          where: {
-            customerPhone: validatedData.customerPhone,
-            createdAt: {
-              gte: new Date(Date.now() - 24 * 60 * 60 * 1000), // За последние 24 часа
-            },
-            total: validatedData.totalPrice,
-          },
+        const existingOrder = await prisma.order.findUnique({
+          where: { idempotencyKey: validatedData.idempotencyKey },
           include: {
             items: {
               include: {
@@ -153,7 +146,7 @@ export class OrderCreateController {
         });
 
         if (existingOrder) {
-          console.log(`⚠️ Idempotency: Order already exists for phone ${validatedData.customerPhone}`);
+          console.log(`Idempotency hit: order ${existingOrder.orderNumber}`);
           res.status(200).json({
             success: true,
             message: 'Заказ уже создан',
@@ -191,9 +184,10 @@ export class OrderCreateController {
             customerNote: validatedData.customerNote || undefined,
             subtotal: serverTotal,
             total: serverTotal,
-            status: OrderStatus.NEW,
+            status: OrderStatus.RESERVED,
             isStockReserved: true,
             reservedAt: new Date(),
+            idempotencyKey: validatedData.idempotencyKey,
           },
         });
 
@@ -247,7 +241,7 @@ export class OrderCreateController {
               day: 'numeric',
             }),
             items: order!.items.map(item => ({
-              name: item.productSnapshot ? (item.productSnapshot as any).name : item.product?.name || 'Товар',
+              name: getProductSnapshotName(item.productSnapshot) || item.product?.name || 'Товар',
               quantity: item.quantity,
               price: Number(item.price),
               total: Number(item.total),
@@ -308,7 +302,7 @@ export class OrderCreateController {
   /**
    * Генерация ссылки для WhatsApp уведомления
    */
-  private static generateWhatsAppUrl(order: any): string {
+  private static generateWhatsAppUrl(order: Prisma.OrderGetPayload<{ include: { items: { include: { product: true } } } }>): string {
     const managerPhone = '79288331532'; // Номер менеджера
     
     const message = `
@@ -325,7 +319,7 @@ ${order.deliveryAddress}
 💰 *Сумма заказа:* ${order.total} ₽
 
 📦 *Товары:*
-${order.items.map((item: any, index: number) => 
+${order.items.map((item, index: number) =>
   `${index + 1}. ${item.product?.name || 'Товар'} × ${item.quantity} = ${item.total} ₽`
 ).join('\n')}
 
@@ -351,9 +345,7 @@ ${order.customerNote ? `💬 *Комментарий:*\n${order.customerNote}` :
         throw new Error('Заказ не найден');
       }
 
-      // Проверяем флаг резервирования через any (временное решение)
-      const orderWithReserved = order as any;
-      if (!orderWithReserved.isStockReserved) {
+      if (!order.isStockReserved) {
         throw new Error('Товар не был зарезервирован');
       }
 
@@ -375,11 +367,20 @@ ${order.customerNote ? `💬 *Комментарий:*\n${order.customerNote}` :
       await tx.order.update({
         where: { id: orderId },
         data: {
-          status: 'CANCELLED' as any,
-          isStockReserved: false as any,
+          status: OrderStatus.CANCELLED,
+          isStockReserved: false,
           cancelledAt: new Date(),
         },
       });
     });
   }
+}
+
+function getProductSnapshotName(snapshot: Prisma.JsonValue): string | null {
+  if (!snapshot || typeof snapshot !== 'object' || Array.isArray(snapshot)) {
+    return null;
+  }
+
+  const name = snapshot.name;
+  return typeof name === 'string' ? name : null;
 }

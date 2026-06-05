@@ -41,7 +41,9 @@ export class WebhookController {
           break;
 
         case 'checkout.session.async_payment_failed':
+        case 'checkout.session.expired':
         case 'payment_intent.payment_failed':
+        case 'payment_intent.canceled':
           await stripeService.processPaymentFailed(event.data.object as any);
           break;
 

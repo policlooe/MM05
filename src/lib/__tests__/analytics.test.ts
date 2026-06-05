@@ -25,7 +25,6 @@ describe('Analytics', () => {
 
   describe('initGoogleAnalytics', () => {
     it('should warn if measurement ID is not configured', () => {
-      // @ts-expect-error - testing without env var
       import.meta.env.VITE_GA_MEASUREMENT_ID = '';
       
       initGoogleAnalytics();
@@ -36,7 +35,6 @@ describe('Analytics', () => {
     });
 
     it('should warn if measurement ID has invalid format', () => {
-      // @ts-expect-error - testing with invalid format
       import.meta.env.VITE_GA_MEASUREMENT_ID = 'INVALID-ID';
       
       initGoogleAnalytics();
@@ -47,7 +45,6 @@ describe('Analytics', () => {
     });
 
     it('should initialize GA with valid measurement ID', () => {
-      // @ts-expect-error - testing with valid ID
       import.meta.env.VITE_GA_MEASUREMENT_ID = 'G-ABCD1234';
       
       initGoogleAnalytics();

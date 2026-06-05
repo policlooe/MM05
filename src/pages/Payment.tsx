@@ -42,7 +42,8 @@ export default function Payment() {
 
     try {
       setLoading(true);
-      await paymentService.checkoutAndRedirect();
+      toast.error("Сначала оформите заказ с адресом доставки");
+      navigate("/checkout");
     } catch (error: any) {
       console.error('Checkout error:', error);
       toast.error(error.response?.data?.error || "Не удалось создать сессию оплаты");

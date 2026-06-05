@@ -37,7 +37,7 @@ export const paymentService = {
    * Create Stripe checkout session from cart
    * @throws {PaymentError} If rate limited or network error occurs
    */
-  async createCheckoutSession(): Promise<CreateCheckoutSessionResponse> {
+  async createCheckoutSession(orderId: string): Promise<CreateCheckoutSessionResponse> {
     // Rate limiting check
     const now = Date.now();
     if (now - lastCheckoutAttempt < CHECKOUT_COOLDOWN_MS) {
@@ -51,7 +51,8 @@ export const paymentService = {
 
     try {
       const { data } = await api.post<CreateCheckoutSessionResponse>(
-        '/checkout/create-session'
+        '/payment/create-checkout-session',
+        { orderId }
       );
       return data;
     } catch (error) {
@@ -94,9 +95,9 @@ export const paymentService = {
    * Create checkout and redirect (convenience method)
    * @throws {PaymentError} If any step fails
    */
-  async checkoutAndRedirect(): Promise<void> {
+  async checkoutAndRedirect(orderId: string): Promise<void> {
     try {
-      const response = await this.createCheckoutSession();
+      const response = await this.createCheckoutSession(orderId);
       await this.redirectToCheckout(response.data.url);
     } catch (error) {
       if (error instanceof PaymentError) {

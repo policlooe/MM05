@@ -1,13 +1,10 @@
 import { Request, Response, NextFunction } from 'express';
 import { stripeService } from '../services/stripe.service';
 import { prisma } from '../lib/prisma.js';
+import { AuthRequest } from '../middleware/auth.middleware.js';
 
 export class PaymentController {
-  /**
-   * Create Stripe Checkout Session
-   * POST /api/payment/create-checkout-session
-   */
-  async createCheckoutSession(req: Request, res: Response, next: NextFunction): Promise<void> {
+  async createCheckoutSession(req: AuthRequest, res: Response, next: NextFunction): Promise<void> {
     try {
       const { orderId } = req.body;
 
@@ -16,7 +13,6 @@ export class PaymentController {
         return;
       }
 
-      // Get order with items
       const order = await prisma.order.findUnique({
         where: { id: orderId },
         include: {
@@ -29,108 +25,57 @@ export class PaymentController {
         return;
       }
 
-      // Check if order already paid
+      if (order.userId && order.userId !== req.user?.userId) {
+        res.status(403).json({ error: 'Access denied for this order' });
+        return;
+      }
+
       if (order.paymentStatus === 'SUCCEEDED') {
         res.status(400).json({ error: 'Order already paid' });
         return;
       }
 
-      // Prepare items for Stripe
+      if (!order.isStockReserved || order.status !== 'RESERVED') {
+        res.status(400).json({ error: 'Order stock is not reserved' });
+        return;
+      }
+
       const items = order.items.map(item => {
-        const snapshot = item.productSnapshot as { name: string };
+        const snapshot = item.productSnapshot as { name?: string } | null;
         return {
-          name: snapshot.name,
+          name: snapshot?.name || 'Product',
           price: Number(item.price),
           quantity: item.quantity,
         };
       });
 
-      // Create Stripe session
       const session = await stripeService.createCheckoutSession({
         orderId: order.id,
         orderNumber: order.orderNumber,
         items,
         total: Number(order.total),
-        customerEmail: order.customerEmail || order.customerName,
+        customerEmail: order.customerEmail,
       });
 
       res.json({
-        sessionId: session.id,
-        url: session.url,
+        success: true,
+        data: {
+          sessionId: session.id,
+          url: session.url,
+          orderId: order.id,
+          orderNumber: order.orderNumber,
+        },
       });
     } catch (error) {
       next(error);
     }
   }
 
-  /**
-   * Handle Stripe Webhook
-   * POST /api/payment/webhook
-   */
-  async handleWebhook(req: Request, res: Response, next: NextFunction): Promise<void> {
-    try {
-      const signature = req.headers['stripe-signature'];
-      const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
-
-      if (!signature || !webhookSecret) {
-        res.status(400).json({ error: 'Missing signature or secret' });
-        return;
-      }
-
-      let event;
-
-      // Криптографическая валидация
-      try {
-        const stripe = (await import('../services/stripe.service')).stripe;
-        event = stripe.webhooks.constructEvent(
-          req.body, // Buffer expected here
-          signature,
-          webhookSecret
-        );
-      } catch (error: unknown) {
-        const errMessage = error instanceof Error ? error.message : 'Unknown signature error';
-        res.status(400).json({ error: errMessage });
-        return;
-      }
-
-      // Делегирование бизнес-логики сервису
-      switch (event.type) {
-        case 'checkout.session.completed':
-        case 'checkout.session.async_payment_succeeded':
-          await stripeService.processCheckoutCompleted(event.data.object as any);
-          break;
-
-        case 'checkout.session.async_payment_failed':
-        case 'payment_intent.payment_failed':
-          await stripeService.processPaymentFailed(event.data.object as any);
-          break;
-
-        case 'payment_intent.succeeded':
-          console.log(`PaymentIntent succeeded: ${(event.data.object as any).id}`);
-          break;
-
-        default:
-          console.log(`Unhandled Stripe event type: ${event.type}`);
-      }
-
-      res.status(200).json({ received: true });
-    } catch (error) {
-      console.error('Webhook error:', error);
-      next(error);
-    }
-  }
-
-  /**
-   * Get Checkout Session Status
-   * GET /api/payment/session/:sessionId
-   */
   async getSessionStatus(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const sessionId = req.params.sessionId as string;
 
       const session = await stripeService.getCheckoutSession(sessionId);
-
-      // Get order by session ID
       const order = await prisma.order.findFirst({
         where: { stripeSessionId: sessionId },
       });
@@ -151,10 +96,6 @@ export class PaymentController {
     }
   }
 
-  /**
-   * Create Refund
-   * POST /api/payment/refund
-   */
   async createRefund(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const { orderId, amount } = req.body;
@@ -188,7 +129,6 @@ export class PaymentController {
         amount ? Number(amount) : undefined
       );
 
-      // Update order status
       await prisma.order.update({
         where: { id: orderId },
         data: {

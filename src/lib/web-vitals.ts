@@ -170,8 +170,8 @@ declare global {
   interface Window {
     gtag?: (
       command: string,
-      eventName: string,
-      params?: Record<string, any>
+      eventName: string | Date,
+      params?: Record<string, unknown>
     ) => void;
   }
 }

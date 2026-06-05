@@ -70,7 +70,6 @@ describe('Contacts', () => {
     });
 
     it('should return Yandex Maps when navigator is undefined', () => {
-      // @ts-expect-error - testing server-side scenario
       vi.stubGlobal('navigator', undefined);
 
       const url = buildMapsUrl();

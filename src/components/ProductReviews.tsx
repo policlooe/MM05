@@ -66,7 +66,7 @@ export function ProductReviews({ productId, productName }: ProductReviewsProps) 
   const averageRating = useMemo(() => {
     if (productReviews.length === 0) return 0;
     const sum = productReviews.reduce((acc, review) => acc + review.rating, 0);
-    return (sum / productReviews.length).toFixed(1);
+    return sum / productReviews.length;
   }, [productReviews]);
 
   // Сортировка отзывов
@@ -185,11 +185,11 @@ export function ProductReviews({ productId, productName }: ProductReviewsProps) 
             <div className="flex items-center gap-4">
               <div className="text-center">
                 <div className="text-4xl font-bold text-foreground mb-1">
-                  {productReviews.length > 0 ? averageRating : "—"}
+                  {productReviews.length > 0 ? averageRating.toFixed(1) : "—"}
                 </div>
                 <div className="flex gap-1 justify-center mb-1">
                   {[1, 2, 3, 4, 5].map((star) => (
-                    <StarDisplay key={star} filled={star <= parseFloat(averageRating)} />
+                    <StarDisplay key={star} filled={star <= averageRating} />
                   ))}
                 </div>
                 <p className="text-xs text-muted-foreground">

@@ -4,10 +4,7 @@ import { HelmetProvider } from 'react-helmet-async';
 import App from "./App.tsx";
 import "./index.css";
 import { installChunkErrorRecovery } from "./lib/chunk-recovery";
-import { initCsrfProtection } from "./lib/csrf";
 
-// Initialize CSRF protection
-initCsrfProtection();
 installChunkErrorRecovery();
 
 // Remove the old cache-first service worker. It can serve stale hashed chunks

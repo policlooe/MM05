@@ -13,7 +13,7 @@ const server = app.listen(PORT, () => {
   console.log(`👑 Admin API: http://localhost:${PORT}/api/admin`);
   console.log(`🛒 Cart API: http://localhost:${PORT}/api/cart`);
   console.log(`📦 Orders API: http://localhost:${PORT}/api/orders`);
-  console.log(`💳 Checkout API: http://localhost:${PORT}/api/checkout`);
+  console.log(`💳 Payment API: http://localhost:${PORT}/api/payment`);
   console.log(`🔔 Webhook: http://localhost:${PORT}/api/webhook`);
   console.log(`💚 Health: http://localhost:${PORT}/health`);
   console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);

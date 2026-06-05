@@ -4,21 +4,7 @@ import { z } from 'zod';
  * Схема валидации для создания checkout сессии
  */
 export const createCheckoutSessionSchema = z.object({
-  orderId: z.string().uuid('Некорректный ID заказа').optional(),
-  items: z
-    .array(
-      z.object({
-        productId: z.string().uuid('Некорректный ID товара'),
-        quantity: z
-          .number()
-          .int('Количество должно быть целым числом')
-          .positive('Количество должно быть положительным')
-          .max(99, 'Максимальное количество: 99'),
-        price: z.number().positive('Цена должна быть положительной'),
-      })
-    )
-    .min(1, 'Список товаров не может быть пустым')
-    .optional(),
+  orderId: z.string().uuid('Некорректный ID заказа'),
   successUrl: z.string().url('Некорректный URL успеха').optional(),
   cancelUrl: z.string().url('Некорректный URL отмены').optional(),
 });

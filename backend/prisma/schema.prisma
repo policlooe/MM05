@@ -211,6 +211,7 @@ model Order {
   // Payment info
   stripeSessionId String?       @map("stripe_session_id")
   stripePaymentId String?       @map("stripe_payment_id")
+  idempotencyKey  String?       @unique @map("idempotency_key")
   
   // Customer info
   customerName    String        @map("customer_name")

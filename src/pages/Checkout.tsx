@@ -7,6 +7,7 @@ import { MobileNav } from "@/components/MobileNav";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { useCart, formatPrice } from "@/store/cart";
 import { orderService } from "@/services/order";
+import { paymentService } from "@/services/payment";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import { ecommerce } from "@/lib/web-vitals";
@@ -28,7 +29,7 @@ type CheckoutForm = z.infer<typeof checkoutSchema>;
 
 export default function Checkout() {
   const navigate = useNavigate();
-  const { items, total, count, clear } = useCart();
+  const { items, total, count } = useCart();
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   
@@ -130,16 +131,8 @@ export default function Checkout() {
       const response = await orderService.createOrder(orderData);
 
       if (response.success) {
-        // Очищаем корзину
-        clear();
-        
-        // Переходим на страницу успеха с данными заказа
-        navigate("/checkout/success", {
-          state: {
-            order: response.data.order,
-            whatsappUrl: response.data.whatsappUrl,
-          },
-        });
+        const checkoutSession = await paymentService.createCheckoutSession(response.data.order.id);
+        await paymentService.redirectToCheckout(checkoutSession.data.url);
       }
     } catch (error: any) {
       console.error("Checkout error:", error);
