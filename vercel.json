@@ -2,7 +2,7 @@
   "framework": "vite",
   "cleanUrls": true,
   "rewrites": [
-    { "source": "/((?!assets/|favicon.svg|favicon.ico|site.webmanifest|robots.txt|sitemap.xml|og.png).*)", "destination": "/index.html" }
+    { "source": "/(.*)", "destination": "/" }
   ],
   "headers": [
     {
