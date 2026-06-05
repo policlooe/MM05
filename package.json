@@ -29,6 +29,7 @@
     "railway:start": "npm run backend:start"
   },
   "dependencies": {
+    "@gsap/react": "^2.1.2",
     "@hookform/resolvers": "^3.10.0",
     "@prisma/client": "^5.22.0",
     "@radix-ui/react-accordion": "^1.2.11",
@@ -81,6 +82,7 @@
     "express": "^5.2.1",
     "express-rate-limit": "^8.4.1",
     "framer-motion": "^12.38.0",
+    "gsap": "^3.15.0",
     "helmet": "^8.1.0",
     "input-otp": "^1.4.2",
     "jsonwebtoken": "^9.0.3",

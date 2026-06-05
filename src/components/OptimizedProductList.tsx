@@ -1,5 +1,4 @@
 import { memo, useCallback } from 'react';
-import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { useCart, formatPrice } from '@/store/cart';
 import { useFavorites } from '@/store/favorites';
@@ -48,15 +47,7 @@ export const OptimizedProductCard = memo(({
   }, [isInFavorites, product, addToFavorites, removeFromFavorites]);
 
   return (
-    <motion.article
-      initial={{ opacity: 0, y: 20 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "-50px" }}
-      transition={{ 
-        duration: 0.2, 
-        delay: Math.min(index * 0.03, 0.15),
-        ease: [0.22, 1, 0.36, 1]
-      }}
+    <article
       role="article"
       aria-label={`Товар: ${product.name}, цена ${formatPrice(product.price)}`}
       className="ios-gpu-optimized group bg-surface rounded-xl overflow-hidden border border-border hover:shadow-md transition-shadow duration-150 flex flex-col relative h-full"
@@ -83,36 +74,21 @@ export const OptimizedProductCard = memo(({
           {/* Badges */}
           <div className="absolute top-2 left-2 flex flex-col gap-1.5">
             {product.badge && (
-              <motion.span 
-                initial={{ opacity: 0, scale: 0.5, x: -10 }}
-                animate={{ opacity: 1, scale: 1, x: 0 }}
-                transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
-                className="bg-background/95 border border-border text-muted-foreground text-xs font-medium px-2.5 py-1 rounded-md shadow-sm"
-              >
+              <span className="bg-background/95 border border-border text-muted-foreground text-xs font-medium px-2.5 py-1 rounded-md shadow-sm">
                 {product.badge}
-              </motion.span>
+              </span>
             )}
             {product.inStock && (
-              <motion.span 
-                initial={{ opacity: 0, scale: 0.5, x: -10 }}
-                animate={{ opacity: 1, scale: 1, x: 0 }}
-                transition={{ delay: 0.3, type: "spring", stiffness: 200 }}
-                className="bg-accent/90 text-white text-xs font-medium px-2 py-0.5 rounded-md shadow-sm flex items-center gap-1"
-              >
+              <span className="bg-accent/90 text-white text-xs font-medium px-2 py-0.5 rounded-md shadow-sm flex items-center gap-1">
                 <span className="w-1.5 h-1.5 bg-white rounded-full"></span>
                 В наличии
-              </motion.span>
+              </span>
             )}
           </div>
 
           {/* Favorite Button */}
-          <motion.button
+          <button
             onClick={toggleFavorite}
-            initial={{ opacity: 0, scale: 0 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.15 }}
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.9 }}
             className="absolute top-2 right-2 w-9 h-9 bg-background/95 border border-border rounded-full flex items-center justify-center shadow-md hover:bg-accent hover:text-white transition-all duration-300 z-10"
             aria-label={isInFavorites 
               ? `Удалить ${product.name} из избранного` 
@@ -123,7 +99,7 @@ export const OptimizedProductCard = memo(({
               className={`w-4 h-4 stroke-2 transition-all ${isInFavorites ? 'fill-current text-red-500' : ''}`}
               aria-hidden="true"
             />
-          </motion.button>
+          </button>
         </div>
       </Link>
       
@@ -146,19 +122,16 @@ export const OptimizedProductCard = memo(({
         </Link>
         
         {/* Кнопка - прижата к низу */}
-        <motion.button
+        <button
           onClick={handleAddToCart}
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
-          transition={{ duration: 0.15, type: "spring", stiffness: 400 }}
           className="mt-auto w-full bg-accent hover:bg-accent-hover text-white text-sm font-medium py-2 rounded-lg transition-all flex items-center justify-center gap-1.5 h-[36px]"
           aria-label={`Добавить ${product.name} в корзину за ${formatPrice(product.price)}`}
         >
           <ShoppingBag className="w-4 h-4 stroke-2" aria-hidden="true" />
           В корзину
-        </motion.button>
+        </button>
       </div>
-    </motion.article>
+    </article>
   );
 }, (prevProps, nextProps) => {
   return prevProps.product.id === nextProps.product.id && 

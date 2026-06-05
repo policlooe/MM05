@@ -3,6 +3,7 @@ import { useState, memo } from "react";
 import { ShoppingBag, Clock } from "lucide-react";
 import { formatPrice } from "@/store/cart";
 import { OptimizedImage } from "./OptimizedImage";
+import { AnimatedSection } from "./AnimatedSection";
 
 // Интерфейс для акционного товара
 interface PromotionProduct {
@@ -75,10 +76,10 @@ export const Promotions = memo(function Promotions() {
   const [isPaused, setIsPaused] = useState(false);
 
   return (
-    <section id="promotions" className="py-8 md:py-12">
+    <AnimatedSection id="promotions" className="py-8 md:py-12">
       <div className="container-x">
         {/* Заголовок секции */}
-        <div className="flex items-center justify-between mb-6 md:mb-8">
+        <div data-reveal className="flex items-center justify-between mb-6 md:mb-8">
           <div>
             <h2 className="text-3xl font-semibold tracking-tight mb-2">
               Акции и скидки
@@ -194,6 +195,6 @@ export const Promotions = memo(function Promotions() {
           </Link>
         </div>
       </div>
-    </section>
+    </AnimatedSection>
   );
 });

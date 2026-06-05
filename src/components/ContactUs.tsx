@@ -1,20 +1,21 @@
 import { MapPin, Phone, MessageCircle, Send, Clock, Users, Package, Wrench } from "lucide-react";
 import { buildMapsUrl, CONTACTS } from "@/lib/contacts";
 import { PremiumIconMark } from "@/components/PremiumIcon";
+import { AnimatedSection } from "@/components/AnimatedSection";
 
 export function ContactUs() {
   const mapsUrl = buildMapsUrl();
 
   return (
-    <section id="contact-us" className="py-8 md:py-12">
+    <AnimatedSection id="contact-us" className="py-8 md:py-12">
       <div className="container-x">
-        <h2 className="text-3xl font-semibold tracking-tight mb-6 md:mb-8">Как нас найти?</h2>
+        <h2 data-reveal className="text-3xl font-semibold tracking-tight mb-6 md:mb-8">Как нас найти?</h2>
 
         <div className="grid lg:grid-cols-2 gap-6">
           {/* Левая колонка - Контакты и местоположение */}
           <div className="flex flex-col gap-6">
             {/* Местоположение и контакты */}
-            <div className="bg-surface border border-border rounded-xl p-5 shadow-md flex-1">
+            <div data-reveal className="bg-surface border border-border rounded-xl p-5 shadow-md flex-1">
               <div className="flex items-start gap-3 mb-4">
                 <div className="w-10 h-10 bg-accent rounded-xl flex items-center justify-center shrink-0">
                   <MapPin className="w-5 h-5 text-white" />
@@ -62,7 +63,7 @@ export function ContactUs() {
               </div>
             </div>
 
-            <div className="bg-surface border border-border rounded-xl p-5 shadow-md min-h-[300px] lg:min-h-[350px] flex items-center justify-center">
+            <div data-reveal className="bg-surface border border-border rounded-xl p-5 shadow-md min-h-[300px] lg:min-h-[350px] flex items-center justify-center">
               <a
                 href={mapsUrl}
                 target="_blank"
@@ -85,7 +86,7 @@ export function ContactUs() {
           {/* Правая колонка */}
           <div className="flex flex-col gap-6">
             {/* О компании с доставкой и сборкой */}
-            <div className="bg-surface border border-border rounded-xl p-5 shadow-md flex-1">
+            <div data-reveal className="bg-surface border border-border rounded-xl p-5 shadow-md flex-1">
               <h3 className="text-xl font-semibold mb-3">Качественная мебель</h3>
               <p className="text-sm text-muted-foreground leading-relaxed mb-4">
                 Работаем напрямую с поставщиками. Предлагаем мебель из ЛДСП, МДФ и эксклюзивные кровати из массива бука по справедливым ценам.
@@ -120,7 +121,7 @@ export function ContactUs() {
             </div>
 
             {/* Мессенджеры - единый блок */}
-            <div className="bg-surface border border-border rounded-xl p-5 shadow-md flex-1">
+            <div data-reveal className="bg-surface border border-border rounded-xl p-5 shadow-md flex-1">
               <h3 className="text-xl font-semibold mb-1">Выберите удобный мессенджер</h3>
               <p className="text-xs text-muted-foreground mb-4">
                 Ответим в рабочее время, обычно до 10 минут
@@ -170,6 +171,6 @@ export function ContactUs() {
           </div>
         </div>
       </div>
-    </section>
+    </AnimatedSection>
   );
 }
