@@ -1,6 +1,5 @@
 import { useState, useEffect, memo, useCallback, useRef } from "react";
 import { Link } from "react-router-dom";
-import { motion, AnimatePresence } from "framer-motion";
 import { ChevronRight, ChevronLeft } from "lucide-react";
 import { OptimizedImage } from "./OptimizedImage";
 import heroBanner from "@/assets/hero-banner.jpg";
@@ -116,12 +115,7 @@ export const Hero = memo(function Hero() {
 
   return (
     <section className="container-x pt-2 md:pt-3 px-3 md:px-0" aria-label="Главный баннер">
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.4, ease: "easeOut" }}
-        className="hero-composite-layer relative isolate"
-      >
+      <div className="hero-composite-layer relative isolate">
         <div className="sr-only" role="status" aria-live="polite" aria-atomic="true">
           Баннер {currentIndex + 1} из {banners.length}: {currentBanner.title}
         </div>
@@ -135,29 +129,18 @@ export const Hero = memo(function Hero() {
           style={{ aspectRatio: "16 / 9" }}
           aria-label={currentBanner.cta}
         >
-          <div className="absolute inset-0 flex-shrink-0">
-            {banners.map((banner, index) => (
-              <motion.div
-                key={banner.id}
-                initial={false}
-                animate={{ opacity: index === currentIndex ? 1 : 0 }}
-                transition={{ duration: 0.32, ease: "easeOut" }}
-                className="hero-slide absolute inset-0"
-                aria-hidden={index !== currentIndex}
-              >
-                <OptimizedImage
-                  src={banner.image}
-                  alt={banner.title}
-                  width={1200}
-                  height={675}
-                  priority={true}
-                  loading="eager"
-                  fetchPriority="high"
-                  decoding="sync"
-                  className="hero-image w-full h-full object-cover flex-shrink-0"
-                />
-              </motion.div>
-            ))}
+          <div className="hero-slide absolute inset-0 flex-shrink-0">
+            <OptimizedImage
+              src={currentBanner.image}
+              alt={currentBanner.title}
+              width={1200}
+              height={675}
+              priority={true}
+              loading="eager"
+              fetchPriority="high"
+              decoding="sync"
+              className="hero-image w-full h-full object-cover flex-shrink-0"
+            />
           </div>
 
           {/* Gradient overlay */}
@@ -166,15 +149,7 @@ export const Hero = memo(function Hero() {
           {/* Text content - responsive typography with max-width and line-clamp */}
           <div className="relative z-10 h-full flex flex-col justify-end md:justify-center p-4 md:p-8 lg:p-12">
             <div className="max-w-2xl">
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key={currentBanner.id}
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.35 }}
-                  className="space-y-2 md:space-y-3"
-                >
+              <div className="space-y-2 md:space-y-3">
                   {/* Badge - responsive text */}
                   <p className="text-xs sm:text-sm font-semibold tracking-wider uppercase text-white/80 line-clamp-1">
                     {currentBanner.badge}
@@ -202,8 +177,7 @@ export const Hero = memo(function Hero() {
                       <ChevronRight className="w-4 h-4 stroke-2" />
                     </span>
                   </div>
-                </motion.div>
-              </AnimatePresence>
+              </div>
             </div>
           </div>
         </Link>
@@ -256,7 +230,7 @@ export const Hero = memo(function Hero() {
             ))}
           </div>
         )}
-      </motion.div>
+      </div>
     </section>
   );
 });

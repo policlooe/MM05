@@ -1,18 +1,18 @@
-import { useState, Suspense, lazy } from "react";
+import { Suspense, lazy } from "react";
 import { Navbar } from "@/components/Navbar";
 import { RecentlyViewed } from "@/components/RecentlyViewed";
 import { ContactUs } from "@/components/ContactUs";
 import { CartSidebar } from "@/components/CartSidebar";
+import { CatalogSidebar } from "@/components/CatalogSidebar";
 import { MobileNav } from "@/components/MobileNav";
 import { SEO } from "@/components/SEO";
-import { HeroSkeleton, ProductListSkeleton } from "@/components/skeletons";
+import { ProductListSkeleton } from "@/components/skeletons";
+import { Hero } from "@/components/Hero";
 
 // Lazy load heavy components
-const Hero = lazy(() => import("@/components/Hero").then(m => ({ default: m.Hero })));
 const Promotions = lazy(() => import("@/components/Promotions").then(m => ({ default: m.Promotions })));
 const Products = lazy(() => import("@/components/Products").then(m => ({ default: m.Products })));
 const Footer = lazy(() => import("@/components/Footer").then(m => ({ default: m.Footer })));
-const CatalogSidebar = lazy(() => import("@/components/CatalogSidebar").then(m => ({ default: m.CatalogSidebar })));
 const ChatLauncher = lazy(() => import("@/components/ChatLauncher").then(m => ({ default: m.ChatLauncher })));
 
 export default function Index() {
@@ -26,9 +26,7 @@ export default function Index() {
       />
       <Navbar />
       <main id="main-content">
-        <Suspense fallback={<HeroSkeleton />}>
-          <Hero />
-        </Suspense>
+        <Hero />
         <Suspense fallback={<div className="py-8" />}>
           <Promotions />
         </Suspense>
@@ -48,9 +46,7 @@ export default function Index() {
         <Footer />
       </Suspense>
       <CartSidebar />
-      <Suspense fallback={null}>
-        <CatalogSidebar />
-      </Suspense>
+      <CatalogSidebar />
       <MobileNav />
       <Suspense fallback={null}>
         <ChatLauncher />

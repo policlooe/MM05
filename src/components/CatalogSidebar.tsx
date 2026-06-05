@@ -1,7 +1,6 @@
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { X, LayoutGrid, SlidersHorizontal } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
 import { products, allCategories, type Category } from "@/data/products";
 import { formatPrice, useCart } from "@/store/cart";
 import { PremiumIconMark } from "@/components/PremiumIcon";
@@ -54,13 +53,13 @@ export function CatalogSidebar() {
     });
   };
 
+  if (!isOpen) return null;
+
   return (
     <>
       {/* Overlay */}
       <div
-        className={`fixed inset-0 bg-black/50 z-[60] transition-opacity ${
-          isOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
-        }`}
+        className="ios-fixed-overlay fixed inset-0 bg-black/50 z-[60]"
         onClick={close}
         data-scroll-overlay="true"
         aria-hidden="true"
@@ -68,9 +67,7 @@ export function CatalogSidebar() {
 
       {/* Sidebar - СЛЕВА */}
       <aside
-        className={`fixed top-0 left-0 h-full w-full sm:w-[520px] bg-surface z-[70] shadow-lg flex flex-col transition-transform duration-300 ${
-          isOpen ? "translate-x-0" : "-translate-x-full"
-        }`}
+        className="ios-fixed-panel fixed top-0 left-0 w-full sm:w-[520px] bg-surface z-[70] shadow-lg flex flex-col"
         role="complementary"
         aria-label="Каталог товаров"
       >
@@ -131,15 +128,8 @@ export function CatalogSidebar() {
         </div>
 
         {/* Extended Filters */}
-        <AnimatePresence>
-          {showFilters && (
-            <motion.div
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: "auto", opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              transition={{ duration: 0.2 }}
-              className="overflow-hidden border-b border-border"
-            >
+        {showFilters && (
+            <div className="overflow-hidden border-b border-border">
               <div className="px-6 pb-4 space-y-4">
                 {/* All Categories */}
                 <div role="group" aria-labelledby="category-filter">
@@ -207,9 +197,8 @@ export function CatalogSidebar() {
                   Сбросить фильтры
                 </button>
               </div>
-            </motion.div>
+            </div>
           )}
-        </AnimatePresence>
 
         {/* Products Grid */}
         <div className="flex-1 overflow-y-auto px-6 pb-6">
@@ -229,14 +218,10 @@ export function CatalogSidebar() {
             </div>
           ) : (
             <div className="grid grid-cols-2 gap-3">
-              <AnimatePresence mode="popLayout">
-                {filtered.map((p, index) => (
-                  <motion.div
+              <>
+                {filtered.map((p) => (
+                  <div
                     key={p.id}
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.9 }}
-                    transition={{ duration: 0.2, delay: index * 0.02 }}
                     className="group bg-surface rounded-lg overflow-hidden border border-border hover:shadow-md transition-all"
                   >
                     <Link
@@ -277,9 +262,9 @@ export function CatalogSidebar() {
                         В корзину
                       </button>
                     </div>
-                  </motion.div>
+                  </div>
                 ))}
-              </AnimatePresence>
+              </>
             </div>
           )}
         </div>

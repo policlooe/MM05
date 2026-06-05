@@ -1,7 +1,6 @@
 import { useMemo, useState, useEffect, lazy, Suspense } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { Search, SlidersHorizontal, X } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
 import { products, allCategories, type Category } from "@/data/products";
 import { formatPrice } from "@/store/cart";
 import { Navbar } from "@/components/Navbar";
@@ -9,11 +8,10 @@ import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { CartSidebar } from "@/components/CartSidebar";
 import { MobileNav } from "@/components/MobileNav";
 import { SEO } from "@/components/SEO";
-import { CatalogSidebarSkeleton } from "@/components/skeletons";
+import { CatalogSidebar } from "@/components/CatalogSidebar";
 
 // Lazy load heavy components
 const Footer = lazy(() => import("@/components/Footer").then(m => ({ default: m.Footer })));
-const CatalogSidebar = lazy(() => import("@/components/CatalogSidebar").then(m => ({ default: m.CatalogSidebar })));
 const ChatLauncher = lazy(() => import("@/components/ChatLauncher").then(m => ({ default: m.ChatLauncher })));
 
 type Sort = "popular" | "price_asc" | "price_desc";
@@ -201,47 +199,29 @@ export default function Catalog() {
               </div>
             ) : (
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-5">
-                {filtered.map((p, index) => (
-                  <motion.article
+                {filtered.map((p) => (
+                  <article
                     key={p.id}
-                    initial={{ opacity: 0, y: 30 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ 
-                      duration: 0.4, 
-                      delay: index * 0.05,
-                      ease: [0.22, 1, 0.36, 1]
-                    }}
                   >
                     <Link
                       to={`/product/${p.slug}`}
                       className="group bg-surface rounded-lg overflow-hidden border border-border hover:shadow-lg transition-all block"
                     >
-                      <motion.div 
-                        className="relative aspect-square bg-secondary overflow-hidden"
-                        whileHover={{ scale: 1.02 }}
-                        transition={{ duration: 0.3 }}
-                      >
-                        <motion.img
+                      <div className="relative aspect-square bg-secondary overflow-hidden">
+                        <img
                           src={p.image}
                           alt={p.name}
                           loading="lazy"
                           width={400}
                           height={400}
-                          whileHover={{ scale: 1.1 }}
-                          transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-                          className="w-full h-full object-cover"
+                          className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                         />
                         {p.badge && (
-                          <motion.span 
-                            initial={{ opacity: 0, scale: 0.8 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            transition={{ delay: 0.2 }}
-                            className="absolute top-2 left-2 bg-background border border-border text-muted-foreground text-xs font-medium px-2 py-0.5 rounded-md"
-                          >
+                          <span className="absolute top-2 left-2 bg-background border border-border text-muted-foreground text-xs font-medium px-2 py-0.5 rounded-md">
                             {p.badge}
-                          </motion.span>
+                          </span>
                         )}
-                      </motion.div>
+                      </div>
                       <div className="p-3 md:p-4">
                         <p className="font-bold text-base mb-1">{formatPrice(p.price)}</p>
                         {p.oldPrice && (
@@ -250,7 +230,7 @@ export default function Catalog() {
                       <h3 className="text-sm text-foreground leading-tight line-clamp-2 font-medium">{p.name}</h3>
                       </div>
                     </Link>
-                  </motion.article>
+                  </article>
                 ))}
               </div>
             )}
@@ -261,9 +241,7 @@ export default function Catalog() {
         <Footer />
       </Suspense>
       <CartSidebar />
-      <Suspense fallback={<CatalogSidebarSkeleton />}>
-        <CatalogSidebar />
-      </Suspense>
+      <CatalogSidebar />
       <MobileNav />
       <Suspense fallback={null}>
         <ChatLauncher />

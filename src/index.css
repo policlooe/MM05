@@ -90,10 +90,10 @@
   /* Предотвращение горизонтального скролла - используем clip вместо hidden */
   html,
   body {
-    overflow-x: clip;
+    overflow-x: hidden;
     width: 100%;
     position: relative;
-    background-color: #ffffff;
+    background: hsl(var(--background));
   }
 
   body {
@@ -122,9 +122,11 @@
   /* Защита всех контейнеров от переполнения */
   #root {
     width: 100%;
-    overflow-x: clip;
+    min-height: 100dvh;
+    overflow-x: hidden;
     position: relative;
     isolation: isolate;
+    background: hsl(var(--background));
   }
 
   .font-serif {
@@ -213,8 +215,6 @@
   .promotion-card {
     backface-visibility: hidden;
     -webkit-backface-visibility: hidden;
-    transform: translateZ(0);
-    transform-style: preserve-3d;
   }
 
   /* КРИТИЧНО: Убираем contain: layout paint - ломает Safari compositor */
@@ -230,6 +230,16 @@
 
   .hero-image {
     display: block;
+    transform: none;
+    -webkit-transform: none;
+  }
+
+  .ios-fixed-panel,
+  .ios-fixed-overlay {
+    height: 100vh;
+    height: 100dvh;
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
   }
 
   button,
@@ -321,12 +331,11 @@
     will-change: auto;
     transform: translateX(0);
     backface-visibility: hidden;
-    perspective: 1000px;
   }
 
   .promotion-card {
-    transform: translateZ(0);
-    -webkit-transform: translateZ(0);
+    transform: none;
+    -webkit-transform: none;
   }
   
   /* КРИТИЧНО: Правильный контейнер без overflow */

@@ -3,22 +3,26 @@ import { createRoot } from "react-dom/client";
 import { HelmetProvider } from 'react-helmet-async';
 import App from "./App.tsx";
 import "./index.css";
+import { installChunkErrorRecovery } from "./lib/chunk-recovery";
 import { initCsrfProtection } from "./lib/csrf";
 
 // Initialize CSRF protection
 initCsrfProtection();
+installChunkErrorRecovery();
 
-// Register service worker for caching
-if ('serviceWorker' in navigator && import.meta.env.PROD) {
+// Remove the old cache-first service worker. It can serve stale hashed chunks
+// after deploys, which is especially visible as blank screens in iOS Safari.
+if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker
-      .register('/service-worker.js')
-      .then((registration) => {
-        console.log('SW registered:', registration);
-      })
-      .catch((error) => {
-        console.log('SW registration failed:', error);
-      });
+    navigator.serviceWorker.getRegistrations()
+      .then((registrations) => Promise.all(registrations.map((registration) => registration.unregister())))
+      .catch(() => undefined);
+
+    if ('caches' in window) {
+      caches.keys()
+        .then((keys) => Promise.all(keys.map((key) => caches.delete(key))))
+        .catch(() => undefined);
+    }
   });
 }
 

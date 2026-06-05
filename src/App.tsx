@@ -1,36 +1,37 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
-import { Suspense, lazy } from "react";
+import { Suspense } from "react";
+import Index from "./pages/Index";
+import Catalog from "./pages/Catalog";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { CartProvider } from "@/store/cart";
 import { SkipLink } from "@/components/SkipLink";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { AdminGuard } from "@/components/AdminGuard";
+import { lazyWithChunkRecovery } from "@/lib/chunk-recovery";
 
-// Lazy load pages
-const Index = lazy(() => import("./pages/Index"));
-const Catalog = lazy(() => import("./pages/Catalog"));
-const ProductPage = lazy(() => import("./pages/ProductPage"));
-const Checkout = lazy(() => import("./pages/Checkout"));
-const CheckoutSuccess = lazy(() => import("./pages/CheckoutSuccess"));
-const Payment = lazy(() => import("./pages/Payment"));
-const PaymentSuccess = lazy(() => import("./pages/PaymentSuccess"));
-const PaymentCancel = lazy(() => import("./pages/PaymentCancel"));
-const About = lazy(() => import("./pages/About"));
-const Contact = lazy(() => import("./pages/Contact"));
-const Login = lazy(() => import("./pages/Login"));
-const Register = lazy(() => import("./pages/Register"));
-const Favorites = lazy(() => import("./pages/Favorites"));
-const NotFound = lazy(() => import("./pages/NotFound"));
+// Keep primary storefront routes eager to avoid white Suspense swaps on iOS.
+const ProductPage = lazyWithChunkRecovery(() => import("./pages/ProductPage"));
+const Checkout = lazyWithChunkRecovery(() => import("./pages/Checkout"));
+const CheckoutSuccess = lazyWithChunkRecovery(() => import("./pages/CheckoutSuccess"));
+const Payment = lazyWithChunkRecovery(() => import("./pages/Payment"));
+const PaymentSuccess = lazyWithChunkRecovery(() => import("./pages/PaymentSuccess"));
+const PaymentCancel = lazyWithChunkRecovery(() => import("./pages/PaymentCancel"));
+const About = lazyWithChunkRecovery(() => import("./pages/About"));
+const Contact = lazyWithChunkRecovery(() => import("./pages/Contact"));
+const Login = lazyWithChunkRecovery(() => import("./pages/Login"));
+const Register = lazyWithChunkRecovery(() => import("./pages/Register"));
+const Favorites = lazyWithChunkRecovery(() => import("./pages/Favorites"));
+const NotFound = lazyWithChunkRecovery(() => import("./pages/NotFound"));
 
 // Admin pages
-const AdminDashboard = lazy(() => import("./pages/admin/Dashboard"));
-const ProductsManagement = lazy(() => import("./pages/admin/ProductsManagement"));
-const ProductEdit = lazy(() => import("./pages/admin/ProductEdit"));
-const AdminOrders = lazy(() => import("./pages/admin/Orders"));
-const AdminOrderDetail = lazy(() => import("./pages/admin/OrderDetail"));
-const AdminUsers = lazy(() => import("./pages/admin/Users"));
+const AdminDashboard = lazyWithChunkRecovery(() => import("./pages/admin/Dashboard"));
+const ProductsManagement = lazyWithChunkRecovery(() => import("./pages/admin/ProductsManagement"));
+const ProductEdit = lazyWithChunkRecovery(() => import("./pages/admin/ProductEdit"));
+const AdminOrders = lazyWithChunkRecovery(() => import("./pages/admin/Orders"));
+const AdminOrderDetail = lazyWithChunkRecovery(() => import("./pages/admin/OrderDetail"));
+const AdminUsers = lazyWithChunkRecovery(() => import("./pages/admin/Users"));
 
 const PageLoader = () => (
   <div className="flex items-center justify-center min-h-screen">

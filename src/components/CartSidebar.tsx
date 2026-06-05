@@ -1,4 +1,3 @@
-import { motion, AnimatePresence } from 'framer-motion';
 import { X, ShoppingBag, Trash2, ChevronRight } from 'lucide-react';
 import { useCart, formatPrice } from '@/store/cart';
 import { useScrollLock } from '@/hooks/useScrollLock';
@@ -23,30 +22,23 @@ export function CartSidebar() {
   };
 
   return (
-    <AnimatePresence>
+    <>
       {isOpen && (
         <>
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
+          <div
             onClick={close}
-            className="fixed inset-0 bg-black/50 z-[60]"
+            className="ios-fixed-overlay fixed inset-0 bg-black/50 z-[60]"
             data-scroll-overlay="true"
             aria-hidden="true"
           />
-          <motion.div
+          <div
             ref={focusTrapRef}
             onKeyDown={handleKeyDown}
             role="dialog"
             aria-modal="true"
             aria-label="Корзина покупок"
             aria-live="polite"
-            initial={{ x: '100%' }}
-            animate={{ x: 0 }}
-            exit={{ x: '100%' }}
-            transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-            className="fixed right-0 top-0 h-full w-full max-w-md bg-surface shadow-2xl z-[70] flex flex-col"
+            className="ios-fixed-panel fixed right-0 top-0 w-full max-w-md bg-surface shadow-2xl z-[70] flex flex-col"
           >
             <div className="p-6 border-b border-border flex items-center justify-between bg-surface">
               <div className="flex items-center gap-3">
@@ -133,9 +125,9 @@ export function CartSidebar() {
                 </button>
               </div>
             )}
-          </motion.div>
+          </div>
         </>
       )}
-    </AnimatePresence>
+    </>
   );
 }
