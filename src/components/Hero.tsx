@@ -1,49 +1,42 @@
-import { useState, useEffect, memo, useCallback, useRef } from "react";
+import { useState, useEffect, memo } from "react";
 import { Link } from "react-router-dom";
-import { ChevronRight, ChevronLeft } from "lucide-react";
 import { OptimizedImage } from "./OptimizedImage";
 import heroBanner from "@/assets/hero-banner.jpg";
 
-// Banner data
+const ROTATION_INTERVAL_MS = 5200;
+
 const banners = [
   {
     id: 1,
     image: heroBanner,
-    badge: "Каталог 2026",
+    badge: "MM05",
     title: "Мебель из массива",
-    subtitle: "с доставкой по Дагестану",
-    description: "Качественная мебель в Махачкале. Сборка и доставка от 30 000 ₽ — бесплатно.",
+    subtitle: "Спокойные формы для дома.",
     link: "/catalog",
-    cta: "Смотреть каталог",
+    cta: "В каталог",
   },
   {
     id: 2,
     image: heroBanner,
-    badge: "Новинки 2026",
-    title: "Кровати из массива бука",
-    subtitle: "Эксклюзивные модели",
-    description: "Прочные и красивые кровати ручной работы. Гарантия качества 5 лет.",
+    badge: "Массив бука",
+    title: "Кровати",
+    subtitle: "Чистая линия. Прочная основа.",
     link: "/catalog?category=beds",
-    cta: "Смотреть кровати",
+    cta: "Смотреть",
   },
   {
     id: 3,
     image: heroBanner,
     badge: "Акция",
     title: "Скидки до 20%",
-    subtitle: "на всю мебель из ЛДСП",
-    description: "Успейте купить качественную мебель по выгодным ценам. Акция до конца месяца.",
+    subtitle: "На выбранные модели.",
     link: "/catalog?category=wardrobes",
-    cta: "Смотреть акции",
+    cta: "Перейти",
   },
 ];
 
 export const Hero = memo(function Hero() {
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [isAutoPlaying, setIsAutoPlaying] = useState(true);
-  // КРИТИЧНО: Используем refs вместо state для touch координат - избегаем stale closure
-  const touchStartRef = useRef(0);
-  const touchEndRef = useRef(0);
 
   useEffect(() => {
     banners.forEach((banner) => {
@@ -52,82 +45,25 @@ export const Hero = memo(function Hero() {
     });
   }, []);
 
-  // Auto-rotate banners every 5 seconds
   useEffect(() => {
-    if (!isAutoPlaying) return;
+    if (banners.length <= 1) return;
 
-    const interval = setInterval(() => {
+    const interval = window.setInterval(() => {
       setCurrentIndex((prev) => (prev + 1) % banners.length);
-    }, 5000);
+    }, ROTATION_INTERVAL_MS);
 
-    return () => clearInterval(interval);
-  }, [isAutoPlaying]);
-
-  const goToNext = useCallback(() => {
-    setCurrentIndex((prev) => (prev + 1) % banners.length);
-    setIsAutoPlaying(false);
+    return () => window.clearInterval(interval);
   }, []);
-
-  const goToPrev = useCallback(() => {
-    setCurrentIndex((prev) => (prev - 1 + banners.length) % banners.length);
-    setIsAutoPlaying(false);
-  }, []);
-
-  const goToSlide = useCallback((index: number) => {
-    setCurrentIndex(index);
-    setIsAutoPlaying(false);
-  }, []);
-
-  // КРИТИЧНО: Touch handlers с refs - стабильные ссылки, нет stale closure
-  const handleTouchStart = useCallback((e: React.TouchEvent) => {
-    touchStartRef.current = e.targetTouches[0].clientX;
-  }, []);
-
-  const handleTouchMove = useCallback((e: React.TouchEvent) => {
-    touchEndRef.current = e.targetTouches[0].clientX;
-  }, []);
-
-  const handleTouchEnd = useCallback(() => {
-    const touchStart = touchStartRef.current;
-    const touchEnd = touchEndRef.current;
-
-    if (!touchStart || !touchEnd) return;
-
-    const distance = touchStart - touchEnd;
-    const isLeftSwipe = distance > 50;
-    const isRightSwipe = distance < -50;
-
-    if (isLeftSwipe) {
-      setCurrentIndex((prev) => (prev + 1) % banners.length);
-      setIsAutoPlaying(false);
-    }
-    if (isRightSwipe) {
-      setCurrentIndex((prev) => (prev - 1 + banners.length) % banners.length);
-      setIsAutoPlaying(false);
-    }
-
-    // Reset
-    touchStartRef.current = 0;
-    touchEndRef.current = 0;
-  }, []); // КРИТИЧНО: Пустые deps - стабильная ссылка
 
   const currentBanner = banners[currentIndex];
 
   return (
     <section className="container-x pt-2 md:pt-3 px-3 md:px-0" aria-label="Главный баннер">
       <div className="hero-composite-layer relative isolate">
-        <div className="sr-only" role="status" aria-live="polite" aria-atomic="true">
-          Баннер {currentIndex + 1} из {banners.length}: {currentBanner.title}
-        </div>
-        
         <Link
           to={currentBanner.link}
-          onTouchStart={handleTouchStart}
-          onTouchMove={handleTouchMove}
-          onTouchEnd={handleTouchEnd}
-          className="hero-frame relative block rounded-xl md:rounded-3xl overflow-hidden bg-secondary group transition-shadow shadow-sm hover:shadow-lg touch-pan-y z-0"
-          style={{ aspectRatio: "16 / 9" }}
-          aria-label={currentBanner.cta}
+          className="hero-frame relative block aspect-[4/5] overflow-hidden rounded-2xl bg-secondary shadow-sm transition-shadow hover:shadow-md sm:aspect-[16/9] lg:aspect-[16/7]"
+          aria-label={`${currentBanner.cta}: ${currentBanner.title}`}
         >
           <div className="hero-slide absolute inset-0 flex-shrink-0">
             <OptimizedImage
@@ -139,97 +75,30 @@ export const Hero = memo(function Hero() {
               loading="eager"
               fetchPriority="high"
               decoding="sync"
-              className="hero-image w-full h-full object-cover flex-shrink-0"
+              className="hero-image h-full w-full flex-shrink-0 object-cover"
+              style={{ width: "100%", height: "100%", objectFit: "cover" }}
             />
           </div>
 
-          {/* Gradient overlay */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent md:bg-gradient-to-r md:from-black/75 md:via-black/35 md:to-transparent pointer-events-none" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-black/25 to-black/10 pointer-events-none" />
 
-          {/* Text content - responsive typography with max-width and line-clamp */}
-          <div className="relative z-10 h-full flex flex-col justify-end md:justify-center p-4 md:p-8 lg:p-12">
-            <div className="max-w-2xl">
-              <div className="space-y-2 md:space-y-3">
-                  {/* Badge - responsive text */}
-                  <p className="text-xs sm:text-sm font-semibold tracking-wider uppercase text-white/80 line-clamp-1">
-                    {currentBanner.badge}
-                  </p>
-                  
-                  {/* Title - responsive with line-clamp to prevent overflow */}
-                  <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight leading-tight text-white max-w-prose">
-                    <span className="block line-clamp-2">
-                      {currentBanner.title}
-                    </span>
-                    <span className="block text-white/90 line-clamp-1 mt-1">
-                      {currentBanner.subtitle}
-                    </span>
-                  </h1>
-                  
-                  {/* Description - responsive with line-clamp */}
-                  <p className="text-sm sm:text-base text-white/80 max-w-xl leading-relaxed line-clamp-2 md:line-clamp-3">
-                    {currentBanner.description}
-                  </p>
-
-                  {/* CTA button - hidden on mobile */}
-                  <div className="hidden md:inline-flex pt-2">
-                    <span className="inline-flex items-center gap-2 bg-white hover:bg-accent text-foreground hover:text-white px-5 md:px-7 py-2.5 md:py-3 rounded-xl font-semibold text-sm shadow-xl transition-colors duration-300">
-                      {currentBanner.cta}
-                      <ChevronRight className="w-4 h-4 stroke-2" />
-                    </span>
-                  </div>
-              </div>
+          <div className="relative z-10 flex h-full items-center justify-center p-6 text-center text-white sm:p-8 lg:p-12">
+            <div className="mx-auto max-w-[620px]">
+              <p className="mb-3 text-xs font-medium uppercase text-white/75 sm:text-sm">
+                {currentBanner.badge}
+              </p>
+              <h1 className="text-3xl font-semibold leading-[1.05] text-white sm:text-4xl lg:text-6xl">
+                {currentBanner.title}
+              </h1>
+              <p className="mx-auto mt-3 max-w-[360px] text-sm font-normal leading-snug text-white/85 sm:text-base lg:text-lg">
+                {currentBanner.subtitle}
+              </p>
+              <span className="mt-5 inline-flex min-h-10 items-center justify-center rounded-full bg-white/95 px-5 text-sm font-medium text-foreground shadow-sm transition-colors duration-200 group-hover:bg-white">
+                {currentBanner.cta}
+              </span>
             </div>
           </div>
         </Link>
-
-        {/* Navigation Arrows - Desktop only */}
-        {banners.length > 1 && (
-          <>
-            <button
-              onClick={(e) => {
-                e.preventDefault();
-                goToPrev();
-              }}
-              className="hidden md:flex absolute left-4 top-1/2 -translate-y-1/2 z-20 w-10 h-10 md:w-12 md:h-12 bg-white/90 hover:bg-white rounded-full items-center justify-center shadow-lg transition-all hover:scale-110 active:scale-95"
-              aria-label="Предыдущий баннер"
-            >
-              <ChevronLeft className="w-6 h-6 stroke-[1.5] text-foreground" />
-            </button>
-
-            <button
-              onClick={(e) => {
-                e.preventDefault();
-                goToNext();
-              }}
-              className="hidden md:flex absolute right-4 top-1/2 -translate-y-1/2 z-20 w-10 h-10 md:w-12 md:h-12 bg-white/90 hover:bg-white rounded-full items-center justify-center shadow-lg transition-all hover:scale-110 active:scale-95"
-              aria-label="Следующий баннер"
-            >
-              <ChevronRight className="w-6 h-6 stroke-[1.5] text-foreground" />
-            </button>
-          </>
-        )}
-
-        {/* Dots Indicator */}
-        {banners.length > 1 && (
-          <div className="absolute bottom-4 md:bottom-6 left-1/2 -translate-x-1/2 z-20 flex items-center gap-2" role="group" aria-label="Навигация по баннерам">
-            {banners.map((banner, index) => (
-              <button
-                key={index}
-                onClick={(e) => {
-                  e.preventDefault();
-                  goToSlide(index);
-                }}
-                className={`transition-all ${
-                  index === currentIndex
-                    ? "w-8 h-2 bg-white"
-                    : "w-2 h-2 bg-white/50 hover:bg-white/75"
-                } rounded-full`}
-                aria-label={`Перейти к баннеру: ${banner.title}`}
-                aria-current={index === currentIndex ? "true" : "false"}
-              />
-            ))}
-          </div>
-        )}
       </div>
     </section>
   );
