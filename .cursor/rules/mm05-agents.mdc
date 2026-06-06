@@ -9,6 +9,6 @@ alwaysApply: true
 
 Read `AGENTS.md` for stack and agent skill paths under `.kiro/skills/`.
 
-For frontend performance/Safari work, apply rules in `AGENTS.md` (no backdrop-blur on scroll UI, banner aspect-ratio, no Lovable assets).
+For frontend performance/Safari work, apply rules in `AGENTS.md` (no backdrop-blur on scroll UI, banner aspect-ratio, no third-party builder assets).
 
 When the user asks for a specialist role, read the corresponding file in `.kiro/skills/` before implementing.

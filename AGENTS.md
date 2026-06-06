@@ -30,7 +30,7 @@ Orchestration: for large changes, follow `agents-orchestrator` phases (plan → 
 
 ## Performance & Safari (mandatory)
 
-- No Lovable branding or assets.
+- No third-party builder branding or assets.
 - Hero/LCP images: `loading="eager"`, `fetchPriority="high"`, fixed `aspect-ratio`, no opacity fade on priority images.
 - Avoid `backdrop-filter` on fixed/sticky nav and scroll overlays (use solid/semi-opaque backgrounds).
 - No `background-attachment: fixed`.
