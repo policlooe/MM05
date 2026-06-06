@@ -6,6 +6,10 @@ export function useFocusTrap(isOpen: boolean) {
   useEffect(() => {
     if (!isOpen || !containerRef.current) return;
 
+    const previouslyFocused = document.activeElement instanceof HTMLElement
+      ? document.activeElement
+      : null;
+
     const focusableElements = containerRef.current.querySelectorAll(
       'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
     );
@@ -34,6 +38,7 @@ export function useFocusTrap(isOpen: boolean) {
 
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
+      previouslyFocused?.focus({ preventScroll: true });
     };
   }, [isOpen]);
 

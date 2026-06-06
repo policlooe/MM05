@@ -26,7 +26,14 @@ const app: Express = express();
 // Sentry initialization
 initSentry();
 
-const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
+const FRONTEND_URL = env.FRONTEND_URL;
+const ALLOWED_ORIGINS = new Set(
+  [FRONTEND_URL, process.env.CORS_ORIGINS]
+    .filter(Boolean)
+    .flatMap((value) => value!.split(',').map((origin) => origin.trim()))
+    .filter(Boolean)
+);
+const VERCEL_PREVIEW_ORIGIN = /^https:\/\/[a-z0-9-]+-[a-z0-9-]+\.vercel\.app$/i;
 
 // Security
 app.use(helmet({
@@ -41,7 +48,14 @@ app.use(helmet({
 }));
 
 app.use(cors({
-  origin: FRONTEND_URL,
+  origin(origin, callback) {
+    if (!origin || ALLOWED_ORIGINS.has(origin) || VERCEL_PREVIEW_ORIGIN.test(origin)) {
+      callback(null, true);
+      return;
+    }
+
+    callback(new Error(`CORS origin not allowed: ${origin}`));
+  },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-CSRF-Token'],

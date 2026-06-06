@@ -36,6 +36,7 @@ export default defineConfig(({ mode }) => ({
         // Разделение кода по вендорам для лучшего кеширования
         manualChunks: {
           'react-vendor': ['react', 'react-dom', 'react-router-dom'],
+          'gsap-vendor': ['gsap', '@gsap/react'],
           'ui-vendor': ['framer-motion', 'lucide-react'],
           'form-vendor': ['react-hook-form', '@hookform/resolvers', 'zod'],
           'query-vendor': ['@tanstack/react-query'],

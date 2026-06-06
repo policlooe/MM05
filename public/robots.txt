@@ -5,6 +5,7 @@ Allow: /
 Disallow: /admin
 Disallow: /api
 Disallow: /payment
+Disallow: /checkout
 
 # Sitemap
 Sitemap: https://mm05.vercel.app/sitemap.xml

@@ -1,84 +1,63 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <!-- Главная страница -->
   <url>
     <loc>https://mm05.vercel.app/</loc>
-    <lastmod>2026-04-30</lastmod>
+    <lastmod>2026-06-06</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
-  
-  <!-- Каталог -->
   <url>
     <loc>https://mm05.vercel.app/catalog</loc>
-    <lastmod>2026-04-30</lastmod>
+    <lastmod>2026-06-06</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.9</priority>
   </url>
-  
-  <!-- Страницы товаров -->
+  <url>
+    <loc>https://mm05.vercel.app/about</loc>
+    <lastmod>2026-06-06</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://mm05.vercel.app/contact</loc>
+    <lastmod>2026-06-06</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
   <url>
     <loc>https://mm05.vercel.app/product/krovat-massiv-1</loc>
-    <lastmod>2026-04-30</lastmod>
+    <lastmod>2026-06-06</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  
   <url>
     <loc>https://mm05.vercel.app/product/shkaf-massiv-1</loc>
-    <lastmod>2026-04-30</lastmod>
+    <lastmod>2026-06-06</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  
   <url>
     <loc>https://mm05.vercel.app/product/stol-massiv-1</loc>
-    <lastmod>2026-04-30</lastmod>
+    <lastmod>2026-06-06</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  
   <url>
     <loc>https://mm05.vercel.app/product/kreslo-kachalka</loc>
-    <lastmod>2026-04-30</lastmod>
+    <lastmod>2026-06-06</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  
   <url>
     <loc>https://mm05.vercel.app/product/besedka-massiv</loc>
-    <lastmod>2026-04-30</lastmod>
+    <lastmod>2026-06-06</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  
   <url>
     <loc>https://mm05.vercel.app/product/tumba-massiv</loc>
-    <lastmod>2026-04-30</lastmod>
+    <lastmod>2026-06-06</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
-  </url>
-  
-  <!-- Оформление заказа -->
-  <url>
-    <loc>https://mm05.vercel.app/payment</loc>
-    <lastmod>2026-04-30</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  
-  <!-- Авторизация -->
-  <url>
-    <loc>https://mm05.vercel.app/login</loc>
-    <lastmod>2026-04-30</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.5</priority>
-  </url>
-  
-  <url>
-    <loc>https://mm05.vercel.app/register</loc>
-    <lastmod>2026-04-30</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.5</priority>
   </url>
 </urlset>

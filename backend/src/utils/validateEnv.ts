@@ -94,6 +94,8 @@ const envSchema = z.object({
       'FRONTEND_URL must start with http:// or https://'
     ),
 
+  CORS_ORIGINS: z.string().optional(),
+
   // Optional: SMTP Configuration (for email notifications)
   SMTP_HOST: z.string().optional(),
   SMTP_PORT: z.string().optional(),
