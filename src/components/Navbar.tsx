@@ -1,4 +1,4 @@
-import { ShoppingBag, Search, User, Heart } from "lucide-react";
+﻿import { ShoppingBag, Search, User, Heart } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useState, useEffect, useRef, memo } from "react";
 import { motion } from "framer-motion";
@@ -127,7 +127,7 @@ export const Navbar = memo(function Navbar() {
       <div className="w-full overflow-hidden">
         <div className="container-x">
           <nav className="flex items-center gap-2 md:gap-3 py-2 md:pb-3" aria-label="Основная навигация">
-            <Link to="/" className="text-xl md:text-2xl font-semibold tracking-tight whitespace-nowrap shrink-0">
+            <Link to="/" className="text-xl md:text-2xl font-semibold whitespace-nowrap shrink-0">
               MM05
             </Link>
 

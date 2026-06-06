@@ -1,4 +1,4 @@
-import { MapPin, Phone, MessageCircle, Send, Clock, Users, Package, Wrench } from "lucide-react";
+﻿import { MapPin, Phone, MessageCircle, Send, Clock, Users, Package, Wrench } from "lucide-react";
 import { buildMapsUrl, CONTACTS } from "@/lib/contacts";
 import { PremiumIconMark } from "@/components/PremiumIcon";
 import { AnimatedSection } from "@/components/AnimatedSection";
@@ -9,7 +9,7 @@ export function ContactUs() {
   return (
     <AnimatedSection id="contact-us" className="py-8 md:py-12">
       <div className="container-x">
-        <h2 data-reveal className="text-3xl font-semibold tracking-tight mb-6 md:mb-8">Как нас найти?</h2>
+        <h2 data-reveal className="text-3xl font-semibold mb-6 md:mb-8">Как нас найти?</h2>
 
         <div className="grid lg:grid-cols-2 gap-6">
           {/* Левая колонка - Контакты и местоположение */}

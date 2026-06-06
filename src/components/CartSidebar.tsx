@@ -85,18 +85,18 @@ export function CartSidebar() {
                         <div className="flex items-center border border-border rounded-lg bg-background" role="group" aria-label="Управление количеством">
                           <button 
                             className="px-2 py-1 hover:bg-muted" 
-                            onClick={() => setQty(item.id, Math.max(1, item.qty - 1))}
+                            onClick={() => setQty(item.cartItemKey, Math.max(1, item.qty - 1))}
                             aria-label={`Уменьшить количество ${item.name}`}
                           >-</button>
                           <span className="px-2 text-xs font-bold" aria-label={`Количество: ${item.qty}`}>{item.qty}</span>
                           <button 
                             className="px-2 py-1 hover:bg-muted" 
-                            onClick={() => setQty(item.id, item.qty + 1)}
+                            onClick={() => setQty(item.cartItemKey, item.qty + 1)}
                             aria-label={`Увеличить количество ${item.name}`}
                           >+</button>
                         </div>
                         <button 
-                          onClick={() => remove(item.id)}
+                          onClick={() => remove(item.cartItemKey)}
                           className="text-destructive hover:bg-destructive/10 p-2 rounded-lg transition-colors"
                           aria-label={`Удалить ${item.name} из корзины`}
                         >

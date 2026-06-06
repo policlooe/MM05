@@ -1,4 +1,4 @@
-import { useMemo, useState, memo } from "react";
+﻿import { useMemo, useState, memo } from "react";
 import { products } from "@/data/products";
 import { OptimizedProductCard } from "./OptimizedProductList";
 import { AnimatedSection } from "./AnimatedSection";
@@ -17,7 +17,7 @@ export const Products = memo(function Products() {
     <AnimatedSection id="products" className="bg-surface-alt py-8 md:py-12">
       <div className="container-x">
         <div data-reveal className="flex items-end justify-between gap-4 mb-6 md:mb-8">
-          <h2 className="text-3xl font-semibold tracking-tight">Популярные товары</h2>
+          <h2 className="text-3xl font-semibold">Популярные товары</h2>
         </div>
 
         {/* Фильтры — улучшенный дизайн */}

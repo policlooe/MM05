@@ -4,7 +4,6 @@ import { X, LayoutGrid, SlidersHorizontal } from "lucide-react";
 import { products, allCategories, type Category } from "@/data/products";
 import { formatPrice, useCart } from "@/store/cart";
 import { PremiumIconMark } from "@/components/PremiumIcon";
-import { toast } from "sonner";
 import { useCatalog } from "@/hooks/use-catalog";
 import { useScrollLock } from "@/hooks/useScrollLock";
 
@@ -47,10 +46,6 @@ export function CatalogSidebar() {
 
   const handleAddToCart = (product: typeof products[0]) => {
     add(product);
-    toast.success("✓ Добавлено в корзину", { 
-      description: product.name,
-      duration: 2000
-    });
   };
 
   if (!isOpen) return null;

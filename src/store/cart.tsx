@@ -73,11 +73,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
     config?: SelectedConfiguration, 
     finalPrice?: number
   ) => {
-    // КРИТИЧНО: Правильная проверка finalPrice (не срабатывает при 0)
-    if (finalPrice === undefined || finalPrice === null) {
-      console.error("finalPrice is required for addToCart");
-      finalPrice = p.price;
-    }
+    const itemFinalPrice = finalPrice ?? p.price;
 
     const cartItemKey = generateCartItemKey(p.id, config);
 
@@ -102,7 +98,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
         name: p.name,
         slug: p.slug,
         basePrice: p.price,
-        finalPrice: finalPrice!,
+        finalPrice: itemFinalPrice,
         image: p.image,
         category: p.category,
         qty: 1,
@@ -118,7 +114,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
     ecommerce.addToCart({
       id: p.id,
       name: p.name,
-      price: finalPrice!,
+      price: itemFinalPrice,
       quantity: 1,
     });
 

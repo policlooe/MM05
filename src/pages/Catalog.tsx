@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect, lazy, Suspense } from "react";
+﻿import { useMemo, useState, useEffect, lazy, Suspense } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { Search, SlidersHorizontal, X } from "lucide-react";
 import { products, allCategories, type Category } from "@/data/products";
@@ -87,7 +87,7 @@ export default function Catalog() {
       <Breadcrumbs />
       <main id="main-content" className="container-x py-6 pb-24 md:pb-10">
         <div className="flex items-center justify-between mb-4">
-          <h1 className="text-4xl md:text-5xl font-bold tracking-tight">Каталог</h1>
+          <h1 className="text-4xl md:text-5xl font-bold">Каталог</h1>
           <button
             onClick={() => setFiltersOpen((v) => !v)}
             className="md:hidden flex items-center gap-2 text-sm bg-secondary border border-border px-3 py-2 rounded-lg"

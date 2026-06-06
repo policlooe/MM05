@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+﻿import { useMemo } from "react";
 import { products as allProducts, type Product } from "@/data/products";
 import { OptimizedProductCard } from "./OptimizedProductList";
 import { motion } from "framer-motion";
@@ -44,7 +44,7 @@ export function SimilarProducts({ currentProduct, limit = 4 }: SimilarProductsPr
             <Sparkles className="w-5 h-5 text-accent" />
           </div>
           <div>
-            <h2 className="text-3xl font-semibold tracking-tight">
+            <h2 className="text-3xl font-semibold">
               Похожие товары
             </h2>
             <p className="text-sm text-muted-foreground">

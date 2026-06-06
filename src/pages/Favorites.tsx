@@ -7,17 +7,14 @@ import { useFavorites } from "@/store/favorites";
 import { useCart, formatPrice } from "@/store/cart";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
+import type { Product } from "@/data/products";
 
 export default function Favorites() {
   const { favorites, remove } = useFavorites();
   const { add } = useCart();
 
-  const handleAddToCart = (product: any) => {
+  const handleAddToCart = (product: Product) => {
     add(product);
-    toast.success("✓ Добавлено в корзину", {
-      description: product.name,
-      duration: 2000,
-    });
   };
 
   const handleRemove = (productId: string, productName: string) => {

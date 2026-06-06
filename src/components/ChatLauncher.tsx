@@ -1,4 +1,4 @@
-import { useState } from "react";
+﻿import { useState } from "react";
 import { MessageCircle, Send, X, MessagesSquare, Users, Phone } from "lucide-react";
 import { CONTACTS } from "@/lib/contacts";
 import { PremiumIconMark } from "@/components/PremiumIcon";
@@ -16,7 +16,7 @@ export function ChatLauncher() {
           aria-label="Связаться с нами"
         >
           <div className="flex items-center justify-between mb-3">
-            <p className="font-semibold text-sm tracking-tight">Связь с нами</p>
+            <p className="font-semibold text-sm">Связь с нами</p>
             <button
               type="button"
               onClick={() => setOpen(false)}

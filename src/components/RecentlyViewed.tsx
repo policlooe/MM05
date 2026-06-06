@@ -1,4 +1,4 @@
-import { useRecentlyViewed } from "@/store/recentlyViewed";
+﻿import { useRecentlyViewed } from "@/store/recentlyViewed";
 import { OptimizedProductCard } from "./OptimizedProductList";
 import { motion } from "framer-motion";
 import { Clock } from "lucide-react";
@@ -25,7 +25,7 @@ export function RecentlyViewed() {
             <Clock className="w-5 h-5 text-accent" />
           </div>
           <div>
-            <h2 className="text-3xl font-semibold tracking-tight">
+            <h2 className="text-3xl font-semibold">
               Недавно просмотренные
             </h2>
             <p className="text-sm text-muted-foreground">

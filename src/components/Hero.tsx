@@ -147,7 +147,7 @@ export const Hero = memo(function Hero() {
             <div
               key={banner.id}
               data-hero-slide
-              className="hero-slide absolute inset-0 z-0 opacity-0"
+              className={`hero-slide absolute inset-0 ${index === 0 ? "z-[2] opacity-100" : "z-0 opacity-0"}`}
               aria-hidden={index !== activeIndex}
             >
               <OptimizedImage
@@ -162,21 +162,22 @@ export const Hero = memo(function Hero() {
                 className="hero-image h-full w-full object-cover"
                 style={{ width: "100%", height: "100%", objectFit: "cover" }}
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/28 to-black/8 pointer-events-none" />
+              <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.24)_0%,rgba(0,0,0,0.44)_50%,rgba(0,0,0,0.62)_100%)] pointer-events-none" />
             </div>
           ))}
-          <div className="pointer-events-none relative z-10 flex h-full items-center justify-center p-6 text-center text-white sm:p-8 lg:p-12">
-            <div data-hero-copy className="mx-auto max-w-[560px]">
-              <p className="mb-3 text-[11px] font-medium uppercase text-white/80 sm:text-xs">
+          <div className="hero-text-vignette absolute inset-0 z-[5] pointer-events-none" />
+          <div className="pointer-events-none relative z-10 flex h-full items-center justify-center px-6 py-8 text-center text-white sm:px-10 sm:py-12 lg:px-14 lg:py-16">
+            <div data-hero-copy className="hero-copy-shell mx-auto flex max-w-[560px] flex-col items-center">
+              <p className="hero-copy-kicker mb-3 text-[11px] font-medium uppercase text-white sm:text-xs">
                 {currentBanner.eyebrow}
               </p>
-              <h1 className="text-3xl font-semibold leading-[1.05] text-white sm:text-4xl lg:text-6xl">
+              <h1 className="hero-copy-title text-[2.5rem] font-semibold leading-[0.96] text-white sm:text-5xl lg:text-6xl">
                 {currentBanner.title}
               </h1>
-              <p className="mx-auto mt-3 max-w-[320px] text-sm font-normal leading-snug text-white/90 sm:text-base">
+              <p className="hero-copy-subtitle mx-auto mt-4 max-w-[340px] text-sm font-normal leading-snug text-white sm:text-base">
                 {currentBanner.subtitle}
               </p>
-              <span className="pointer-events-auto mt-5 inline-flex min-h-10 items-center justify-center rounded-full bg-white/95 px-5 text-sm font-medium text-foreground shadow-sm transition-colors duration-200 group-hover:bg-white">
+              <span className="pointer-events-auto mt-6 inline-flex min-h-10 items-center justify-center rounded-full bg-white px-5 text-sm font-medium text-foreground shadow-sm transition-colors duration-200 group-hover:bg-white/95">
                 {currentBanner.cta}
               </span>
             </div>

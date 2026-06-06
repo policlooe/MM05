@@ -6,7 +6,11 @@ import { paginationSchema } from '../validators/admin.validator.js';
 import { z } from 'zod';
 import { prisma } from '../lib/prisma.js';
 
-function normalizeProductData(data: Record<string, any>) {
+function getErrorMessage(error: unknown, fallback: string): string {
+  return error instanceof Error ? error.message : fallback;
+}
+
+function normalizeProductData(data: Record<string, unknown>) {
   const { image, stock, featured, ...rest } = data;
 
   return {
@@ -57,7 +61,7 @@ export class AdminController {
           totalPages: Math.ceil(total / limit),
         },
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
       if (error instanceof z.ZodError) {
         return res.status(400).json({
           success: false,
@@ -67,7 +71,7 @@ export class AdminController {
       }
       res.status(500).json({
         success: false,
-        error: error.message || 'Failed to fetch products',
+        error: getErrorMessage(error, 'Failed to fetch products'),
       });
     }
   }
@@ -98,10 +102,10 @@ export class AdminController {
         success: true,
         data: product,
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
       res.status(500).json({
         success: false,
-        error: error.message || 'Failed to fetch product',
+        error: getErrorMessage(error, 'Failed to fetch product'),
       });
     }
   }
@@ -139,7 +143,7 @@ export class AdminController {
         message: 'Product created successfully',
         data: product,
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
       if (error instanceof z.ZodError) {
         return res.status(400).json({
           success: false,
@@ -149,7 +153,7 @@ export class AdminController {
       }
       res.status(400).json({
         success: false,
-        error: error.message || 'Failed to create product',
+        error: getErrorMessage(error, 'Failed to create product'),
       });
     }
   }
@@ -195,7 +199,7 @@ export class AdminController {
         message: 'Product updated successfully',
         data: product,
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
       if (error instanceof z.ZodError) {
         return res.status(400).json({
           success: false,
@@ -205,7 +209,7 @@ export class AdminController {
       }
       res.status(400).json({
         success: false,
-        error: error.message || 'Failed to update product',
+        error: getErrorMessage(error, 'Failed to update product'),
       });
     }
   }
@@ -226,10 +230,10 @@ export class AdminController {
         success: true,
         message: 'Product deleted successfully',
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
       res.status(400).json({
         success: false,
-        error: error.message || 'Failed to delete product',
+        error: getErrorMessage(error, 'Failed to delete product'),
       });
     }
   }
@@ -280,7 +284,7 @@ export class AdminController {
           totalPages: Math.ceil(total / limit),
         },
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
       if (error instanceof z.ZodError) {
         return res.status(400).json({
           success: false,
@@ -290,7 +294,7 @@ export class AdminController {
       }
       res.status(500).json({
         success: false,
-        error: error.message || 'Failed to fetch orders',
+        error: getErrorMessage(error, 'Failed to fetch orders'),
       });
     }
   }
@@ -332,10 +336,10 @@ export class AdminController {
         success: true,
         data: order,
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
       res.status(500).json({
         success: false,
-        error: error.message || 'Failed to fetch order',
+        error: getErrorMessage(error, 'Failed to fetch order'),
       });
     }
   }
@@ -372,7 +376,7 @@ export class AdminController {
         message: 'Order status updated successfully',
         data: order,
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
       if (error instanceof z.ZodError) {
         return res.status(400).json({
           success: false,
@@ -382,7 +386,7 @@ export class AdminController {
       }
       res.status(400).json({
         success: false,
-        error: error.message || 'Failed to update order status',
+        error: getErrorMessage(error, 'Failed to update order status'),
       });
     }
   }
@@ -432,7 +436,7 @@ export class AdminController {
           totalPages: Math.ceil(total / limit),
         },
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
       if (error instanceof z.ZodError) {
         return res.status(400).json({
           success: false,
@@ -442,7 +446,7 @@ export class AdminController {
       }
       res.status(500).json({
         success: false,
-        error: error.message || 'Failed to fetch users',
+        error: getErrorMessage(error, 'Failed to fetch users'),
       });
     }
   }
@@ -480,10 +484,10 @@ export class AdminController {
           totalRevenue: totalRevenue._sum.total || 0,
         },
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
       res.status(500).json({
         success: false,
-        error: error.message || 'Failed to fetch stats',
+        error: getErrorMessage(error, 'Failed to fetch stats'),
       });
     }
   }

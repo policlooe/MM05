@@ -21,10 +21,6 @@ export const OptimizedProductCard = memo(({
 
   const handleAddToCart = useCallback(() => {
     add(product);
-    toast.success("✓ Добавлено в корзину", { 
-      description: product.name,
-      duration: 2000
-    });
   }, [product, add]);
 
   const toggleFavorite = useCallback((e: React.MouseEvent) => {

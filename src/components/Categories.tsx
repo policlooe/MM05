@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+﻿import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Store, Percent, type LucideIcon } from "lucide-react";
 import { categories } from "@/data/products";
@@ -88,7 +88,7 @@ export function Categories() {
 
       {/* Категории товаров */}
       <div>
-        <h2 className="text-2xl font-semibold tracking-tight mb-3 md:mb-4 px-0.5">
+        <h2 className="text-2xl font-semibold mb-3 md:mb-4 px-0.5">
           Категории
         </h2>
         <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2 md:gap-3">

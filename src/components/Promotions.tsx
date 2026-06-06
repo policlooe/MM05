@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+﻿import { Link } from "react-router-dom";
 import { useState, memo } from "react";
 import { ShoppingBag, Clock } from "lucide-react";
 import { formatPrice } from "@/store/cart";
@@ -81,7 +81,7 @@ export const Promotions = memo(function Promotions() {
         {/* Заголовок секции */}
         <div data-reveal className="flex items-center justify-between mb-6 md:mb-8">
           <div>
-            <h2 className="text-3xl font-semibold tracking-tight mb-2">
+            <h2 className="text-3xl font-semibold mb-2">
               Акции и скидки
             </h2>
             <p className="text-sm text-muted-foreground">

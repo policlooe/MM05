@@ -1,4 +1,4 @@
-import { useParams, Link, useNavigate } from "react-router-dom";
+﻿import { useParams, Link, useNavigate } from "react-router-dom";
 import { useState, useEffect, useMemo } from "react";
 import { ChevronLeft, ShoppingBag, MessageCircle, Check, Clock } from "lucide-react";
 import { motion } from "framer-motion";
@@ -18,7 +18,6 @@ import { ProductConfiguratorCollapsible } from "@/components/ProductConfigurator
 import { SelectedConfiguration, calculateConfiguredPrice } from "@/types/product-config";
 import { SelectedConfiguration as AdvancedSelectedConfiguration } from "@/types/product-configuration";
 import { CONTACTS } from "@/lib/contacts";
-import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { ecommerce } from "@/lib/web-vitals";
 import { useRecentlyViewed } from "@/store/recentlyViewed";
@@ -237,7 +236,7 @@ export default function ProductPage() {
                 </span>
               )}
               <p className="text-xs text-muted-foreground font-medium mb-1.5">{product.category}</p>
-              <h1 className="text-4xl md:text-5xl font-bold tracking-tight leading-tight break-words">{product.name}</h1>
+              <h1 className="text-4xl md:text-5xl font-bold leading-tight break-words">{product.name}</h1>
               <p className="text-sm text-muted-foreground leading-relaxed break-words max-w-2xl">
                 {product.shortDescription}
               </p>
@@ -311,13 +310,12 @@ export default function ProductPage() {
               <div className="flex flex-col gap-2 w-full">
                 <button
                   onClick={() => {
-                    const configToUse = product.advancedConfiguration 
+                    const configToUse: SelectedConfiguration = product.advancedConfiguration
                       ? advancedConfig
                       : product.configuration 
                         ? { ...selectedConfig, options: { ...selectedConfig.options, assembly: assemblySelected } }
                         : { variants: {}, options: { assembly: assemblySelected } };
-                    add(product, configToUse as any, finalPrice);
-                    toast.success("Добавлено в корзину", { description: product.name });
+                    add(product, configToUse, finalPrice);
                   }}
                   className="w-full inline-flex items-center justify-center gap-2 bg-accent hover:bg-accent-hover text-accent-foreground py-3 rounded-lg font-semibold text-sm transition-colors shadow-sm active:scale-[0.98]"
                 >

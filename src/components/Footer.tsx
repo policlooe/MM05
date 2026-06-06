@@ -1,4 +1,4 @@
-import { Phone, MessageCircle, Send, Users } from "lucide-react";
+﻿import { Phone, MessageCircle, Send, Users } from "lucide-react";
 import { Link } from "react-router-dom";
 import { AddressLink } from "@/components/AddressLink";
 import { CONTACTS } from "@/lib/contacts";
@@ -10,7 +10,7 @@ export function Footer() {
       <div className="container-x pt-10">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
           <div>
-            <Link to="/" className="text-2xl font-bold text-foreground block mb-3 tracking-tight">
+            <Link to="/" className="text-2xl font-bold text-foreground block mb-3">
               MM05
             </Link>
             <p className="text-sm text-muted-foreground leading-relaxed max-w-xs">
