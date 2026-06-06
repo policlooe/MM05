@@ -9,23 +9,29 @@ import { CartSidebar } from "@/components/CartSidebar";
 import { MobileNav } from "@/components/MobileNav";
 import { SEO } from "@/components/SEO";
 import { CatalogSidebar } from "@/components/CatalogSidebar";
+import {
+  DEFAULT_CATALOG_CATEGORY,
+  DEFAULT_CATALOG_MAX_PRICE,
+  DEFAULT_CATALOG_SORT,
+  getCatalogProducts,
+  type CatalogCategoryFilter,
+  type CatalogSort,
+} from "@/lib/catalog-products";
 
 // Lazy load heavy components
 const Footer = lazy(() => import("@/components/Footer").then(m => ({ default: m.Footer })));
 const ChatLauncher = lazy(() => import("@/components/ChatLauncher").then(m => ({ default: m.ChatLauncher })));
 
-type Sort = "popular" | "price_asc" | "price_desc";
-
 export default function Catalog() {
-  const [params] = useSearchParams();
+  const [params, setParams] = useSearchParams();
   const [query, setQuery] = useState(params.get("search") ?? params.get("q") ?? "");
   const initialCat = params.get("cat") as Category | null;
   const showPromo = params.get("promo") === "true";
-  const [active, setActive] = useState<Category | "Все">(
-    initialCat && (allCategories as readonly string[]).includes(initialCat) ? initialCat : "Все"
+  const [active, setActive] = useState<CatalogCategoryFilter>(
+    initialCat && (allCategories as readonly string[]).includes(initialCat) ? initialCat : DEFAULT_CATALOG_CATEGORY
   );
-  const [sort, setSort] = useState<Sort>("popular");
-  const [maxPrice, setMaxPrice] = useState<number>(200000);
+  const [sort, setSort] = useState<CatalogSort>(DEFAULT_CATALOG_SORT);
+  const [maxPrice, setMaxPrice] = useState<number>(DEFAULT_CATALOG_MAX_PRICE);
   const [filtersOpen, setFiltersOpen] = useState(false);
 
   // Прокрутка вверх при открытии страницы каталога
@@ -37,42 +43,27 @@ export default function Catalog() {
   useEffect(() => {
     const q = params.get("search") ?? params.get("q");
     const c = params.get("cat") as Category | null;
-    if (q !== null) setQuery(q);
-    if (c && (allCategories as readonly string[]).includes(c)) setActive(c);
+    setQuery(q ?? "");
+    setActive(c && (allCategories as readonly string[]).includes(c) ? c : DEFAULT_CATALOG_CATEGORY);
   }, [params]);
 
   const filtered = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    let list = products.filter((p) => {
-      if (active !== "Все" && p.category !== active) return false;
-      if (p.price > maxPrice) return false;
-      if (q && !(`${p.name} ${p.shortDescription} ${p.category}`.toLowerCase().includes(q))) return false;
-      return true;
+    return getCatalogProducts({
+      products,
+      query,
+      active,
+      sort,
+      maxPrice,
+      promoFirst: showPromo,
     });
-    
-    // Если showPromo, показываем только товары со скидкой первыми
-    if (showPromo) {
-      list = [...list].sort((a, b) => {
-        const aHasDiscount = a.oldPrice && a.oldPrice > a.price;
-        const bHasDiscount = b.oldPrice && b.oldPrice > b.price;
-        if (aHasDiscount && !bHasDiscount) return -1;
-        if (!aHasDiscount && bHasDiscount) return 1;
-        return 0;
-      });
-    } else if (sort === "price_asc") {
-      list = [...list].sort((a, b) => a.price - b.price);
-    } else if (sort === "price_desc") {
-      list = [...list].sort((a, b) => b.price - a.price);
-    }
-    
-    return list;
   }, [query, active, sort, maxPrice, showPromo]);
 
   const reset = () => {
     setQuery("");
-    setActive("Все");
-    setSort("popular");
-    setMaxPrice(200000);
+    setActive(DEFAULT_CATALOG_CATEGORY);
+    setSort(DEFAULT_CATALOG_SORT);
+    setMaxPrice(DEFAULT_CATALOG_MAX_PRICE);
+    setParams({});
   };
 
   return (
@@ -99,7 +90,7 @@ export default function Catalog() {
         </div>
 
         {/* Поиск */}
-        <form className="relative mb-4" role="search">
+        <form className="relative mb-4" role="search" onSubmit={(event) => event.preventDefault()}>
           <Search className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 stroke-2 text-muted-foreground/90" />
           <input
             type="search"
@@ -112,6 +103,7 @@ export default function Catalog() {
           />
           {query && (
             <button
+              type="button"
               onClick={() => setQuery("")}
               className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-muted-foreground hover:text-accent"
               aria-label="Очистить"
@@ -165,7 +157,7 @@ export default function Catalog() {
               <p className="text-xs uppercase font-semibold tracking-wider text-muted-foreground mb-2">Сортировка</p>
               <select
                 value={sort}
-                onChange={(e) => setSort(e.target.value as Sort)}
+                onChange={(e) => setSort(e.target.value as CatalogSort)}
                 className="w-full bg-secondary rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-accent/40"
               >
                 <option value="popular">По популярности</option>

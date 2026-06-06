@@ -1,47 +1,48 @@
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { X, LayoutGrid, SlidersHorizontal } from "lucide-react";
-import { products, allCategories, type Category } from "@/data/products";
+import { products, allCategories } from "@/data/products";
 import { formatPrice, useCart } from "@/store/cart";
 import { PremiumIconMark } from "@/components/PremiumIcon";
 import { useCatalog } from "@/hooks/use-catalog";
 import { useScrollLock } from "@/hooks/useScrollLock";
+import {
+  DEFAULT_CATALOG_CATEGORY,
+  DEFAULT_CATALOG_MAX_PRICE,
+  DEFAULT_CATALOG_SORT,
+  getCatalogProducts,
+  type CatalogCategoryFilter,
+  type CatalogSort,
+} from "@/lib/catalog-products";
 
 const filters = ["Все", ...allCategories] as const;
-type Sort = "popular" | "price_asc" | "price_desc";
 
 export function CatalogSidebar() {
   const { isOpen, close } = useCatalog();
   const { add } = useCart();
-  const [active, setActive] = useState<Category | "Все">("Все");
+  const [active, setActive] = useState<CatalogCategoryFilter>(DEFAULT_CATALOG_CATEGORY);
   const [query, setQuery] = useState("");
-  const [sort, setSort] = useState<Sort>("popular");
-  const [maxPrice, setMaxPrice] = useState<number>(200000);
+  const [sort, setSort] = useState<CatalogSort>(DEFAULT_CATALOG_SORT);
+  const [maxPrice, setMaxPrice] = useState<number>(DEFAULT_CATALOG_MAX_PRICE);
   const [showFilters, setShowFilters] = useState(false);
 
   useScrollLock(isOpen);
 
   const filtered = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    let list = products.filter((p) => {
-      if (active !== "Все" && p.category !== active) return false;
-      if (p.price > maxPrice) return false;
-      if (q && !(`${p.name} ${p.shortDescription}`.toLowerCase().includes(q))) return false;
-      return true;
+    return getCatalogProducts({
+      products,
+      query,
+      active,
+      sort,
+      maxPrice,
     });
-    
-    // Сортировка
-    if (sort === "price_asc") list = [...list].sort((a, b) => a.price - b.price);
-    else if (sort === "price_desc") list = [...list].sort((a, b) => b.price - a.price);
-    
-    return list;
   }, [query, active, sort, maxPrice]);
 
   const reset = () => {
     setQuery("");
-    setActive("Все");
-    setSort("popular");
-    setMaxPrice(200000);
+    setActive(DEFAULT_CATALOG_CATEGORY);
+    setSort(DEFAULT_CATALOG_SORT);
+    setMaxPrice(DEFAULT_CATALOG_MAX_PRICE);
   };
 
   const handleAddToCart = (product: typeof products[0]) => {
@@ -153,7 +154,7 @@ export function CatalogSidebar() {
                   <h3 id="sort-filter" className="text-xs font-medium text-muted-foreground mb-2">Сортировка</h3>
                   <select
                     value={sort}
-                    onChange={(e) => setSort(e.target.value as Sort)}
+                    onChange={(e) => setSort(e.target.value as CatalogSort)}
                     className="w-full px-3 py-2 bg-secondary border border-border rounded-lg text-sm outline-none focus:ring-2 focus:ring-accent/18"
                     aria-label="Выберите сортировку"
                   >
