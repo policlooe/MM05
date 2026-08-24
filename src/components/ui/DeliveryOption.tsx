@@ -23,7 +23,7 @@ export function DeliveryOption({
       onClick={onClick}
       disabled={disabled}
       className={cn(
-        "flex w-full items-center justify-between rounded-lg border-2 p-4 text-left transition-all",
+        "flex w-full items-center justify-between rounded-lg border-2 p-4 text-left transition",
         "hover:border-primary/50 focus:outline-none focus:ring-2 focus:ring-primary/20",
         selected
           ? "border-primary bg-primary/5"
@@ -35,7 +35,7 @@ export function DeliveryOption({
       <div className="flex items-center gap-3">
         <div
           className={cn(
-            "h-5 w-5 rounded-full border-2 transition-all",
+            "h-5 w-5 rounded-full border-2 transition",
             selected
               ? "border-primary bg-primary"
               : "border-gray-300 bg-white"

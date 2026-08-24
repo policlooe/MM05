@@ -10,7 +10,17 @@ export interface CreateCheckoutSessionResponse {
     url: string;
     orderId: string;
     orderNumber: string;
+    provider?: 'STRIPE' | 'YOOKASSA';
   };
+}
+
+export interface OrderPaymentStatusResponse {
+  orderId: string;
+  orderNumber: string;
+  paymentStatus: 'PENDING' | 'PROCESSING' | 'SUCCEEDED' | 'FAILED' | 'REFUNDED' | string;
+  liveProviderStatus?: string | null;
+  orderStatus: string;
+  provider: 'STRIPE' | 'YOOKASSA' | null;
 }
 
 export interface CartItem {
@@ -67,13 +77,16 @@ export const paymentService = {
   },
 
   /**
-   * Redirect to Stripe Checkout
+   * Redirect to provider checkout
    * @throws {PaymentError} If URL is invalid or insecure
    */
-  async redirectToCheckout(url: string): Promise<void> {
+  async redirectToCheckout(url: string, provider?: string): Promise<void> {
     try {
       const checkoutUrl = new URL(url);
-      const allowedHosts = new Set(['checkout.stripe.com', 'buy.stripe.com']);
+      const allowedHosts =
+        provider === 'YOOKASSA'
+          ? new Set(['yoomoney.ru', 'www.yoomoney.ru', 'sbp.yookassa.ru', 'yookassa.ru'])
+          : new Set(['checkout.stripe.com', 'buy.stripe.com']);
 
       if (checkoutUrl.protocol !== 'https:' || !allowedHosts.has(checkoutUrl.hostname)) {
         throw new PaymentError(
@@ -98,12 +111,27 @@ export const paymentService = {
   async checkoutAndRedirect(orderId: string): Promise<void> {
     try {
       const response = await this.createCheckoutSession(orderId);
-      await this.redirectToCheckout(response.data.url);
+      await this.redirectToCheckout(response.data.url, response.data.provider);
     } catch (error) {
       if (error instanceof PaymentError) {
         throw error;
       }
       throw new PaymentError('Ошибка при оформлении заказа', 'UNKNOWN');
     }
+  },
+
+  /**
+   * Статус оплаты заказа (поллинг после возврата с платёжной страницы).
+   * Для гостевых заказов требуется capability-параметр pid (= providerPaymentId).
+   */
+  async getOrderPaymentStatus(
+    orderId: string,
+    pid?: string | null
+  ): Promise<OrderPaymentStatusResponse> {
+    const { data } = await api.get<OrderPaymentStatusResponse>(
+      `/payment/order/${orderId}/status`,
+      { params: pid ? { pid } : undefined }
+    );
+    return data;
   },
 };

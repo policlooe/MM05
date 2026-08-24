@@ -1,24 +1,76 @@
-import { useEffect, lazy, Suspense } from 'react';
+import { useEffect, useState, lazy, Suspense } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
-import { CheckCircle2, Package, Home, ShoppingBag } from 'lucide-react';
+import { CheckCircle2, Package, Home, ShoppingBag, Loader2 } from 'lucide-react';
 import { Navbar } from '@/components/Navbar';
 import { MobileNav } from '@/components/MobileNav';
 import { Breadcrumbs } from '@/components/Breadcrumbs';
 import { useCart } from '@/store/cart';
+import { paymentService } from '@/services/payment';
 
 // Lazy load heavy components
 const Footer = lazy(() => import('@/components/Footer').then(m => ({ default: m.Footer })));
 const ChatLauncher = lazy(() => import('@/components/ChatLauncher').then(m => ({ default: m.ChatLauncher })));
 
+type ConfirmState = 'unknown' | 'confirmed' | 'pending' | 'failed';
+
 export default function PaymentSuccess() {
   const [searchParams] = useSearchParams();
   const { clear } = useCart();
   const sessionId = searchParams.get('session_id');
+  const orderId = searchParams.get('order_id');
+  const provider = searchParams.get('provider');
+
+  // Для СБП/ЮKassa подтверждаем оплату серверным поллингом,
+  // а не доверяем факту возврата на success-URL
+  const [confirmState, setConfirmState] = useState<ConfirmState>(
+    orderId && provider === 'yookassa' ? 'pending' : 'confirmed'
+  );
 
   useEffect(() => {
     window.scrollTo(0, 0);
     clear();
   }, [clear]);
+
+  useEffect(() => {
+    if (!orderId || confirmState !== 'pending') return;
+
+    let cancelled = false;
+    let attempts = 0;
+    const maxAttempts = 10;
+
+    const poll = async () => {
+      try {
+        const status = await paymentService.getOrderPaymentStatus(orderId);
+        if (cancelled) return;
+
+        if (status.paymentStatus === 'SUCCEEDED') {
+          setConfirmState('confirmed');
+          return;
+        }
+        if (status.paymentStatus === 'FAILED') {
+          setConfirmState('failed');
+          return;
+        }
+      } catch {
+        // ошибка сети — продолжаем поллинг до лимита
+      }
+
+      attempts += 1;
+      if (attempts >= maxAttempts) {
+        if (!cancelled) setConfirmState('unknown');
+        return;
+      }
+      setTimeout(poll, 3000);
+    };
+
+    const timer = setTimeout(poll, 1500);
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
+  }, [orderId, confirmState]);
+
+  const isConfirmed = confirmState === 'confirmed';
 
   return (
     <div className="min-h-screen bg-background">
@@ -29,11 +81,23 @@ export default function PaymentSuccess() {
           {/* Success Icon */}
           <div className="text-center mb-8">
             <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-green-100">
-              <CheckCircle2 className="h-12 w-12 text-green-600" />
+              {isConfirmed ? (
+                <CheckCircle2 className="h-12 w-12 text-green-600" />
+              ) : (
+                <Loader2 className="h-12 w-12 text-accent animate-spin" />
+              )}
             </div>
-            <h1 className="font-serif text-3xl font-semibold mb-3">Оплата успешна!</h1>
+            <h1 className="font-serif text-3xl font-semibold mb-3">
+              {confirmState === 'failed' ? 'Оплата не прошла' : isConfirmed ? 'Оплата успешна!' : 'Подтверждаем оплату…'}
+            </h1>
             <p className="text-muted-foreground">
-              Ваш заказ успешно оплачен и принят в обработку
+              {confirmState === 'failed'
+                ? 'Платёж не был завершён. Вы можете попробовать оплатить заказ ещё раз.'
+                : confirmState === 'unknown'
+                  ? 'Статус оплаты пока не подтверждён банком — обычно это занимает пару минут. Статус заказа можно отслеживать в личном кабинете.'
+                  : isConfirmed
+                    ? 'Ваш заказ успешно оплачен и принят в обработку'
+                    : 'Получаем подтверждение от банка. Это обычно занимает меньше минуты'}
             </p>
           </div>
 

@@ -7,7 +7,7 @@ export function MobileNav() {
   const linkClass = ({ isActive }: { isActive: boolean }) =>
     cn(
       "flex flex-col items-center justify-center gap-1 py-2 px-2 rounded-lg min-w-0 flex-1 min-h-[44px]",
-      "transition-all duration-150 active:scale-95",
+      "transition duration-150 active:scale-95",
       isActive
         ? "text-accent"
         : "text-muted-foreground"

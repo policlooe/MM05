@@ -40,6 +40,6 @@ Orchestration: for large changes, follow `agents-orchestrator` phases (plan → 
 
 ## Code hygiene
 
-- One product configurator path: `ProductConfiguratorV2` + `ProductConfiguratorCollapsible` on `ProductPage`.
+- One product configurator path: `ProductConfiguratorCollapsible` on `ProductPage`, with shared types in `src/types/product-configuration.ts`. Do not reintroduce a second configurator module or legacy array-based schema.
 - Do not add root-level session/summary markdown files; update `README.md` or `DEPLOY.md` instead.
 - Keep `.kiro/skills/` — do not delete agent definitions.

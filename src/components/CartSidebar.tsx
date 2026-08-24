@@ -23,23 +23,25 @@ export function CartSidebar() {
 
   return (
     <>
-      {isOpen && (
-        <>
-          <div
-            onClick={close}
-            className="ios-fixed-overlay fixed inset-0 bg-black/50 z-[60]"
-            data-scroll-overlay="true"
-            aria-hidden="true"
-          />
-          <div
-            ref={focusTrapRef}
-            onKeyDown={handleKeyDown}
-            role="dialog"
-            aria-modal="true"
-            aria-label="Корзина покупок"
-            aria-live="polite"
-            className="ios-fixed-panel fixed right-0 top-0 w-full max-w-md bg-surface shadow-2xl z-[70] flex flex-col"
-          >
+      <div
+        onClick={close}
+        className={`ios-fixed-overlay fixed inset-0 bg-black/50 z-[60] transition-opacity duration-[var(--duration-normal)] [transition-timing-function:var(--ease-out)] ${
+          isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
+        }`}
+        data-scroll-overlay="true"
+        aria-hidden="true"
+      />
+      <div
+        ref={focusTrapRef}
+        onKeyDown={handleKeyDown}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Корзина покупок"
+        aria-live="polite"
+        className={`ios-fixed-panel fixed right-0 top-0 w-full max-w-md bg-surface shadow-2xl z-[70] flex flex-col transition-[transform,visibility] duration-[var(--duration-drawer)] [transition-timing-function:var(--ease-drawer)] ${
+          isOpen ? 'visible translate-x-0' : 'invisible translate-x-full'
+        }`}
+      >
             <div className="p-6 border-b border-border flex items-center justify-between bg-surface">
               <div className="flex items-center gap-3">
                 <ShoppingBag className="w-6 h-6 stroke-[1.5] text-accent" aria-hidden="true" />
@@ -117,7 +119,7 @@ export function CartSidebar() {
                 </div>
                 <button 
                   onClick={handleCheckout}
-                  className="w-full bg-accent hover:bg-accent-hover text-white py-4 rounded-xl font-bold flex items-center justify-center gap-2 transition-all"
+                  className="w-full bg-accent hover:bg-accent-hover text-white py-4 rounded-xl font-bold flex items-center justify-center gap-2 transition"
                   aria-label="Перейти к оформлению заказа"
                 >
                   Оформить заказ
@@ -126,8 +128,6 @@ export function CartSidebar() {
               </div>
             )}
           </div>
-        </>
-      )}
     </>
   );
 }

@@ -132,7 +132,8 @@ export default function Checkout() {
 
       if (response.success) {
         const checkoutSession = await paymentService.createCheckoutSession(response.data.order.id);
-        await paymentService.redirectToCheckout(checkoutSession.data.url);
+        // Провайдер важен для allowlist хостов страницы оплаты (СБП ≠ Stripe)
+        await paymentService.redirectToCheckout(checkoutSession.data.url, checkoutSession.data.provider);
       }
     } catch (error: any) {
       console.error("Checkout error:", error);
@@ -183,7 +184,7 @@ export default function Checkout() {
                     onChange={handleChange("customerName")}
                     placeholder="Иванов Иван Иванович"
                     maxLength={100}
-                    className={`w-full px-4 py-3 border rounded-lg bg-background focus:outline-none focus:ring-2 transition-all ${
+                    className={`w-full px-4 py-3 border rounded-lg bg-background focus:outline-none focus:ring-2 transition ${
                       errors.customerName
                         ? "border-destructive focus:ring-destructive/20"
                         : "border-border focus:ring-accent/20 focus:border-accent"
@@ -216,7 +217,7 @@ export default function Checkout() {
                     onChange={handleChange("customerPhone")}
                     placeholder="+7 (999) 123-45-67"
                     maxLength={20}
-                    className={`w-full px-4 py-3 border rounded-lg bg-background focus:outline-none focus:ring-2 transition-all ${
+                    className={`w-full px-4 py-3 border rounded-lg bg-background focus:outline-none focus:ring-2 transition ${
                       errors.customerPhone
                         ? "border-destructive focus:ring-destructive/20"
                         : "border-border focus:ring-accent/20 focus:border-accent"
@@ -248,7 +249,7 @@ export default function Checkout() {
                     value={form.customerEmail}
                     onChange={handleChange("customerEmail")}
                     placeholder="example@mail.ru"
-                    className={`w-full px-4 py-3 border rounded-lg bg-background focus:outline-none focus:ring-2 transition-all ${
+                    className={`w-full px-4 py-3 border rounded-lg bg-background focus:outline-none focus:ring-2 transition ${
                       errors.customerEmail
                         ? "border-destructive focus:ring-destructive/20"
                         : "border-border focus:ring-accent/20 focus:border-accent"
@@ -281,7 +282,7 @@ export default function Checkout() {
                     onChange={handleChange("deliveryAddress")}
                     placeholder="г. Махачкала, ул. Ленина, д. 10, кв. 5"
                     maxLength={500}
-                    className={`w-full px-4 py-3 border rounded-lg bg-background focus:outline-none focus:ring-2 transition-all ${
+                    className={`w-full px-4 py-3 border rounded-lg bg-background focus:outline-none focus:ring-2 transition ${
                       errors.deliveryAddress
                         ? "border-destructive focus:ring-destructive/20"
                         : "border-border focus:ring-accent/20 focus:border-accent"
@@ -314,7 +315,7 @@ export default function Checkout() {
                     placeholder="Дополнительная информация о заказе..."
                     maxLength={1000}
                     rows={4}
-                    className="w-full px-4 py-3 border border-border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-accent/20 focus:border-accent transition-all resize-y"
+                    className="w-full px-4 py-3 border border-border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-accent/20 focus:border-accent transition resize-y"
                   />
                 </div>
 

@@ -1,7 +1,7 @@
 import Stripe from 'stripe';
 import { OrderStatus, PaymentStatus, Prisma } from '@prisma/client';
-import { emailService } from './email.service';
-import { captureError, captureMessage } from '../lib/sentry';
+import { emailService } from './email.service.js';
+import { captureError, captureMessage } from '../lib/sentry.js';
 import { prisma } from '../lib/prisma.js';
 
 if (!process.env.STRIPE_SECRET_KEY) {
@@ -9,7 +9,7 @@ if (!process.env.STRIPE_SECRET_KEY) {
 }
 
 export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-  apiVersion: '2025-02-24.acacia',
+  apiVersion: '2026-04-22.dahlia',
   typescript: true,
 });
 
@@ -106,6 +106,8 @@ export class StripeService {
             status: OrderStatus.CONFIRMED,
             isStockReserved: false,
             stripePaymentId: getPaymentIntentId(session),
+            paymentProvider: 'STRIPE',
+            providerPaymentId: getPaymentIntentId(session),
             paidAt: new Date(),
             confirmedAt: new Date(),
           },
@@ -282,10 +284,23 @@ export class StripeService {
     return stripe.checkout.sessions.retrieve(sessionId);
   }
 
-  async createRefund(paymentIntentId: string, amount?: number): Promise<Stripe.Response<Stripe.Refund>> {
+  async createRefund(
+    paymentIntentId: string,
+    amount?: number,
+    reason?: string,
+    description?: string
+  ): Promise<Stripe.Response<Stripe.Refund>> {
+    // Stripe принимает reason только из фиксированного набора значений
+    const stripeReason =
+      reason === 'duplicate' || reason === 'fraudulent' || reason === 'requested_by_customer'
+        ? reason
+        : 'requested_by_customer';
+
     return stripe.refunds.create({
       payment_intent: paymentIntentId,
       amount: amount ? Math.round(amount * 100) : undefined,
+      reason: stripeReason,
+      ...(description ? { metadata: { description } } : {}),
     });
   }
 }

@@ -90,7 +90,7 @@ export const Promotions = memo(function Promotions() {
           </div>
           <Link
             to="/catalog?promo=true"
-            className="hidden md:inline-flex items-center gap-2 px-5 py-2.5 bg-accent hover:bg-accent-hover text-white rounded-lg text-sm font-medium transition-all shadow-sm hover:shadow-md hover:scale-105 active:scale-95"
+            className="hidden md:inline-flex items-center gap-2 px-5 py-2.5 bg-accent hover:bg-accent-hover text-white rounded-lg text-sm font-medium transition shadow-sm hover:shadow-md hover:scale-105 active:scale-95"
           >
             Все товары
           </Link>
@@ -189,7 +189,7 @@ export const Promotions = memo(function Promotions() {
         <div className="mt-6 md:hidden">
           <Link
             to="/catalog?promo=true"
-            className="flex items-center justify-center gap-2 w-full py-3.5 bg-accent hover:bg-accent-hover text-white rounded-xl text-sm font-medium transition-all shadow-sm active:scale-95"
+            className="flex items-center justify-center gap-2 w-full py-3.5 bg-accent hover:bg-accent-hover text-white rounded-xl text-sm font-medium transition shadow-sm active:scale-95"
           >
             Посмотреть все товары
           </Link>

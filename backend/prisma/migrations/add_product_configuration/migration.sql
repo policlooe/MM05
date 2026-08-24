@@ -1,2 +1,2 @@
 -- Add product configuration JSON used by configurable catalog items.
-ALTER TABLE "products" ADD COLUMN "configuration" JSONB DEFAULT '{}';
+ALTER TABLE "products" ADD COLUMN IF NOT EXISTS "configuration" JSONB DEFAULT '{}';

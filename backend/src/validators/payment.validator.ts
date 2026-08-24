@@ -27,3 +27,10 @@ export const createRefundSchema = z.object({
     .default('requested_by_customer'),
   description: z.string().max(500, 'Описание слишком длинное').optional(),
 });
+
+/**
+ * Схема валидации для параметра orderId (статус оплаты заказа)
+ */
+export const orderIdParamSchema = z.object({
+  orderId: z.string().uuid('Некорректный ID заказа'),
+});

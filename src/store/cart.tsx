@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, ReactNode, useCallback, useEffect, useMemo } from "react";
 import type { Product } from "@/data/products";
-import { SelectedConfiguration } from "@/types/product-config";
+import { SelectedConfiguration } from "@/types/product-configuration";
 import { toast } from "sonner";
 import { ecommerce } from "@/lib/web-vitals";
 

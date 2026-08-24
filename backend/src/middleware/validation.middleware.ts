@@ -32,7 +32,10 @@ export const validateBody = (schema: z.ZodSchema) => {
 export const validateQuery = (schema: z.ZodSchema) => {
   return async (req: Request, res: Response, next: NextFunction) => {
     try {
-      req.query = await schema.parseAsync(req.query);
+      // Express 5: req.query доступен только для чтения — мутируем содержимое,
+      // а не переприсваиваем свойство (иначе TypeError в production)
+      const parsed = await schema.parseAsync(req.query);
+      Object.assign(req.query as Record<string, unknown>, parsed);
       next();
     } catch (error) {
       if (error instanceof ZodError) {
@@ -57,7 +60,9 @@ export const validateQuery = (schema: z.ZodSchema) => {
 export const validateParams = (schema: z.ZodSchema) => {
   return async (req: Request, res: Response, next: NextFunction) => {
     try {
-      req.params = await schema.parseAsync(req.params);
+      // Аналогично req.query: не переприсваиваем, а объединяем (совместимость с Express 5)
+      const parsed = await schema.parseAsync(req.params);
+      Object.assign(req.params as Record<string, unknown>, parsed);
       next();
     } catch (error) {
       if (error instanceof ZodError) {

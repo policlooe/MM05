@@ -79,8 +79,9 @@ export class AuthController {
 
       const result = await AuthService.refresh(refreshToken);
 
-      // Обновляем accessToken в cookie
+      // Обновляем оба токена в cookie (refresh ротируется при каждом обновлении)
       res.cookie('accessToken', result.accessToken, ACCESS_COOKIE_OPTIONS);
+      res.cookie('refreshToken', result.refreshToken, REFRESH_COOKIE_OPTIONS);
 
       res.status(200).json({
         success: true,

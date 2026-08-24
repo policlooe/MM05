@@ -109,16 +109,12 @@ export class AuthService {
   static async refresh(refreshToken: string) {
     const payload = TokenService.verifyRefreshToken(refreshToken);
 
-    const tokenData = await TokenService.findRefreshToken(refreshToken);
-
-    if (!tokenData) {
-      throw new Error('Invalid refresh token');
-    }
-
-    if (tokenData.expiresAt < new Date()) {
-      await TokenService.removeRefreshToken(refreshToken);
-      throw new Error('Refresh token expired');
-    }
+    // Ротация: старый refresh инвалидируется, выдаётся новая пара токенов
+    const rotated = await TokenService.rotateRefreshToken(refreshToken, {
+      userId: payload.userId,
+      email: payload.email,
+      role: payload.role,
+    });
 
     const accessToken = TokenService.generateAccessToken({
       userId: payload.userId,
@@ -126,7 +122,7 @@ export class AuthService {
       role: payload.role,
     });
 
-    return { accessToken };
+    return { accessToken, refreshToken: rotated.refreshToken };
   }
 
   static async logout(refreshToken: string) {

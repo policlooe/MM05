@@ -1,6 +1,8 @@
 import { Request, Response } from 'express';
+import { Prisma } from '@prisma/client';
 import { z } from 'zod';
 import { prisma } from '../lib/prisma.js';
+import { productPaginationSchema } from '../validators/product.validator.js';
 
 const productSchema = z.object({
   name: z.string().min(1).max(200),
@@ -19,30 +21,64 @@ const productSchema = z.object({
 export class ProductController {
   static async getAllProducts(req: Request, res: Response): Promise<void> {
     try {
-      const products = await prisma.product.findMany({
-        where: { isActive: true },
-        include: { category: true },
-        orderBy: { createdAt: 'desc' },
-      });
+      // Публичный каталог: пагинация + фильтры + сортировка (query уже провалидирован роутом)
+      const q = productPaginationSchema.parse(req.query);
+
+      const where: Prisma.ProductWhereInput = {
+        isActive: true,
+        ...(q.category ? { categoryId: q.category } : {}),
+        ...(q.featured !== undefined ? { isFeatured: q.featured } : {}),
+        ...(q.inStock !== undefined ? { stockQuantity: q.inStock ? { gt: 0 } : { lte: 0 } } : {}),
+        ...((q.minPrice !== undefined || q.maxPrice !== undefined)
+          ? { price: { gte: q.minPrice ?? undefined, lte: q.maxPrice ?? undefined } }
+          : {}),
+        ...(q.search
+          ? {
+              OR: [
+                { name: { contains: q.search, mode: 'insensitive' } },
+                { shortDescription: { contains: q.search, mode: 'insensitive' } },
+              ],
+            }
+          : {}),
+      };
+
+      const [products, total] = await Promise.all([
+        prisma.product.findMany({
+          where,
+          include: { category: true },
+          orderBy: { [q.sortBy]: q.sortOrder },
+          skip: (q.page - 1) * q.limit,
+          take: q.limit,
+        }),
+        prisma.product.count({ where }),
+      ]);
 
       res.json({
         success: true,
         data: products,
+        pagination: {
+          page: q.page,
+          limit: q.limit,
+          total,
+          totalPages: Math.ceil(total / q.limit),
+        },
       });
     } catch (error: unknown) {
+      console.error('Get products error:', error);
       res.status(500).json({
         success: false,
-        error: error instanceof Error ? error.message : 'Failed to fetch products',
+        error: 'Failed to fetch products',
       });
     }
   }
 
   static async getProductById(req: Request, res: Response): Promise<void> {
     try {
-      const { id } = req.params;
+      const id = String(req.params.id ?? '');
 
-      const product = await prisma.product.findUnique({
-        where: { id: id as string },
+      const product = await prisma.product.findFirst({
+        // Публичная выдача: только активные товары (по id ИЛИ slug)
+        where: { isActive: true, OR: [{ id }, { slug: id }] },
         include: { category: true },
       });
 
@@ -54,14 +90,20 @@ export class ProductController {
         return;
       }
 
+      // Счётчик просмотров — асинхронно, не блокирует ответ
+      void prisma.product
+        .update({ where: { id: product.id }, data: { viewsCount: { increment: 1 } } })
+        .catch(() => undefined);
+
       res.json({
         success: true,
         data: product,
       });
     } catch (error: unknown) {
+      console.error('Get product error:', error);
       res.status(500).json({
         success: false,
-        error: error instanceof Error ? error.message : 'Failed to fetch product',
+        error: 'Failed to fetch product',
       });
     }
   }
@@ -104,7 +146,7 @@ export class ProductController {
 
       res.status(500).json({
         success: false,
-        error: error instanceof Error ? error.message : 'Failed to create product',
+        error: 'Failed to create product',
       });
     }
   }
@@ -154,7 +196,7 @@ export class ProductController {
 
       res.status(500).json({
         success: false,
-        error: error instanceof Error ? error.message : 'Failed to update product',
+        error: 'Failed to update product',
       });
     }
   }
@@ -174,7 +216,7 @@ export class ProductController {
     } catch (error: unknown) {
       res.status(500).json({
         success: false,
-        error: error instanceof Error ? error.message : 'Failed to delete product',
+        error: 'Failed to delete product',
       });
     }
   }

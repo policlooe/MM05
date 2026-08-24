@@ -23,8 +23,12 @@ const env = validateEnv();
 
 const app: Express = express();
 
-// Sentry initialization
-initSentry();
+// Railway/Vercel проксируют запросы: доверяем одному proxy-hop,
+// иначе req.ip = IP прокси и rate limiter блокирует всех клиентов разом
+app.set('trust proxy', 1);
+
+// Sentry initialization (async: нативный профайлер подгружается опционально)
+void initSentry();
 
 const FRONTEND_URL = env.FRONTEND_URL;
 const ALLOWED_ORIGINS = new Set(
@@ -77,8 +81,9 @@ if (process.env.NODE_ENV !== 'test') {
 app.use('/api/webhook', express.raw({ type: 'application/json' }), webhookRoutes);
 
 // JSON parser for all other routes
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+// 1mb достаточно для JSON API (заказы с конфигурациями); 10mb — вектор DoS
+app.use(express.json({ limit: '1mb' }));
+app.use(express.urlencoded({ extended: true, limit: '1mb' }));
 
 // CSRF token generator (must be after cookieParser and before routes)
 app.use(csrfTokenGenerator);

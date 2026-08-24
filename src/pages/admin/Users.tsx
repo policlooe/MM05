@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import api from '@/services/api';
-import { toast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { ru } from 'date-fns/locale';
 
@@ -49,11 +49,7 @@ export default function Users() {
       setUsers(response.data.data);
     } catch (error) {
       console.error(error);
-      toast({
-        title: 'Ошибка',
-        description: 'Не удалось загрузить пользователей',
-        variant: 'destructive',
-      });
+      toast.error('Не удалось загрузить пользователей');
     } finally {
       setLoading(false);
     }

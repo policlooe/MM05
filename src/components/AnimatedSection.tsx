@@ -47,7 +47,7 @@ export function AnimatedSection({
           gsap.to(batch, {
             autoAlpha: 1,
             y: 0,
-            duration: 0.72,
+            duration: 0.55,
             ease: "power3.out",
             stagger: 0.07,
             overwrite: "auto",

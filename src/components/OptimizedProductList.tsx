@@ -85,14 +85,14 @@ export const OptimizedProductCard = memo(({
           {/* Favorite Button */}
           <button
             onClick={toggleFavorite}
-            className="absolute top-2 right-2 w-9 h-9 bg-background/95 border border-border rounded-full flex items-center justify-center shadow-md hover:bg-accent hover:text-white transition-all duration-300 z-10"
+            className="absolute top-2 right-2 w-9 h-9 bg-background/95 border border-border rounded-full flex items-center justify-center shadow-md hover:bg-accent hover:text-white transition duration-300 z-10"
             aria-label={isInFavorites 
               ? `Удалить ${product.name} из избранного` 
               : `Добавить ${product.name} в избранное`}
             aria-pressed={isInFavorites}
           >
             <Heart 
-              className={`w-4 h-4 stroke-2 transition-all ${isInFavorites ? 'fill-current text-red-500' : ''}`}
+              className={`w-4 h-4 stroke-2 transition ${isInFavorites ? 'fill-current text-red-500' : ''}`}
               aria-hidden="true"
             />
           </button>
@@ -120,7 +120,7 @@ export const OptimizedProductCard = memo(({
         {/* Кнопка - прижата к низу */}
         <button
           onClick={handleAddToCart}
-          className="mt-auto w-full bg-accent hover:bg-accent-hover text-white text-sm font-medium py-2 rounded-lg transition-all flex items-center justify-center gap-1.5 h-[36px]"
+          className="mt-auto w-full bg-accent hover:bg-accent-hover text-white text-sm font-medium py-2 rounded-lg transition flex items-center justify-center gap-1.5 h-[36px]"
           aria-label={`Добавить ${product.name} в корзину за ${formatPrice(product.price)}`}
         >
           <ShoppingBag className="w-4 h-4 stroke-2" aria-hidden="true" />

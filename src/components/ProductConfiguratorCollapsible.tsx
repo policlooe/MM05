@@ -118,7 +118,7 @@ export function ProductConfiguratorCollapsible({
   return (
     <div className={cn("space-y-3", className)}>
       {/* МАСТЕР-БЛОК: Дополнительные опции */}
-      <div className="bg-white border border-border/60 rounded-xl overflow-hidden hover:shadow-sm transition-all shadow-sm">
+      <div className="bg-white border border-border/60 rounded-xl overflow-hidden hover:shadow-sm transition shadow-sm">
         {/* Заголовок мастер-блока */}
         <button
           onClick={() => setIsMasterExpanded(!isMasterExpanded)}
@@ -209,7 +209,7 @@ export function ProductConfiguratorCollapsible({
                             disabled={isDisabled}
                             whileTap={!isDisabled ? { scale: 0.97 } : {}}
                             className={cn(
-                              "relative px-4 py-3 rounded-lg border text-sm transition-all text-left",
+                              "relative px-4 py-3 rounded-lg border text-sm transition text-left",
                               "flex flex-col gap-1.5 min-h-[60px]",
                               isSelected
                                 ? "border-accent bg-accent/10 text-accent shadow-sm"
@@ -232,9 +232,10 @@ export function ProductConfiguratorCollapsible({
                             <AnimatePresence>
                               {isSelected && (
                                 <motion.div
-                                  initial={{ scale: 0 }}
-                                  animate={{ scale: 1 }}
-                                  exit={{ scale: 0 }}
+                                  initial={{ scale: 0.6, opacity: 0 }}
+                                  animate={{ scale: 1, opacity: 1 }}
+                                  exit={{ scale: 0.6, opacity: 0 }}
+                                  transition={{ type: "spring", duration: 0.3, bounce: 0.2 }}
                                   className="absolute -top-1 -right-1 w-5 h-5 bg-accent rounded-full flex items-center justify-center"
                                 >
                                   <Check className="w-3 h-3 text-white stroke-[2.5]" />
@@ -313,7 +314,7 @@ export function ProductConfiguratorCollapsible({
                         disabled={isDisabled}
                         whileTap={!isDisabled ? { scale: 0.98 } : {}}
                         className={cn(
-                          "w-full flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-3 px-4 py-3 rounded-lg border text-sm transition-all text-left",
+                          "w-full flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-3 px-4 py-3 rounded-lg border text-sm transition text-left",
                           isChecked
                             ? "border-accent bg-accent/10 shadow-sm"
                             : isDisabled
@@ -408,7 +409,7 @@ export function ProductConfiguratorCollapsible({
                             disabled={isDisabled}
                             whileTap={!isDisabled ? { scale: 0.98 } : {}}
                             className={cn(
-                              "w-full flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-3 px-4 py-3 rounded-lg border text-sm transition-all text-left",
+                              "w-full flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-3 px-4 py-3 rounded-lg border text-sm transition text-left",
                               isSelected
                                 ? "border-accent bg-accent/10 shadow-sm"
                                 : isDisabled

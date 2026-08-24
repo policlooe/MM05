@@ -13,10 +13,8 @@ import { MobileNav } from "@/components/MobileNav";
 import { ChatLauncher } from "@/components/ChatLauncher";
 import { ProductReviews } from "@/components/ProductReviews";
 import ImageViewer from "@/components/ImageViewer";
-import { ProductConfiguratorV2 } from "@/components/ProductConfiguratorV2";
 import { ProductConfiguratorCollapsible } from "@/components/ProductConfiguratorCollapsible";
-import { SelectedConfiguration, calculateConfiguredPrice } from "@/types/product-config";
-import { SelectedConfiguration as AdvancedSelectedConfiguration } from "@/types/product-configuration";
+import { SelectedConfiguration } from "@/types/product-configuration";
 import { CONTACTS } from "@/lib/contacts";
 import { cn } from "@/lib/utils";
 import { ecommerce } from "@/lib/web-vitals";
@@ -36,11 +34,6 @@ export default function ProductPage() {
   const [currentImage, setCurrentImage] = useState(0);
 
   const [selectedConfig, setSelectedConfig] = useState<SelectedConfiguration>({
-    variants: {},
-    options: {},
-  });
-
-  const [advancedConfig, setAdvancedConfig] = useState<AdvancedSelectedConfiguration>({
     variants: {},
     options: {},
   });
@@ -65,12 +58,6 @@ export default function ProductPage() {
 
   const handleConfigChange = (config: SelectedConfiguration, price: number) => {
     setSelectedConfig(config);
-    const assemblyPrice = assemblySelected && product?.assemblyPrice ? product.assemblyPrice : 0;
-    setFinalPrice(price + assemblyPrice);
-  };
-
-  const handleAdvancedConfigChange = (config: AdvancedSelectedConfiguration, price: number) => {
-    setAdvancedConfig(config);
     setFinalPrice(price);
   };
 
@@ -79,15 +66,11 @@ export default function ProductPage() {
   };
 
   useEffect(() => {
-    if (product) {
-      let basePrice = product.price;
-      if (product.configuration) {
-        basePrice = calculateConfiguredPrice(product.price, product.configuration, selectedConfig);
-      }
+    if (product && !product.configuration) {
       const assemblyPrice = assemblySelected && product.assemblyPrice ? product.assemblyPrice : 0;
-      setFinalPrice(basePrice + assemblyPrice);
+      setFinalPrice(product.price + assemblyPrice);
     }
-  }, [product, selectedConfig, assemblySelected]);
+  }, [product, assemblySelected]);
 
   const handleAssemblyToggle = () => {
     if (!product) return;
@@ -98,12 +81,8 @@ export default function ProductPage() {
     } catch (error) {
       console.error('Failed to save assembly state:', error);
     }
-    let basePrice = product.price;
-    if (product.configuration) {
-      basePrice = calculateConfiguredPrice(product.price, product.configuration, selectedConfig);
-    }
     const assemblyPrice = newValue && product.assemblyPrice ? product.assemblyPrice : 0;
-    setFinalPrice(basePrice + assemblyPrice);
+    setFinalPrice(product.price + assemblyPrice);
   };
 
   useEffect(() => {
@@ -210,7 +189,7 @@ export default function ProductPage() {
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
                       className={cn(
-                        "shrink-0 bg-surface rounded-lg overflow-hidden border-2 transition-all aspect-square hover:opacity-80 cursor-pointer w-[64px] h-[64px]",
+                        "shrink-0 bg-surface rounded-lg overflow-hidden border-2 transition aspect-square hover:opacity-80 cursor-pointer w-[64px] h-[64px]",
                         selectedImage === img 
                           ? "border-accent opacity-100 ring-2 ring-accent/20" 
                           : "border-border opacity-70"
@@ -253,7 +232,7 @@ export default function ProductPage() {
                   )}
                 </div>
 
-                {!product.advancedConfiguration && product.assemblyPrice && product.assemblyPrice > 0 && (
+                {!product.configuration && product.assemblyPrice && product.assemblyPrice > 0 && (
                   <div className="pt-2 border-t border-border mt-2">
                     <label className="flex items-center gap-2 cursor-pointer group">
                       <input
@@ -278,22 +257,14 @@ export default function ProductPage() {
                 )}
               </div>
 
-              {product.advancedConfiguration ? (
+              {product.configuration ? (
                 <div className="mb-3">
                   <ProductConfiguratorCollapsible
                     basePrice={product.price}
-                    configuration={product.advancedConfiguration}
-                    defaultImage={product.image}
-                    onConfigChange={handleAdvancedConfigChange}
-                    onImageChange={handleImageChange}
-                  />
-                </div>
-              ) : product.configuration ? (
-                <div className="mb-3">
-                  <ProductConfiguratorV2
-                    basePrice={product.price}
                     configuration={product.configuration}
+                    defaultImage={product.image}
                     onConfigChange={handleConfigChange}
+                    onImageChange={handleImageChange}
                   />
                 </div>
               ) : null}
@@ -310,11 +281,9 @@ export default function ProductPage() {
               <div className="flex flex-col gap-2 w-full">
                 <button
                   onClick={() => {
-                    const configToUse: SelectedConfiguration = product.advancedConfiguration
-                      ? advancedConfig
-                      : product.configuration 
-                        ? { ...selectedConfig, options: { ...selectedConfig.options, assembly: assemblySelected } }
-                        : { variants: {}, options: { assembly: assemblySelected } };
+                    const configToUse: SelectedConfiguration = product.configuration
+                      ? selectedConfig
+                      : { variants: {}, options: { assembly: assemblySelected } };
                     add(product, configToUse, finalPrice);
                   }}
                   className="w-full inline-flex items-center justify-center gap-2 bg-accent hover:bg-accent-hover text-accent-foreground py-3 rounded-lg font-semibold text-sm transition-colors shadow-sm active:scale-[0.98]"

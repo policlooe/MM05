@@ -44,7 +44,7 @@ export function ToggleOption({
   return (
     <label
       className={cn(
-        "flex cursor-pointer items-start gap-3 rounded-lg border-2 p-4 transition-all",
+        "flex cursor-pointer items-start gap-3 rounded-lg border-2 p-4 transition",
         "hover:border-primary/30 focus-within:ring-2 focus-within:ring-primary/20",
         checked
           ? "border-primary/30 bg-primary/5"

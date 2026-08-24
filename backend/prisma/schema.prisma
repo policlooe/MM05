@@ -20,14 +20,14 @@ enum UserRole {
 }
 
 enum OrderStatus {
-  NEW           // Новый заказ (только создан)
-  RESERVED      // Товар зарезервирован
-  CONFIRMED     // Подтвержден менеджером
-  PROCESSING    // В обработке
-  SHIPPED       // Отправлен
-  DELIVERED     // Доставлен
-  COMPLETED     // Завершен
-  CANCELLED     // Отменен
+  NEW // Новый заказ (только создан)
+  RESERVED // Товар зарезервирован
+  CONFIRMED // Подтвержден менеджером
+  PROCESSING // В обработке
+  SHIPPED // Отправлен
+  DELIVERED // Доставлен
+  COMPLETED // Завершен
+  CANCELLED // Отменен
 }
 
 enum PaymentStatus {
@@ -46,29 +46,34 @@ enum AuditAction {
   LOGOUT
 }
 
+enum DeliveryMethod {
+  PICKUP // Самовывоз из магазина MM05
+  COURIER // Доставка курьером (маршрут на карте)
+}
+
 // =====================================================
 // MODELS
 // =====================================================
 
 model User {
-  id            String   @id @default(uuid())
-  email         String   @unique
-  passwordHash  String   @map("password_hash")
-  fullName      String?  @map("full_name")
-  phone         String?
-  role          UserRole @default(USER)
-  
+  id           String   @id @default(uuid())
+  email        String   @unique
+  passwordHash String   @map("password_hash")
+  fullName     String?  @map("full_name")
+  phone        String?
+  role         UserRole @default(USER)
+
   // Timestamps
-  createdAt     DateTime @default(now()) @map("created_at")
-  updatedAt     DateTime @updatedAt @map("updated_at")
-  lastLoginAt   DateTime? @map("last_login_at")
-  
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+  lastLoginAt DateTime? @map("last_login_at")
+
   // Relations
   cart          Cart?
   orders        Order[]
   refreshTokens RefreshToken[]
   reviews       Review[]
-  
+
   @@map("users")
 }
 
@@ -78,30 +83,30 @@ model RefreshToken {
   userId    String   @map("user_id")
   expiresAt DateTime @map("expires_at")
   createdAt DateTime @default(now()) @map("created_at")
-  
+
   // Relations
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   @@index([userId])
   @@map("refresh_tokens")
 }
 
 model Category {
-  id          String    @id @default(uuid())
-  name        String    @unique
-  slug        String    @unique
+  id          String  @id @default(uuid())
+  name        String  @unique
+  slug        String  @unique
   description String?
-  imageUrl    String?   @map("image_url")
-  sortOrder   Int       @default(0) @map("sort_order")
-  isActive    Boolean   @default(true) @map("is_active")
-  
+  imageUrl    String? @map("image_url")
+  sortOrder   Int     @default(0) @map("sort_order")
+  isActive    Boolean @default(true) @map("is_active")
+
   // Timestamps
-  createdAt   DateTime  @default(now()) @map("created_at")
-  updatedAt   DateTime  @updatedAt @map("updated_at")
-  
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
   // Relations
-  products    Product[]
-  
+  products Product[]
+
   @@map("categories")
 }
 
@@ -124,7 +129,7 @@ model Product {
   badge            String?
   viewsCount       Int      @default(0) @map("views_count")
   salesCount       Int      @default(0) @map("sales_count")
-  
+
   // Расширенная конфигурация товара
   // Структура JSON для configuration:
   // {
@@ -177,18 +182,18 @@ model Product {
   //     }
   //   }
   // }
-  configuration    Json?    @default("{}") // Полная конфигурация товара (варианты + опции)
-  
+  configuration Json? @default("{}") // Полная конфигурация товара (варианты + опции)
+
   // Timestamps
-  createdAt        DateTime @default(now()) @map("created_at")
-  updatedAt        DateTime @updatedAt @map("updated_at")
-  
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
   // Relations
-  category         Category?    @relation(fields: [categoryId], references: [id], onDelete: SetNull)
-  cartItems        CartItem[]
-  orderItems       OrderItem[]
-  reviews          Review[]
-  
+  category   Category?   @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  cartItems  CartItem[]
+  orderItems OrderItem[]
+  reviews    Review[]
+
   @@index([categoryId])
   @@index([categoryId, isActive, isFeatured])
   @@index([price, isActive])
@@ -198,47 +203,58 @@ model Product {
 }
 
 model Order {
-  id              String        @id @default(uuid())
-  userId          String?       @map("user_id") // Nullable для гостевых заказов
-  orderNumber     String        @unique @map("order_number")
-  status          OrderStatus   @default(NEW)
-  paymentStatus   PaymentStatus @default(PENDING) @map("payment_status")
-  subtotal        Decimal       @db.Decimal(10, 2)
-  deliveryCost    Decimal       @default(0) @map("delivery_cost") @db.Decimal(10, 2)
-  discount        Decimal       @default(0) @db.Decimal(10, 2)
-  total           Decimal       @db.Decimal(10, 2)
-  
+  id            String        @id @default(uuid())
+  userId        String?       @map("user_id") // Nullable для гостевых заказов
+  orderNumber   String        @unique @map("order_number")
+  status        OrderStatus   @default(NEW)
+  paymentStatus PaymentStatus @default(PENDING) @map("payment_status")
+  subtotal      Decimal       @db.Decimal(10, 2)
+  deliveryCost  Decimal       @default(0) @map("delivery_cost") @db.Decimal(10, 2)
+  discount      Decimal       @default(0) @map("discount") @db.Decimal(10, 2)
+  total         Decimal       @db.Decimal(10, 2)
+
+  // Доставка
+  deliveryMethod      DeliveryMethod @default(PICKUP) @map("delivery_method")
+  deliveryLat         Float?         @map("delivery_lat")
+  deliveryLng         Float?         @map("delivery_lng")
+  deliveryDistanceKm  Float?         @map("delivery_distance_km")
+  deliveryDurationMin Int?           @map("delivery_duration_min")
+
   // Payment info
-  stripeSessionId String?       @map("stripe_session_id")
-  stripePaymentId String?       @map("stripe_payment_id")
-  idempotencyKey  String?       @unique @map("idempotency_key")
-  
+  stripeSessionId String? @map("stripe_session_id")
+  stripePaymentId String? @map("stripe_payment_id")
+  idempotencyKey  String? @unique @map("idempotency_key")
+
+  // Унифицированные поля платёжного провайдера ('STRIPE' | 'YOOKASSA')
+  paymentProvider   String? @map("payment_provider")
+  providerPaymentId String? @map("provider_payment_id")
+
   // Customer info
-  customerName    String        @map("customer_name")
-  customerEmail   String?       @map("customer_email")
-  customerPhone   String        @map("customer_phone")
-  deliveryAddress String        @map("delivery_address") // Изменено на String для простоты
-  customerNote    String?       @map("customer_note")
-  adminNote       String?       @map("admin_note")
-  
+  customerName    String  @map("customer_name")
+  customerEmail   String? @map("customer_email")
+  customerPhone   String  @map("customer_phone")
+  deliveryAddress String  @map("delivery_address") // Текстовый адрес (или строковое представление точки с карты)
+  customerNote    String? @map("customer_note")
+  adminNote       String? @map("admin_note")
+
   // Stock reservation
-  isStockReserved Boolean       @default(false) @map("is_stock_reserved")
-  reservedAt      DateTime?     @map("reserved_at")
-  
+  isStockReserved Boolean   @default(false) @map("is_stock_reserved")
+  reservedAt      DateTime? @map("reserved_at")
+
   // Timestamps
-  createdAt       DateTime      @default(now()) @map("created_at")
-  updatedAt       DateTime      @updatedAt @map("updated_at")
-  paidAt          DateTime?     @map("paid_at")
-  confirmedAt     DateTime?     @map("confirmed_at")
-  shippedAt       DateTime?     @map("shipped_at")
-  deliveredAt     DateTime?     @map("delivered_at")
-  completedAt     DateTime?     @map("completed_at")
-  cancelledAt     DateTime?     @map("cancelled_at")
-  
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+  paidAt      DateTime? @map("paid_at")
+  confirmedAt DateTime? @map("confirmed_at")
+  shippedAt   DateTime? @map("shipped_at")
+  deliveredAt DateTime? @map("delivered_at")
+  completedAt DateTime? @map("completed_at")
+  cancelledAt DateTime? @map("cancelled_at")
+
   // Relations
-  user            User?         @relation(fields: [userId], references: [id], onDelete: SetNull)
-  items           OrderItem[]
-  
+  user  User?       @relation(fields: [userId], references: [id], onDelete: SetNull)
+  items OrderItem[]
+
   @@index([userId])
   @@index([userId, status])
   @@index([createdAt, status])
@@ -246,43 +262,44 @@ model Order {
   @@index([orderNumber])
   @@index([status])
   @@index([stripeSessionId])
+  @@index([providerPaymentId])
   @@index([customerPhone])
   @@map("orders")
 }
 
 model OrderItem {
-  id              String   @id @default(uuid())
-  orderId         String   @map("order_id")
-  productId       String?  @map("product_id")
-  productSnapshot Json     @map("product_snapshot") // Сохраняем название, цену, конфигурацию
+  id              String  @id @default(uuid())
+  orderId         String  @map("order_id")
+  productId       String? @map("product_id")
+  productSnapshot Json    @map("product_snapshot") // Сохраняем название, цену, конфигурацию
   quantity        Int
-  price           Decimal  @db.Decimal(10, 2) // Цена за единицу
-  total           Decimal  @db.Decimal(10, 2) // Итого за позицию
-  options         Json?    @default("{}") // Доп. опции (сборка, доставка и т.д.)
-  
+  price           Decimal @db.Decimal(10, 2) // Цена за единицу
+  total           Decimal @db.Decimal(10, 2) // Итого за позицию
+  options         Json?   @default("{}") // Доп. опции (сборка, доставка и т.д.)
+
   // Timestamps
-  createdAt       DateTime @default(now()) @map("created_at")
-  
+  createdAt DateTime @default(now()) @map("created_at")
+
   // Relations
-  order           Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  product         Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
-  
+  order   Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
+
   @@index([orderId])
   @@index([productId])
   @@map("order_items")
 }
 
 model AuditLog {
-  id          String      @id @default(uuid())
-  userId      String?     @map("user_id")
-  action      AuditAction
-  entity      String      // e.g., "Product", "Order", "User"
-  entityId    String?     @map("entity_id")
-  changes     Json?       // Store what changed
-  ipAddress   String?     @map("ip_address")
-  userAgent   String?     @map("user_agent")
-  createdAt   DateTime    @default(now()) @map("created_at")
-  
+  id        String      @id @default(uuid())
+  userId    String?     @map("user_id")
+  action    AuditAction
+  entity    String // e.g., "Product", "Order", "User"
+  entityId  String?     @map("entity_id")
+  changes   Json? // Store what changed
+  ipAddress String?     @map("ip_address")
+  userAgent String?     @map("user_agent")
+  createdAt DateTime    @default(now()) @map("created_at")
+
   @@index([userId])
   @@index([entity])
   @@index([createdAt])
@@ -290,21 +307,21 @@ model AuditLog {
 }
 
 model Review {
-  id          String   @id @default(uuid())
-  productId   String   @map("product_id")
-  userId      String   @map("user_id")
-  rating      Int      // 1-5 stars
-  comment     String?  @db.Text
-  isApproved  Boolean  @default(false) @map("is_approved") // Модерация отзывов
-  
+  id         String  @id @default(uuid())
+  productId  String  @map("product_id")
+  userId     String  @map("user_id")
+  rating     Int // 1-5 stars
+  comment    String? @db.Text
+  isApproved Boolean @default(false) @map("is_approved") // Модерация отзывов
+
   // Timestamps
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
-  
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
   // Relations
-  product     Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   @@unique([productId, userId]) // Один пользователь - один отзыв на товар
   @@index([productId])
   @@index([userId])
@@ -313,34 +330,34 @@ model Review {
 }
 
 model Cart {
-  id        String     @id @default(uuid())
-  userId    String     @unique @map("user_id")
-  
+  id     String @id @default(uuid())
+  userId String @unique @map("user_id")
+
   // Timestamps
-  createdAt DateTime   @default(now()) @map("created_at")
-  updatedAt DateTime   @updatedAt @map("updated_at")
-  
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
   // Relations
-  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
-  items     CartItem[]
-  
+  user  User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items CartItem[]
+
   @@map("carts")
 }
 
 model CartItem {
-  id        String   @id @default(uuid())
-  cartId    String   @map("cart_id")
-  productId String   @map("product_id")
-  quantity  Int      @default(1)
-  
+  id        String @id @default(uuid())
+  cartId    String @map("cart_id")
+  productId String @map("product_id")
+  quantity  Int    @default(1)
+
   // Timestamps
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
-  
+
   // Relations
-  cart      Cart     @relation(fields: [cartId], references: [id], onDelete: Cascade)
-  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
-  
+  cart    Cart    @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
   @@unique([cartId, productId]) // Один товар может быть только один раз в корзине
   @@index([cartId])
   @@index([productId])

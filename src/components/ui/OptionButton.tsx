@@ -23,7 +23,7 @@ export function OptionButton({
       onClick={onClick}
       disabled={disabled}
       className={cn(
-        "relative w-full rounded-lg border-2 px-4 py-3 text-left transition-all",
+        "relative w-full rounded-lg border-2 px-4 py-3 text-left transition",
         "hover:border-primary/50 focus:outline-none focus:ring-2 focus:ring-primary/20",
         selected
           ? "border-primary bg-primary/5 text-foreground"

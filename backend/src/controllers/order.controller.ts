@@ -2,21 +2,50 @@ import { Response } from 'express';
 import { OrderStatus } from '@prisma/client';
 import { z } from 'zod';
 import { AuthRequest } from '../middleware/auth.middleware.js';
-import { emailService } from '../services/email.service.js';
 import { prisma } from '../lib/prisma.js';
+import { safeChangeOrderStatus } from '../services/order-status.service.js';
 
 const updateOrderStatusSchema = z.object({
   status: z.nativeEnum(OrderStatus),
   adminNote: z.string().max(500).optional().nullable(),
 });
 
+function getOrderListParams(query: Record<string, unknown>) {
+  const page = Math.max(1, Number(query.page) || 1);
+  const limit = Math.min(100, Math.max(1, Number(query.limit) || 20));
+  const rawStatus = typeof query.status === 'string' ? query.status : undefined;
+  const status = rawStatus && (Object.values(OrderStatus) as string[]).includes(rawStatus)
+    ? (rawStatus as OrderStatus)
+    : undefined;
+  const search = typeof query.search === 'string' ? query.search.trim() : undefined;
+
+  return {
+    page,
+    skip: (page - 1) * limit,
+    take: limit,
+    where: {
+      ...(status ? { status } : {}),
+      ...(search
+        ? {
+            OR: [
+              { orderNumber: { contains: search, mode: 'insensitive' as const } },
+              { customerPhone: { contains: search } },
+              { customerName: { contains: search, mode: 'insensitive' as const } },
+            ],
+          }
+        : {}),
+    },
+  };
+}
+
 export class OrderController {
   static async getUserOrders(req: AuthRequest, res: Response): Promise<void> {
     try {
       const userId = req.user!.userId;
+      const { skip, take, where } = getOrderListParams(req.query as Record<string, unknown>);
 
       const orders = await prisma.order.findMany({
-        where: { userId },
+        where: { userId, ...where },
         include: {
           items: {
             include: {
@@ -25,6 +54,8 @@ export class OrderController {
           },
         },
         orderBy: { createdAt: 'desc' },
+        skip,
+        take,
       });
 
       res.json({
@@ -32,9 +63,10 @@ export class OrderController {
         data: orders,
       });
     } catch (error: unknown) {
+      console.error('Get user orders error:', error);
       res.status(500).json({
         success: false,
-        error: error instanceof Error ? error.message : 'Failed to fetch orders',
+        error: 'Failed to fetch orders',
       });
     }
   }
@@ -71,42 +103,58 @@ export class OrderController {
         data: order,
       });
     } catch (error: unknown) {
+      console.error('Get order error:', error);
       res.status(500).json({
         success: false,
-        error: error instanceof Error ? error.message : 'Failed to fetch order',
+        error: 'Failed to fetch order',
       });
     }
   }
 
   static async getAllOrders(req: AuthRequest, res: Response): Promise<void> {
     try {
-      const orders = await prisma.order.findMany({
-        include: {
-          user: {
-            select: {
-              id: true,
-              email: true,
-              fullName: true,
-              phone: true,
+      const { page, skip, take, where } = getOrderListParams(req.query as Record<string, unknown>);
+
+      const [orders, total] = await Promise.all([
+        prisma.order.findMany({
+          where,
+          include: {
+            user: {
+              select: {
+                id: true,
+                email: true,
+                fullName: true,
+                phone: true,
+              },
+            },
+            items: {
+              include: {
+                product: true,
+              },
             },
           },
-          items: {
-            include: {
-              product: true,
-            },
-          },
-        },
-        orderBy: { createdAt: 'desc' },
-      });
+          orderBy: { createdAt: 'desc' },
+          skip,
+          take,
+        }),
+        prisma.order.count({ where }),
+      ]);
 
       res.json({
         success: true,
         data: orders,
+        pagination: {
+          page,
+          limit: take,
+          total,
+          totalPages: Math.ceil(total / take),
+        },
       });
     } catch (error: unknown) {
+      console.error('Get all orders error:', error);
       res.status(500).json({
         success: false,
-        error: error instanceof Error ? error.message : 'Failed to fetch orders',
+        error: 'Failed to fetch orders',
       });
     }
   }
@@ -116,53 +164,20 @@ export class OrderController {
       const { id } = req.params;
       const { status, adminNote } = updateOrderStatusSchema.parse(req.body);
 
-      const order = await prisma.order.update({
-        where: { id: id as string },
-        data: {
-          status,
-          adminNote,
-          ...(status === OrderStatus.CONFIRMED && { confirmedAt: new Date() }),
-          ...(status === OrderStatus.SHIPPED && { shippedAt: new Date() }),
-          ...(status === OrderStatus.DELIVERED && { deliveredAt: new Date() }),
-          ...(status === OrderStatus.CANCELLED && { cancelledAt: new Date() }),
-        },
-        include: {
-          user: true,
-          items: true,
-        },
-      });
+      const result = await safeChangeOrderStatus(id as string, status, adminNote ?? null);
 
-      // Отправляем email уведомление об изменении статуса
-      if (order.customerEmail && emailService.isAvailable()) {
-        try {
-          const statusMessages: Record<string, string> = {
-            NEW: 'Новый заказ',
-            RESERVED: 'Товары зарезервированы',
-            CONFIRMED: 'Заказ подтвержден',
-            PROCESSING: 'Заказ в обработке',
-            SHIPPED: 'Заказ отправлен',
-            DELIVERED: 'Заказ доставлен',
-            COMPLETED: 'Заказ завершен',
-            CANCELLED: 'Заказ отменен',
-          };
-
-          await emailService.sendOrderStatusUpdate(
-            order.customerEmail,
-            order.customerName,
-            order.orderNumber,
-            status,
-            statusMessages[status] || status
-          );
-        } catch (emailError) {
-          console.error('Failed to send status update email:', emailError);
-          // Не прерываем процесс обновления статуса из-за ошибки email
-        }
+      if (!result.ok) {
+        res.status(result.code).json({
+          success: false,
+          error: result.message,
+        });
+        return;
       }
 
       res.json({
         success: true,
         message: 'Order status updated',
-        data: order,
+        data: result.order,
       });
     } catch (error: unknown) {
       if (error instanceof z.ZodError) {
@@ -174,9 +189,10 @@ export class OrderController {
         return;
       }
 
+      console.error('Update order status error:', error);
       res.status(500).json({
         success: false,
-        error: error instanceof Error ? error.message : 'Failed to update order',
+        error: 'Failed to update order',
       });
     }
   }

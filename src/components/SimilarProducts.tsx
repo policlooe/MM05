@@ -34,7 +34,7 @@ export function SimilarProducts({ currentProduct, limit = 4 }: SimilarProductsPr
     <section className="py-8 md:py-12 bg-surface-alt">
       <div className="container-x">
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 12 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.5 }}

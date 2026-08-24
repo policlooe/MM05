@@ -89,7 +89,7 @@ export function CatalogSidebar() {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Поиск товаров..."
-            className="w-full px-4 py-2.5 bg-secondary border border-border/60 focus:border-accent/35 rounded-lg text-sm outline-none focus:ring-2 focus:ring-accent/18 transition-all"
+            className="w-full px-4 py-2.5 bg-secondary border border-border/60 focus:border-accent/35 rounded-lg text-sm outline-none focus:ring-2 focus:ring-accent/18 transition"
             aria-label="Поиск товаров"
           />
         </div>
@@ -101,7 +101,7 @@ export function CatalogSidebar() {
               <button
                 key={f}
                 onClick={() => setActive(f)}
-                className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-all border ${
+                className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition border ${
                   active === f
                     ? "border-primary bg-primary text-primary-foreground shadow-sm"
                     : "border-transparent bg-secondary text-foreground hover:bg-muted hover:border-border"
@@ -135,7 +135,7 @@ export function CatalogSidebar() {
                       <button
                         key={f}
                         onClick={() => setActive(f)}
-                        className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all border ${
+                        className={`px-3 py-1.5 rounded-full text-xs font-medium transition border ${
                           active === f
                             ? "border-primary bg-primary text-primary-foreground"
                             : "border-border bg-secondary text-foreground hover:bg-muted"
@@ -218,7 +218,7 @@ export function CatalogSidebar() {
                 {filtered.map((p) => (
                   <div
                     key={p.id}
-                    className="group bg-surface rounded-lg overflow-hidden border border-border hover:shadow-md transition-all"
+                    className="group bg-surface rounded-lg overflow-hidden border border-border hover:shadow-md transition"
                   >
                     <Link
                       to={`/product/${p.slug}`}

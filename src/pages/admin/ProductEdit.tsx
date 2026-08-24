@@ -141,6 +141,11 @@ export default function ProductEdit() {
       return;
     }
 
+    if (product.description.trim().length < 10) {
+      toast.error("Описание должно содержать минимум 10 символов");
+      return;
+    }
+
     if (product.price <= 0) {
       toast.error("Цена должна быть больше нуля");
       return;

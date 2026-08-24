@@ -26,7 +26,7 @@ export const Products = memo(function Products() {
             <button
               key={f}
               onClick={() => setActive(f)}
-              className={`shrink-0 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-300 border-2 ${
+              className={`shrink-0 px-5 py-2.5 rounded-xl text-sm font-semibold transition duration-300 border-2 ${
                 active === f
                   ? "border-accent bg-accent text-white shadow-accent scale-105"
                   : "border-border bg-surface text-foreground hover:bg-muted hover:shadow-md"

@@ -56,19 +56,36 @@ const envSchema = z.object({
       'STRIPE_SECRET_KEY must start with sk_test_ or sk_live_'
     ),
   
+  // Publishable key используется только фронтендом (VITE_*) — на бэкенде опционален
   STRIPE_PUBLISHABLE_KEY: z
     .string()
     .refine(
       (key) => key.startsWith('pk_test_') || key.startsWith('pk_live_'),
       'STRIPE_PUBLISHABLE_KEY must start with pk_test_ or pk_live_'
-    ),
-  
+    )
+    .optional(),
+
   STRIPE_WEBHOOK_SECRET: z
     .string()
     .refine(
       (secret) => secret.startsWith('whsec_'),
       'STRIPE_WEBHOOK_SECRET must start with whsec_'
     ),
+
+  // Выбор платёжного провайдера ('STRIPE' | 'YOOKASSA'), по умолчанию STRIPE
+  PAYMENT_PROVIDER: z.enum(['STRIPE', 'YOOKASSA']).optional(),
+
+  // ЮKassa (СБП): обязательны при PAYMENT_PROVIDER=YOOKASSA
+  YOOKASSA_SHOP_ID: z.string().optional(),
+  YOOKASSA_SECRET_KEY:
+    process.env.YOOKASSA_SHOP_ID || process.env.PAYMENT_PROVIDER === 'YOOKASSA'
+      ? z.string().min(1, 'YOOKASSA_SECRET_KEY is required when YooKassa is enabled').optional()
+      : z.string().optional(),
+  // Переопределение IP-allowlist вебхуков (csv, IPv4/CIDR)
+  YOOKASSA_WEBHOOK_IPS: z.string().optional(),
+  // Тестовый URL API (для мок-сервера); в production не задавать
+  YOOKASSA_API_URL: z.string().url().optional(),
+
 
   // Application Configuration
   NODE_ENV: z
@@ -111,6 +128,19 @@ const envSchema = z.object({
 
   // Optional: Monitoring
   SENTRY_DSN: z.string().url().optional(),
+
+  // Optional: Магазин (координаты точки A для расчёта доставки)
+  SHOP_LAT: z.coerce.number().min(-90).max(90).optional(),
+  SHOP_LNG: z.coerce.number().min(-180).max(180).optional(),
+  // Тариф доставки: base + perKm * distance; min — минимальная стоимость
+  DELIVERY_BASE_PRICE: z.coerce.number().min(0).optional(),
+  DELIVERY_PRICE_PER_KM: z.coerce.number().min(0).optional(),
+  DELIVERY_MIN_PRICE: z.coerce.number().min(0).optional(),
+  DELIVERY_FREE_FROM: z.coerce.number().min(0).optional(),
+  // URL OSRM-сервера маршрутов (по умолчанию публичный демо-сервер)
+  OSRM_URL: z.string().url().optional(),
+
+  MANAGER_WHATSAPP_PHONE: z.string().optional(),
 });
 
 export type ValidatedEnv = z.infer<typeof envSchema>;

@@ -8,8 +8,7 @@ import {
   TrendingUp,
   AlertCircle
 } from "lucide-react";
-import { Navbar } from "@/components/Navbar";
-import { Footer } from "@/components/Footer";
+import { AdminLayout } from "@/components/AdminLayout";
 import api from "@/services/api";
 
 interface DashboardStats {
@@ -89,16 +88,17 @@ export default function AdminDashboard() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-accent"></div>
-      </div>
+      <AdminLayout>
+        <div className="flex items-center justify-center min-h-[50vh]">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-accent"></div>
+        </div>
+      </AdminLayout>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <Navbar />
-      <main className="container-x py-6 pb-24 md:pb-10">
+    <AdminLayout>
+      <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="mb-8">
           <h1 className="font-serif text-3xl font-semibold mb-2">Панель управления</h1>
@@ -121,7 +121,7 @@ export default function AdminDashboard() {
               <Link
                 key={card.title}
                 to={card.link}
-                className="bg-surface border border-border rounded-xl p-6 hover:shadow-lg transition-all"
+                className="bg-surface border border-border rounded-xl p-6 hover:shadow-lg transition"
               >
                 <div className="flex items-center justify-between mb-4">
                   <div className={`${card.bgColor} ${card.color} p-3 rounded-lg`}>
@@ -208,8 +208,7 @@ export default function AdminDashboard() {
             </div>
           </div>
         )}
-      </main>
-      <Footer />
-    </div>
+      </div>
+    </AdminLayout>
   );
 }

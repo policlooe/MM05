@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import api from '@/services/api';
-import { toast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { ru } from 'date-fns/locale';
 
@@ -95,11 +95,7 @@ export default function OrderDetail() {
       const response = await api.get(`/admin/orders/${id}`);
       setOrder(response.data.data);
     } catch (error) {
-      toast({
-        title: 'Ошибка',
-        description: 'Не удалось загрузить заказ',
-        variant: 'destructive',
-      });
+      toast.error('Не удалось загрузить заказ');
       navigate('/admin/orders');
     } finally {
       setLoading(false);
@@ -111,16 +107,9 @@ export default function OrderDetail() {
       setUpdating(true);
       await api.put(`/admin/orders/${id}/status`, { status: newStatus });
       setOrder((prev) => (prev ? { ...prev, status: newStatus } : null));
-      toast({
-        title: 'Успешно',
-        description: 'Статус заказа обновлен',
-      });
+      toast.success('Статус заказа обновлен');
     } catch (error) {
-      toast({
-        title: 'Ошибка',
-        description: 'Не удалось обновить статус',
-        variant: 'destructive',
-      });
+      toast.error('Не удалось обновить статус');
     } finally {
       setUpdating(false);
     }

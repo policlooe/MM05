@@ -146,7 +146,7 @@ export function ProductReviews({ productId, productName }: ProductReviewsProps) 
       >
         <Star
           className={cn(
-            "w-8 h-8 transition-all",
+            "w-8 h-8 transition",
             filled ? "fill-amber-400 text-amber-400" : "fill-muted/30 text-muted hover:text-amber-300"
           )}
         />
@@ -208,9 +208,10 @@ export function ProductReviews({ productId, productName }: ProductReviewsProps) 
                         <span className="text-muted-foreground w-3">{star}</span>
                         <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
                         <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
+                          {/* scaleX вместо width: анимируем только transform (GPU), не layout */}
                           <div
-                            className="h-full bg-amber-400 transition-all duration-500"
-                            style={{ width: `${percentage}%` }}
+                            className="h-full w-full bg-amber-400 origin-left transition-transform duration-500 [transition-timing-function:var(--ease-out)]"
+                            style={{ transform: `scaleX(${percentage / 100})` }}
                           />
                         </div>
                         <span className="text-muted-foreground w-6 text-right">{count}</span>
@@ -278,7 +279,7 @@ export function ProductReviews({ productId, productName }: ProductReviewsProps) 
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value as SortType)}
-              className="px-3 py-2 bg-secondary border border-border rounded-lg text-xs focus:border-accent/35 focus:outline-none focus:ring-2 focus:ring-accent/18 transition-all"
+              className="px-3 py-2 bg-secondary border border-border rounded-lg text-xs focus:border-accent/35 focus:outline-none focus:ring-2 focus:ring-accent/18 transition"
             >
               <option value="newest">Сначала новые</option>
               <option value="highest">Сначала лучшие</option>

@@ -1,3 +1,4 @@
+import crypto from 'crypto';
 import jwt from 'jsonwebtoken';
 import { prisma } from '../lib/prisma.js';
 
@@ -14,6 +15,14 @@ const JWT_ACCESS_SECRET = process.env.JWT_ACCESS_SECRET;
 const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET;
 const JWT_ACCESS_EXPIRES_IN = process.env.JWT_ACCESS_EXPIRES_IN || '15m';
 const JWT_REFRESH_EXPIRES_IN = process.env.JWT_REFRESH_EXPIRES_IN || '7d';
+
+/**
+ * Refresh-токены хранятся в БД только в виде SHA-256 хэша:
+ * утечка БД не даёт пригодных для использования токенов.
+ */
+function hashToken(token: string): string {
+  return crypto.createHash('sha256').update(token).digest('hex');
+}
 
 export interface TokenPayload {
   userId: string;
@@ -73,18 +82,64 @@ export class TokenService {
   }
 
   /**
-   * Сохранение refresh токена в БД
+   * Сохранение refresh токена в БД (только хэш)
    */
   static async saveRefreshToken(userId: string, token: string) {
     const expiresAt = new Date();
     expiresAt.setDate(expiresAt.getDate() + 7); // 7 дней
 
+    // Периодическая фоновая очистка истёкших токенов (5% запросов)
+    if (Math.random() < 0.05) {
+      void this.cleanExpiredTokens().catch(() => undefined);
+    }
+
     return await prisma.refreshToken.create({
       data: {
         userId,
-        token,
+        token: hashToken(token),
         expiresAt,
       },
+    });
+  }
+
+  /**
+   * Ротация refresh токена: старый инвалидируется, выдаётся новый.
+   * Возвращает payload пользователя и сырой новый refresh-токен.
+   */
+  static async rotateRefreshToken(
+    oldToken: string,
+    payload: TokenPayload
+  ): Promise<{ refreshToken: string; expiresAt: Date }> {
+    const tokenHash = hashToken(oldToken);
+
+    return await prisma.$transaction(async (tx) => {
+      const existing = await tx.refreshToken.findUnique({
+        where: { token: tokenHash },
+        select: { id: true, userId: true, expiresAt: true },
+      });
+
+      if (!existing || existing.userId !== payload.userId) {
+        throw new Error('Invalid refresh token');
+      }
+
+      if (existing.expiresAt < new Date()) {
+        await tx.refreshToken.delete({ where: { id: existing.id } });
+        throw new Error('Refresh token expired');
+      }
+
+      const newRefreshToken = this.generateRefreshToken(payload);
+      const newExpiresAt = new Date();
+      newExpiresAt.setDate(newExpiresAt.getDate() + 7);
+
+      await tx.refreshToken.update({
+        where: { id: existing.id },
+        data: {
+          token: hashToken(newRefreshToken),
+          expiresAt: newExpiresAt,
+        },
+      });
+
+      return { refreshToken: newRefreshToken, expiresAt: newExpiresAt };
     });
   }
 
@@ -93,7 +148,7 @@ export class TokenService {
    */
   static async removeRefreshToken(token: string) {
     return await prisma.refreshToken.deleteMany({
-      where: { token },
+      where: { token: hashToken(token) },
     });
   }
 
@@ -102,8 +157,18 @@ export class TokenService {
    */
   static async findRefreshToken(token: string) {
     return await prisma.refreshToken.findUnique({
-      where: { token },
-      include: { user: true },
+      where: { token: hashToken(token) },
+      include: {
+        user: {
+          select: {
+            id: true,
+            email: true,
+            fullName: true,
+            phone: true,
+            role: true,
+          },
+        },
+      },
     });
   }
 

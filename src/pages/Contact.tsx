@@ -200,7 +200,7 @@ const ContactPage = () => {
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                     placeholder="Иван Иванов"
                     maxLength={100}
-                    className="w-full px-4 py-3 border border-border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-accent/20 focus:border-accent transition-all"
+                    className="w-full px-4 py-3 border border-border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-accent/20 focus:border-accent transition"
                     required
                   />
                 </div>
@@ -217,7 +217,7 @@ const ContactPage = () => {
                     onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                     placeholder="+7 (999) 123-45-67"
                     maxLength={20}
-                    className="w-full px-4 py-3 border border-border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-accent/20 focus:border-accent transition-all"
+                    className="w-full px-4 py-3 border border-border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-accent/20 focus:border-accent transition"
                     required
                   />
                 </div>
@@ -234,7 +234,7 @@ const ContactPage = () => {
                     placeholder="Расскажите, чем мы можем помочь..."
                     maxLength={1000}
                     rows={5}
-                    className="w-full px-4 py-3 border border-border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-accent/20 focus:border-accent transition-all resize-y"
+                    className="w-full px-4 py-3 border border-border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-accent/20 focus:border-accent transition resize-y"
                     required
                   />
                 </div>

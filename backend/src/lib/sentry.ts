@@ -1,11 +1,10 @@
 import * as Sentry from '@sentry/node';
-import { nodeProfilingIntegration } from '@sentry/profiling-node';
 
 /**
  * Инициализация Sentry для мониторинга ошибок в backend
  * Документация: https://docs.sentry.io/platforms/node/
  */
-export function initSentry() {
+export async function initSentry(): Promise<void> {
   const dsn = process.env.SENTRY_DSN;
   const environment = process.env.NODE_ENV || 'development';
 
@@ -14,22 +13,31 @@ export function initSentry() {
     return;
   }
 
+  // Профайлер — нативный модуль: если бинарник не установлен/не загрузился,
+  // бэкенд всё равно должен стартовать (мониторинг важнее профилирования)
+  let profilingIntegration: ReturnType<typeof import('@sentry/profiling-node').nodeProfilingIntegration> | undefined;
+  try {
+    profilingIntegration = (await import('@sentry/profiling-node')).nodeProfilingIntegration();
+  } catch {
+    console.warn('⚠️  Sentry profiling недоступен (нативный модуль не загружается) — пропущено.');
+  }
+
   Sentry.init({
     dsn,
     environment,
-    
+
     // Интеграции
     integrations: [
       // HTTP трейсинг
       Sentry.httpIntegration(),
-      
-      // Profiling
-      nodeProfilingIntegration(),
+
+      // Profiling (опционально)
+      ...(profilingIntegration ? [profilingIntegration] : []),
     ],
 
     // Performance Monitoring
     tracesSampleRate: environment === 'production' ? 0.1 : 1.0,
-    
+
     // Profiling
     profilesSampleRate: environment === 'production' ? 0.1 : 1.0,
 

@@ -68,7 +68,7 @@ export default function Favorites() {
             </p>
             <Link
               to="/catalog"
-              className="inline-flex items-center gap-2 px-6 py-3 bg-accent hover:bg-accent-hover text-white rounded-xl font-semibold transition-all shadow-sm hover:shadow-accent"
+              className="inline-flex items-center gap-2 px-6 py-3 bg-accent hover:bg-accent-hover text-white rounded-xl font-semibold transition shadow-sm hover:shadow-accent"
             >
               Перейти в каталог
             </Link>
@@ -83,7 +83,7 @@ export default function Favorites() {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.05, duration: 0.3 }}
-                  className="bg-surface border border-border rounded-xl overflow-hidden hover:shadow-lg transition-all group"
+                  className="bg-surface border border-border rounded-xl overflow-hidden hover:shadow-lg transition group"
                 >
                   <Link to={`/product/${product.slug}`} className="block">
                     <div className="relative aspect-square bg-secondary overflow-hidden">
@@ -125,7 +125,7 @@ export default function Favorites() {
                     <div className="flex gap-2">
                       <button
                         onClick={() => handleAddToCart(product)}
-                        className="flex-1 bg-accent hover:bg-accent-hover text-white text-sm font-semibold py-2.5 rounded-lg transition-all shadow-sm hover:shadow-accent flex items-center justify-center gap-2"
+                        className="flex-1 bg-accent hover:bg-accent-hover text-white text-sm font-semibold py-2.5 rounded-lg transition shadow-sm hover:shadow-accent flex items-center justify-center gap-2"
                       >
                         <ShoppingBag className="w-4 h-4" />
                         В корзину
@@ -147,7 +147,7 @@ export default function Favorites() {
             <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center">
               <Link
                 to="/catalog"
-                className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-secondary hover:bg-muted border border-border rounded-xl font-semibold transition-all"
+                className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-secondary hover:bg-muted border border-border rounded-xl font-semibold transition"
               >
                 Продолжить покупки
               </Link>

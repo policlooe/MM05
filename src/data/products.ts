@@ -6,7 +6,6 @@ import desk from "@/assets/p-desk.jpg";
 import rocking from "@/assets/p-rocking.jpg";
 import gazebo from "@/assets/p-gazebo.jpg";
 import nightstand from "@/assets/p-nightstand.jpg";
-import { ProductConfiguration as OldProductConfiguration } from "@/types/product-config";
 import { ProductConfiguration } from "@/types/product-configuration";
 
 export type Category = "Кровати" | "Шкафы" | "Столы" | "Кресла" | "Беседки" | "Тумбы";
@@ -27,8 +26,7 @@ export type Product = {
   leadTime: string;
   inStock: boolean;
   assemblyPrice?: number;
-  configuration?: OldProductConfiguration;
-  advancedConfiguration?: ProductConfiguration;
+  configuration?: ProductConfiguration;
 };
 
 export const products: Product[] = [
@@ -55,7 +53,7 @@ export const products: Product[] = [
     leadTime: "10–14 дней",
     inStock: true,
     assemblyPrice: 3500,
-    advancedConfiguration: {
+    configuration: {
       variants: {
         size: {
           label: "Размер спального места",
@@ -135,7 +133,7 @@ export const products: Product[] = [
     ],
     leadTime: "14–21 день",
     inStock: true,
-    advancedConfiguration: {
+    configuration: {
       variants: {
         size: {
           label: "Размер шкафа",
@@ -213,7 +211,7 @@ export const products: Product[] = [
     leadTime: "7–10 дней",
     inStock: true,
     assemblyPrice: 2000,
-    advancedConfiguration: {
+    configuration: {
       variants: {
         size: {
           label: "Размер стола",
@@ -287,7 +285,7 @@ export const products: Product[] = [
     leadTime: "5–7 дней",
     inStock: true,
     assemblyPrice: 1500,
-    advancedConfiguration: {
+    configuration: {
       variants: {
         color: {
           label: "Цвет покрытия",
@@ -351,7 +349,7 @@ export const products: Product[] = [
     leadTime: "21–30 дней",
     inStock: true,
     assemblyPrice: 15000,
-    advancedConfiguration: {
+    configuration: {
       variants: {
         size: {
           label: "Размер беседки",
@@ -431,7 +429,7 @@ export const products: Product[] = [
     leadTime: "7–10 дней",
     inStock: true,
     assemblyPrice: 1000,
-    advancedConfiguration: {
+    configuration: {
       variants: {
         color: {
           label: "Цвет покрытия",
@@ -495,7 +493,7 @@ export const products: Product[] = [
     leadTime: "10–14 дней",
     inStock: true,
     assemblyPrice: 3000,
-    advancedConfiguration: {
+    configuration: {
       variants: {
         size: {
           label: "Размер спального места",
@@ -572,7 +570,7 @@ export const products: Product[] = [
     leadTime: "5–7 дней",
     assemblyPrice: 1500,
     inStock: true,
-    advancedConfiguration: {
+    configuration: {
       variants: {
         size: {
           label: "Размер стола",

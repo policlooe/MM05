@@ -4,6 +4,8 @@ import { z } from 'zod';
 import { AuthRequest } from '../middleware/auth.middleware.js';
 import { emailService } from '../services/email.service.js';
 import { prisma } from '../lib/prisma.js';
+import { captureError } from '../lib/sentry.js';
+import { calculateServerItemPrice } from '../utils/pricing.js';
 
 // Валидация входных данных
 const createOrderSchema = z.object({
@@ -33,16 +35,33 @@ type ReservedOrderItem = CreateOrderInput['items'][number] & {
   lineTotal: number;
 };
 
+const MAX_ORDER_NUMBER_RETRIES = 5;
+
+function isUniqueConstraintError(error: unknown, field: string): boolean {
+  if (!(error instanceof Prisma.PrismaClientKnownRequestError) || error.code !== 'P2002') {
+    return false;
+  }
+  const target = error.meta?.target;
+  if (Array.isArray(target)) {
+    return target.some((t) => String(t).includes(field));
+  }
+  if (typeof target === 'string') {
+    return target.includes(field);
+  }
+  // Не удалось определить поле — считаем совпадением, чтобы не зациклиться
+  return true;
+}
+
 export class OrderCreateController {
   /**
    * Генерация уникального номера заказа: MM05-2026-0001
+   * Вызывается ВНУТРИ транзакции для снижения гонки между параллельными заказами.
    */
-  private static async generateOrderNumber(): Promise<string> {
+  private static async generateOrderNumber(tx: Prisma.TransactionClient): Promise<string> {
     const year = new Date().getFullYear();
     const prefix = `MM05-${year}-`;
 
-    // Находим последний заказ за текущий год
-    const lastOrder = await prisma.order.findFirst({
+    const lastOrder = await tx.order.findFirst({
       where: {
         orderNumber: {
           startsWith: prefix,
@@ -56,15 +75,19 @@ export class OrderCreateController {
     let nextNumber = 1;
     if (lastOrder) {
       const lastNumber = parseInt(lastOrder.orderNumber.split('-')[2]);
-      nextNumber = lastNumber + 1;
+      nextNumber = Number.isFinite(lastNumber) ? lastNumber + 1 : 1;
     }
 
     return `${prefix}${nextNumber.toString().padStart(4, '0')}`;
   }
 
   /**
-   * Резервирование товара с защитой от перепродажи
-   * Использует транзакцию с row-level locking
+   * Резервирование товара с защитой от перепродажи.
+   *
+   * ЦЕНА ВСЕГДА берётся из БД:
+   *   serverPrice = base price + модификаторы конфигурации из product.configuration
+   *                 + assemblyPrice (если выбрана сборка)
+   * Значения price/finalPrice из тела запроса НЕ используются для расчёта.
    */
   private static async reserveStock(
     items: CreateOrderInput['items'],
@@ -72,10 +95,17 @@ export class OrderCreateController {
   ): Promise<ReservedOrderItem[]> {
     const reservedItems: ReservedOrderItem[] = [];
     for (const item of items) {
-      // SELECT FOR UPDATE - блокирует строку до конца транзакции
       const product = await tx.product.findUnique({
         where: { id: item.productId },
-        select: { id: true, name: true, price: true, stockQuantity: true, isActive: true },
+        select: {
+          id: true,
+          name: true,
+          price: true,
+          stockQuantity: true,
+          isActive: true,
+          assemblyPrice: true,
+          configuration: true,
+        },
       });
 
       if (!product || !product.isActive) {
@@ -89,7 +119,7 @@ export class OrderCreateController {
         );
       }
 
-      // Уменьшаем остаток (резервируем)
+      // Уменьшаем остаток (резервируем) — атомарно при условии достаточного стока
       const updated = await tx.product.updateMany({
         where: {
           id: item.productId,
@@ -108,7 +138,22 @@ export class OrderCreateController {
         );
       }
 
-      const serverPrice = Number(product.price);
+      // Серверный расчёт цены позиции: базовая цена из БД + конфигурация + сборка
+      const options = (item.options && typeof item.options === 'object')
+        ? item.options as Record<string, unknown>
+        : {};
+      const assemblySelected = options.assembly === true;
+      const assemblyPrice = assemblySelected && product.assemblyPrice
+        ? Number(product.assemblyPrice)
+        : 0;
+
+      const configuredPrice = calculateServerItemPrice(
+        Number(product.price),
+        product.configuration,
+        item.configuration
+      );
+
+      const serverPrice = configuredPrice + assemblyPrice;
 
       reservedItems.push({
         ...item,
@@ -159,98 +204,128 @@ export class OrderCreateController {
         }
       }
 
-      // Генерируем уникальный номер заказа
-      const orderNumber = await OrderCreateController.generateOrderNumber();
+      // Выполняем всё в транзакции для атомарности.
+      // При гонке номеров заказа (P2002 по order_number) повторяем транзакцию
+      // — номер будет перегенерирован на основе актуального состояния БД.
+      let attempt = 0;
+      let order: Prisma.OrderGetPayload<{ include: { items: { include: { product: true } } } }> | null = null;
 
-      // Выполняем всё в транзакции для атомарности
-      const order = await prisma.$transaction(async (tx) => {
-        // 1. Резервируем товар (с проверкой наличия и блокировкой)
-        const reservedItems = await OrderCreateController.reserveStock(validatedData.items, tx);
-        const serverTotal = reservedItems.reduce((sum, item) => sum + item.lineTotal, 0);
+      while (attempt < MAX_ORDER_NUMBER_RETRIES) {
+        attempt += 1;
+        try {
+          order = await prisma.$transaction(async (tx) => {
+            // 1. Резервируем товар (с проверкой наличия и серверным расчётом цен)
+            const reservedItems = await OrderCreateController.reserveStock(validatedData.items, tx);
+            const serverTotal = reservedItems.reduce((sum, item) => sum + item.lineTotal, 0);
 
-        if (Math.abs(serverTotal - validatedData.totalPrice) > 0.01) {
-          throw new Error('Итоговая сумма заказа не совпадает с актуальными ценами');
-        }
+            // Клиентская сумма используется только как sanity-check (защита от багов UI),
+            // но расчёт всегда серверный
+            if (Math.abs(serverTotal - validatedData.totalPrice) > 0.01) {
+              throw new Error('Итоговая сумма заказа не совпадает с актуальными ценами');
+            }
 
-        // 2. Создаем заказ
-        const newOrder = await tx.order.create({
-          data: {
-            orderNumber,
-            userId: userId || undefined,
-            customerName: validatedData.customerName,
-            customerPhone: validatedData.customerPhone,
-            customerEmail: validatedData.customerEmail || undefined,
-            deliveryAddress: validatedData.deliveryAddress,
-            customerNote: validatedData.customerNote || undefined,
-            subtotal: serverTotal,
-            total: serverTotal,
-            status: OrderStatus.RESERVED,
-            isStockReserved: true,
-            reservedAt: new Date(),
-            idempotencyKey: validatedData.idempotencyKey,
-          },
-        });
+            // 2. Генерируем номер внутри транзакции
+            const orderNumber = await OrderCreateController.generateOrderNumber(tx);
 
-        // 3. Создаем позиции заказа
-        const orderItems = reservedItems.map((item) => ({
-          orderId: newOrder.id,
-          productId: item.productId,
-          quantity: item.quantity,
-          price: item.serverPrice,
-          total: item.lineTotal,
-          productSnapshot: {
-            productId: item.productId,
-            name: item.productName,
-            price: item.serverPrice,
-            finalPrice: item.serverPrice,
-            configuration: item.configuration || null,
-          },
-          options: item.options || {},
-        }));
-
-        await tx.orderItem.createMany({
-          data: orderItems,
-        });
-
-        // 4. Получаем полный заказ с позициями
-        return await tx.order.findUnique({
-          where: { id: newOrder.id },
-          include: {
-            items: {
-              include: {
-                product: true,
+            // 3. Создаем заказ
+            const newOrder = await tx.order.create({
+              data: {
+                orderNumber,
+                userId: userId || undefined,
+                customerName: validatedData.customerName,
+                customerPhone: validatedData.customerPhone,
+                customerEmail: validatedData.customerEmail || undefined,
+                deliveryAddress: validatedData.deliveryAddress,
+                customerNote: validatedData.customerNote || undefined,
+                subtotal: serverTotal,
+                total: serverTotal,
+                status: OrderStatus.RESERVED,
+                isStockReserved: true,
+                reservedAt: new Date(),
+                idempotencyKey: validatedData.idempotencyKey,
               },
-            },
-          },
-        });
-      });
+            });
+
+            // 4. Создаем позиции заказа со снимком цены на момент покупки
+            const orderItems = reservedItems.map((item) => ({
+              orderId: newOrder.id,
+              productId: item.productId,
+              quantity: item.quantity,
+              price: item.serverPrice,
+              total: item.lineTotal,
+              productSnapshot: {
+                productId: item.productId,
+                name: item.productName,
+                price: item.serverPrice,
+                finalPrice: item.serverPrice,
+                configuration: item.configuration || null,
+              },
+              options: item.options || {},
+            }));
+
+            await tx.orderItem.createMany({
+              data: orderItems,
+            });
+
+            // 5. Получаем полный заказ с позициями
+            return await tx.order.findUniqueOrThrow({
+              where: { id: newOrder.id },
+              include: {
+                items: {
+                  include: {
+                    product: true,
+                  },
+                },
+              },
+            });
+          });
+          break;
+        } catch (txError) {
+          const isOrderNumberRace =
+            isUniqueConstraintError(txError, 'order_number') ||
+            (txError instanceof Error && txError.message.includes('Итоговая сумма'));
+
+          // Гонку номеров ретраим, ошибку суммы клиенту отдаём сразу (это бизнес-ошибка)
+          if (txError instanceof Error && txError.message.includes('Итоговая сумма')) {
+            throw txError;
+          }
+          if (isOrderNumberRace && attempt < MAX_ORDER_NUMBER_RETRIES) {
+            continue;
+          }
+          throw txError;
+        }
+      }
+
+      if (!order) {
+        throw new Error('Не удалось создать заказ');
+      }
 
       // Логируем успешное создание заказа
-      console.log(`✅ Order created: ${orderNumber}, Total: ${order!.total} ₽`);
+      console.log(`✅ Order created: ${order.orderNumber}, Total: ${order.total} ₽`);
 
       // Отправляем email подтверждение (если email указан)
-      if (order!.customerEmail && emailService.isAvailable()) {
+      if (order.customerEmail && emailService.isAvailable()) {
         try {
           await emailService.sendOrderConfirmation({
-            customerName: order!.customerName,
-            customerEmail: order!.customerEmail,
-            orderNumber: order!.orderNumber,
-            orderDate: order!.createdAt.toLocaleDateString('ru-RU', {
+            customerName: order.customerName,
+            customerEmail: order.customerEmail,
+            orderNumber: order.orderNumber,
+            orderDate: order.createdAt.toLocaleDateString('ru-RU', {
               year: 'numeric',
               month: 'long',
               day: 'numeric',
             }),
-            items: order!.items.map(item => ({
+            items: order.items.map(item => ({
               name: getProductSnapshotName(item.productSnapshot) || item.product?.name || 'Товар',
               quantity: item.quantity,
               price: Number(item.price),
               total: Number(item.total),
             })),
-            subtotal: Number(order!.subtotal),
-            deliveryCost: Number(order!.deliveryCost),
-            total: Number(order!.total),
-            deliveryAddress: order!.deliveryAddress,
-            customerPhone: order!.customerPhone,
+            subtotal: Number(order.subtotal),
+            deliveryCost: Number(order.deliveryCost),
+            total: Number(order.total),
+            deliveryAddress: order.deliveryAddress,
+            customerPhone: order.customerPhone,
           });
         } catch (emailError) {
           console.error('Failed to send order confirmation email:', emailError);
@@ -263,11 +338,12 @@ export class OrderCreateController {
         message: 'Заказ успешно создан',
         data: {
           order,
-          whatsappUrl: OrderCreateController.generateWhatsAppUrl(order!),
+          whatsappUrl: OrderCreateController.generateWhatsAppUrl(order),
         },
       });
     } catch (error: unknown) {
       console.error('❌ Order creation error:', error);
+      captureError(error instanceof Error ? error : new Error('Order creation failed'));
 
       // Обработка ошибок валидации
       if (error instanceof z.ZodError) {
@@ -282,7 +358,7 @@ export class OrderCreateController {
         return;
       }
 
-      // Обработка ошибок недостатка товара
+      // Обработка ошибок недостатка товара (безопасны для показа пользователю)
       if (error instanceof Error && error.message.includes('Недостаточно товара')) {
         res.status(409).json({
           success: false,
@@ -291,10 +367,19 @@ export class OrderCreateController {
         return;
       }
 
-      // Общая ошибка
+      // Расхождение суммы — бизнес-ошибка ценообразования
+      if (error instanceof Error && error.message.includes('Итоговая сумма')) {
+        res.status(409).json({
+          success: false,
+          error: 'Цены товаров изменились. Обновите корзину и попробуйте снова.',
+        });
+        return;
+      }
+
+      // Общая ошибка: детали наружу не отдаём (утечка внутренних данных)
       res.status(500).json({
         success: false,
-        error: error instanceof Error ? error.message : 'Не удалось создать заказ',
+        error: 'Не удалось создать заказ. Попробуйте позже.',
       });
     }
   }
@@ -303,8 +388,8 @@ export class OrderCreateController {
    * Генерация ссылки для WhatsApp уведомления
    */
   private static generateWhatsAppUrl(order: Prisma.OrderGetPayload<{ include: { items: { include: { product: true } } } }>): string {
-    const managerPhone = '79288331532'; // Номер менеджера
-    
+    const managerPhone = process.env.MANAGER_WHATSAPP_PHONE || '79288331532';
+
     const message = `
 🛒 *Новый заказ №${order.orderNumber}*
 
@@ -332,11 +417,12 @@ ${order.customerNote ? `💬 *Комментарий:*\n${order.customerNote}` :
   }
 
   /**
-   * Отмена резервирования при отмене заказа
+   * Отмена резервирования при отмене заказа (возврат стока).
+   * Используется при ручной отмене администратором и при refund.
    */
-  static async cancelOrderAndReleaseStock(orderId: string): Promise<void> {
-    await prisma.$transaction(async (tx) => {
-      const order = await tx.order.findUnique({
+  static async releaseReservedStock(orderId: string, tx?: Prisma.TransactionClient): Promise<void> {
+    const release = async (client: Prisma.TransactionClient) => {
+      const order = await client.order.findUnique({
         where: { id: orderId },
         include: { items: true },
       });
@@ -346,13 +432,14 @@ ${order.customerNote ? `💬 *Комментарий:*\n${order.customerNote}` :
       }
 
       if (!order.isStockReserved) {
-        throw new Error('Товар не был зарезервирован');
+        // Сток не резервиался — возвращать нечего
+        return false;
       }
 
       // Возвращаем товар на склад
       for (const item of order.items) {
         if (item.productId) {
-          await tx.product.update({
+          await client.product.update({
             where: { id: item.productId },
             data: {
               stockQuantity: {
@@ -363,12 +450,42 @@ ${order.customerNote ? `💬 *Комментарий:*\n${order.customerNote}` :
         }
       }
 
-      // Обновляем статус заказа
+      await client.order.update({
+        where: { id: orderId },
+        data: {
+          isStockReserved: false,
+        },
+      });
+
+      return true;
+    };
+
+    if (tx) {
+      await release(tx);
+    } else {
+      await prisma.$transaction(release);
+    }
+  }
+
+  /**
+   * Отмена заказа с возвратом зарезервированного товара
+   */
+  static async cancelOrderAndReleaseStock(orderId: string): Promise<void> {
+    await prisma.$transaction(async (tx) => {
+      const order = await tx.order.findUnique({
+        where: { id: orderId },
+      });
+
+      if (!order) {
+        throw new Error('Заказ не найден');
+      }
+
+      await OrderCreateController.releaseReservedStock(orderId, tx);
+
       await tx.order.update({
         where: { id: orderId },
         data: {
           status: OrderStatus.CANCELLED,
-          isStockReserved: false,
           cancelledAt: new Date(),
         },
       });

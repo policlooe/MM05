@@ -1,2 +1,2 @@
--- AlterTable
-ALTER TABLE "products" ADD COLUMN "assembly_price" DECIMAL(10,2);
+-- Add assembly price column
+ALTER TABLE "products" ADD COLUMN IF NOT EXISTS "assembly_price" DECIMAL(10,2);

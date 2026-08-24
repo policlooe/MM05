@@ -1,4 +1,5 @@
 -- Add a stable idempotency key for order creation dedupe.
-ALTER TABLE "orders" ADD COLUMN "idempotency_key" TEXT;
+-- Идемпотентно: колонка может уже существовать в проде (Supabase)
+ALTER TABLE "orders" ADD COLUMN IF NOT EXISTS "idempotency_key" TEXT;
 
-CREATE UNIQUE INDEX "orders_idempotency_key_key" ON "orders"("idempotency_key");
+CREATE UNIQUE INDEX IF NOT EXISTS "orders_idempotency_key_key" ON "orders"("idempotency_key");

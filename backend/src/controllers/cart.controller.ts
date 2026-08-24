@@ -56,7 +56,7 @@ export class CartController {
     } catch (error: unknown) {
       res.status(500).json({
         success: false,
-        error: error instanceof Error ? error.message : 'Failed to fetch cart',
+        error: 'Failed to fetch cart',
       });
     }
   }
@@ -146,7 +146,7 @@ export class CartController {
 
       res.status(500).json({
         success: false,
-        error: error instanceof Error ? error.message : 'Failed to add to cart',
+        error: 'Failed to add to cart',
       });
     }
   }
@@ -227,7 +227,7 @@ export class CartController {
 
       res.status(500).json({
         success: false,
-        error: error instanceof Error ? error.message : 'Failed to update cart',
+        error: 'Failed to update cart',
       });
     }
   }
@@ -249,11 +249,21 @@ export class CartController {
         return;
       }
 
-      await prisma.cartItem.delete({
+      // IDOR-защита: удаляем только позицию ИЗ КОРЗИНЫ ТЕКУЩЕГО пользователя
+      const deleted = await prisma.cartItem.deleteMany({
         where: {
           id: itemId as string,
+          cartId: cart.id,
         },
       });
+
+      if (deleted.count === 0) {
+        res.status(404).json({
+          success: false,
+          error: 'Cart item not found',
+        });
+        return;
+      }
 
       const updatedCart = await prisma.cart.findUnique({
         where: { id: cart.id },
@@ -272,9 +282,10 @@ export class CartController {
         data: updatedCart,
       });
     } catch (error: unknown) {
+      console.error('Remove from cart error:', error);
       res.status(500).json({
         success: false,
-        error: error instanceof Error ? error.message : 'Failed to remove from cart',
+        error: 'Failed to remove from cart',
       });
     }
   }
@@ -306,7 +317,7 @@ export class CartController {
     } catch (error: unknown) {
       res.status(500).json({
         success: false,
-        error: error instanceof Error ? error.message : 'Failed to clear cart',
+        error: 'Failed to clear cart',
       });
     }
   }

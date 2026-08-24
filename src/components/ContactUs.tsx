@@ -132,7 +132,7 @@ export function ContactUs() {
                   href={CONTACTS.whatsapp}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-3 p-3 bg-card border border-border rounded-xl hover:bg-accent/5 hover:shadow-md transition-all group"
+                  className="flex items-center gap-3 p-3 bg-card border border-border rounded-xl hover:bg-accent/5 hover:shadow-md transition group"
                 >
                   <PremiumIconMark icon={MessageCircle} size="sm" tone="accent" className="shrink-0" />
                   <div>
@@ -145,7 +145,7 @@ export function ContactUs() {
                   href={CONTACTS.telegram}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-3 p-3 bg-card border border-border rounded-xl hover:bg-accent/5 hover:shadow-md transition-all group"
+                  className="flex items-center gap-3 p-3 bg-card border border-border rounded-xl hover:bg-accent/5 hover:shadow-md transition group"
                 >
                   <PremiumIconMark icon={Send} size="sm" tone="accent" className="shrink-0" />
                   <div>
@@ -158,7 +158,7 @@ export function ContactUs() {
                   href={CONTACTS.vk}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-3 p-3 bg-card border border-border rounded-xl hover:bg-accent/5 hover:shadow-md transition-all group"
+                  className="flex items-center gap-3 p-3 bg-card border border-border rounded-xl hover:bg-accent/5 hover:shadow-md transition group"
                 >
                   <PremiumIconMark icon={Users} size="sm" tone="accent" className="shrink-0" />
                   <div>

@@ -190,14 +190,14 @@ export default function Catalog() {
                 </button>
               </div>
             ) : (
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-5">
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-5 stagger-in">
                 {filtered.map((p) => (
                   <article
                     key={p.id}
                   >
                     <Link
                       to={`/product/${p.slug}`}
-                      className="group bg-surface rounded-lg overflow-hidden border border-border hover:shadow-lg transition-all block"
+                      className="group bg-surface rounded-lg overflow-hidden border border-border hover:shadow-lg transition block"
                     >
                       <div className="relative aspect-square bg-secondary overflow-hidden">
                         <img

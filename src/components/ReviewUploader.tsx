@@ -172,7 +172,7 @@ export function ReviewUploader({ productId, productName, onSubmit, className }: 
             placeholder="Расскажите о своих впечатлениях от товара..."
             rows={4}
             maxLength={1000}
-            className="w-full px-3 py-2 border border-border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-accent/20 focus:border-accent transition-all resize-y text-sm"
+            className="w-full px-3 py-2 border border-border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-accent/20 focus:border-accent transition resize-y text-sm"
           />
           <div className="flex justify-between items-center mt-1">
             <span className="text-xs text-muted-foreground">
@@ -217,7 +217,7 @@ export function ReviewUploader({ productId, productName, onSubmit, className }: 
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
-                className="aspect-square rounded-lg border-2 border-dashed border-border hover:bg-accent/5 bg-muted/30 flex flex-col items-center justify-center gap-1 transition-all group"
+                className="aspect-square rounded-lg border-2 border-dashed border-border hover:bg-accent/5 bg-muted/30 flex flex-col items-center justify-center gap-1 transition group"
               >
                 <Plus className="w-5 h-5 text-muted-foreground group-hover:text-accent transition-colors" />
                 <span className="text-xs text-muted-foreground group-hover:text-accent transition-colors">
@@ -246,7 +246,7 @@ export function ReviewUploader({ productId, productName, onSubmit, className }: 
           type="submit"
           disabled={isSubmitting || rating === 0 || text.trim().length < 10}
           className={cn(
-            "w-full py-2.5 rounded-lg font-medium text-sm transition-all",
+            "w-full py-2.5 rounded-lg font-medium text-sm transition",
             "bg-accent hover:bg-accent-hover text-accent-foreground",
             "disabled:opacity-50 disabled:cursor-not-allowed",
             "active:scale-[0.98]"

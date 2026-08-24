@@ -3,7 +3,7 @@ import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { Suspense } from "react";
 import Index from "./pages/Index";
 import Catalog from "./pages/Catalog";
-import { Toaster } from "@/components/ui/toaster";
+import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { CartProvider } from "@/store/cart";
 import { SkipLink } from "@/components/SkipLink";
@@ -63,7 +63,7 @@ function App() {
       <SkipLink />
       <CartProvider>
         <TooltipProvider>
-          <Toaster />
+          <Toaster position="bottom-center" />
           <BrowserRouter
             future={{
               v7_startTransition: true,

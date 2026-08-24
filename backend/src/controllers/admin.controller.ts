@@ -2,13 +2,10 @@ import { Request, Response } from 'express';
 import { Prisma } from '@prisma/client';
 import { createProductSchema, updateProductSchema } from '../validators/product.validator.js';
 import { updateOrderStatusSchema } from '../validators/order.validator.js';
-import { paginationSchema } from '../validators/admin.validator.js';
+import { paginationSchema, statsQuerySchema } from '../validators/admin.validator.js';
 import { z } from 'zod';
 import { prisma } from '../lib/prisma.js';
-
-function getErrorMessage(error: unknown, fallback: string): string {
-  return error instanceof Error ? error.message : fallback;
-}
+import { safeChangeOrderStatus } from '../services/order-status.service.js';
 
 function normalizeProductData(data: Record<string, unknown>) {
   const { image, stock, featured, ...rest } = data;
@@ -69,9 +66,10 @@ export class AdminController {
           details: error.errors,
         });
       }
+      console.error('Get products error:', error);
       res.status(500).json({
         success: false,
-        error: getErrorMessage(error, 'Failed to fetch products'),
+        error: 'Failed to fetch products',
       });
     }
   }
@@ -103,9 +101,10 @@ export class AdminController {
         data: product,
       });
     } catch (error: unknown) {
+      console.error('Get product error:', error);
       res.status(500).json({
         success: false,
-        error: getErrorMessage(error, 'Failed to fetch product'),
+        error: 'Failed to fetch product',
       });
     }
   }
@@ -151,9 +150,23 @@ export class AdminController {
           details: error.errors,
         });
       }
-      res.status(400).json({
+      if (error instanceof Prisma.PrismaClientKnownRequestError) {
+        // P2002: нарушение unique-ограничения (slug и т.п.)
+        if (error.code === 'P2002') {
+          return res.status(400).json({
+            success: false,
+            error: 'Товар с таким slug уже существует',
+          });
+        }
+        return res.status(400).json({
+          success: false,
+          error: 'Не удалось создать товар: проверьте корректность данных',
+        });
+      }
+      console.error('Create product error:', error);
+      res.status(500).json({
         success: false,
-        error: getErrorMessage(error, 'Failed to create product'),
+        error: 'Failed to create product',
       });
     }
   }
@@ -207,9 +220,28 @@ export class AdminController {
           details: error.errors,
         });
       }
-      res.status(400).json({
+      if (error instanceof Prisma.PrismaClientKnownRequestError) {
+        if (error.code === 'P2002') {
+          return res.status(400).json({
+            success: false,
+            error: 'Товар с таким slug уже существует',
+          });
+        }
+        if (error.code === 'P2025') {
+          return res.status(404).json({
+            success: false,
+            error: 'Товар не найден',
+          });
+        }
+        return res.status(400).json({
+          success: false,
+          error: 'Не удалось обновить товар: проверьте корректность данных',
+        });
+      }
+      console.error('Update product error:', error);
+      res.status(500).json({
         success: false,
-        error: getErrorMessage(error, 'Failed to update product'),
+        error: 'Failed to update product',
       });
     }
   }
@@ -231,9 +263,25 @@ export class AdminController {
         message: 'Product deleted successfully',
       });
     } catch (error: unknown) {
-      res.status(400).json({
+      if (error instanceof Prisma.PrismaClientKnownRequestError) {
+        if (error.code === 'P2025') {
+          return res.status(404).json({
+            success: false,
+            error: 'Товар не найден',
+          });
+        }
+        // P2003: товар связан с заказами/корзинами — не удаляем физически
+        if (error.code === 'P2003') {
+          return res.status(400).json({
+            success: false,
+            error: 'Товар используется в заказах. Деактивируйте его вместо удаления.',
+          });
+        }
+      }
+      console.error('Delete product error:', error);
+      res.status(500).json({
         success: false,
-        error: getErrorMessage(error, 'Failed to delete product'),
+        error: 'Failed to delete product',
       });
     }
   }
@@ -292,9 +340,10 @@ export class AdminController {
           details: error.errors,
         });
       }
+      console.error('Get orders error:', error);
       res.status(500).json({
         success: false,
-        error: getErrorMessage(error, 'Failed to fetch orders'),
+        error: 'Failed to fetch orders',
       });
     }
   }
@@ -337,44 +386,38 @@ export class AdminController {
         data: order,
       });
     } catch (error: unknown) {
+      console.error('Get order error:', error);
       res.status(500).json({
         success: false,
-        error: getErrorMessage(error, 'Failed to fetch order'),
+        error: 'Failed to fetch order',
       });
     }
   }
 
   /**
    * PUT /api/admin/orders/:id/status
-   * Обновление статуса заказа с валидацией
+   * Обновление статуса заказа — использует общий сервис жизненного цикла
+   * (переходы статусов, возврат стока, email), как и PATCH /api/orders/:id/status
    */
   static async updateOrderStatus(req: Request, res: Response) {
     try {
       const id = req.params.id as string;
-      
-      // Валидация входных данных
+
       const { status, adminNote } = updateOrderStatusSchema.parse(req.body);
 
-      const order = await prisma.order.update({
-        where: { id },
-        data: {
-          status,
-          adminNote,
-          ...(status === 'CONFIRMED' && { confirmedAt: new Date() }),
-          ...(status === 'SHIPPED' && { shippedAt: new Date() }),
-          ...(status === 'DELIVERED' && { deliveredAt: new Date() }),
-          ...(status === 'CANCELLED' && { cancelledAt: new Date() }),
-        },
-        include: {
-          user: true,
-          items: true,
-        },
-      });
+      const result = await safeChangeOrderStatus(id, status, adminNote ?? null);
+
+      if (!result.ok) {
+        return res.status(result.code).json({
+          success: false,
+          error: result.message,
+        });
+      }
 
       res.status(200).json({
         success: true,
         message: 'Order status updated successfully',
-        data: order,
+        data: result.order,
       });
     } catch (error: unknown) {
       if (error instanceof z.ZodError) {
@@ -384,9 +427,9 @@ export class AdminController {
           details: error.errors,
         });
       }
-      res.status(400).json({
+      res.status(500).json({
         success: false,
-        error: getErrorMessage(error, 'Failed to update order status'),
+        error: 'Failed to update order status',
       });
     }
   }
@@ -444,50 +487,96 @@ export class AdminController {
           details: error.errors,
         });
       }
+      console.error('Get users error:', error);
       res.status(500).json({
         success: false,
-        error: getErrorMessage(error, 'Failed to fetch users'),
+        error: 'Failed to fetch users',
       });
     }
   }
 
   /**
    * GET /api/admin/stats
-   * Получение статистики для дашборда
+   * Получение статистики для дашборда с фильтрацией по периоду
    */
   static async getStats(req: Request, res: Response) {
     try {
+      const { startDate, endDate, period } = statsQuerySchema.parse(req.query);
+
+      // Период определяет окно статистики, если не заданы явные даты
+      let from = startDate;
+      const to = endDate ?? new Date();
+
+      if (!from) {
+        from = new Date(to);
+        switch (period) {
+          case 'day':
+            from.setDate(from.getDate() - 1);
+            break;
+          case 'week':
+            from.setDate(from.getDate() - 7);
+            break;
+          case 'year':
+            from.setFullYear(from.getFullYear() - 1);
+            break;
+          case 'month':
+          default:
+            from.setMonth(from.getMonth() - 1);
+            break;
+        }
+      }
+
+      const createdAtWindow = { gte: from, lte: to };
+
       const [
         totalUsers,
         totalOrders,
         totalProducts,
         pendingOrders,
-        totalRevenue,
+        revenueAggregate,
       ] = await Promise.all([
-        prisma.user.count(),
-        prisma.order.count(),
+        prisma.user.count({ where: { createdAt: createdAtWindow } }),
+        prisma.order.count({ where: { createdAt: createdAtWindow } }),
         prisma.product.count(),
-        prisma.order.count({ where: { status: 'NEW' } }),
+        prisma.order.count({
+          where: { status: 'NEW', createdAt: createdAtWindow },
+        }),
         prisma.order.aggregate({
           _sum: { total: true },
-          where: { status: { in: ['CONFIRMED', 'PROCESSING', 'SHIPPED', 'DELIVERED', 'COMPLETED'] } },
+          where: {
+            status: { in: ['CONFIRMED', 'PROCESSING', 'SHIPPED', 'DELIVERED', 'COMPLETED'] },
+            paidAt: { not: null },
+          },
         }),
       ]);
 
       res.status(200).json({
         success: true,
         data: {
+          period: {
+            from: from.toISOString(),
+            to: to.toISOString(),
+            type: period,
+          },
           totalUsers,
           totalOrders,
           totalProducts,
           pendingOrders,
-          totalRevenue: totalRevenue._sum.total || 0,
+          totalRevenue: revenueAggregate._sum.total || 0,
         },
       });
     } catch (error: unknown) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({
+          success: false,
+          error: 'Validation error',
+          details: error.errors,
+        });
+      }
+      console.error('Get stats error:', error);
       res.status(500).json({
         success: false,
-        error: getErrorMessage(error, 'Failed to fetch stats'),
+        error: 'Failed to fetch stats',
       });
     }
   }

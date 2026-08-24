@@ -1,10 +1,11 @@
 import { Router } from 'express';
-import { paymentController } from '../controllers/payment.controller';
-import { authMiddleware, adminMiddleware, optionalAuthMiddleware } from '../middleware/auth.middleware';
+import { paymentController } from '../controllers/payment.controller.js';
+import { authMiddleware, adminMiddleware, optionalAuthMiddleware } from '../middleware/auth.middleware.js';
 import { validateBody, validateParams } from '../middleware/validation.middleware.js';
 import {
   createCheckoutSessionSchema,
   sessionIdParamSchema,
+  orderIdParamSchema,
   createRefundSchema,
 } from '../validators/payment.validator.js';
 
@@ -45,6 +46,18 @@ router.post(
   adminMiddleware,
   validateBody(createRefundSchema),
   (req, res, next) => paymentController.createRefund(req, res, next)
+);
+
+/**
+ * @route   GET /api/payment/order/:orderId/status
+ * @desc    Order payment status for frontend polling (owner/admin or ?pid= capability)
+ * @access  Mixed
+ */
+router.get(
+  '/order/:orderId/status',
+  optionalAuthMiddleware,
+  validateParams(orderIdParamSchema),
+  (req, res, next) => paymentController.getOrderStatus(req, res, next)
 );
 
 export default router;

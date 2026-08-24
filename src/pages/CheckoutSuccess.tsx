@@ -70,9 +70,9 @@ export default function CheckoutSuccess() {
         >
           {/* Иконка успеха */}
           <motion.div
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
-            transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
+            initial={{ scale: 0.5, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ delay: 0.2, type: "spring", stiffness: 260, damping: 18 }}
             className="inline-flex items-center justify-center w-20 h-20 bg-accent/10 rounded-full mb-6"
           >
             <CheckCircle2 className="w-12 h-12 text-accent" />

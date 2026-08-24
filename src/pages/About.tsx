@@ -177,7 +177,7 @@ const About = () => {
                 href="https://wa.me/79288331532"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="px-6 py-3 bg-surface border-2 border-accent text-accent hover:bg-accent hover:text-white rounded-lg font-semibold transition-all"
+                className="px-6 py-3 bg-surface border-2 border-accent text-accent hover:bg-accent hover:text-white rounded-lg font-semibold transition"
               >
                 Написать в WhatsApp
               </a>
