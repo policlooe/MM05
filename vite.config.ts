@@ -24,7 +24,7 @@ export default defineConfig(({ mode }) => ({
   build: {
     // Оптимизация production сборки
     minify: "terser",
-    target: "es2015",
+    target: "es2019",
     terserOptions: {
       compress: {
         drop_console: mode === 'production',
@@ -36,7 +36,6 @@ export default defineConfig(({ mode }) => ({
         // Разделение кода по вендорам для лучшего кеширования
         manualChunks: {
           'react-vendor': ['react', 'react-dom', 'react-router-dom'],
-          'gsap-vendor': ['gsap', '@gsap/react'],
           'ui-vendor': ['framer-motion', 'lucide-react'],
           'form-vendor': ['zod'],
           'query-vendor': ['@tanstack/react-query'],
@@ -83,6 +82,11 @@ export default defineConfig(({ mode }) => ({
     port: 8080,
     hmr: {
       overlay: false,
+    },
+    watch: {
+      // Атомарные сохранения (редакторы, инструменты правки файлов) создают
+      // временные каталоги; watcher падал на них с EBUSY и ронял dev-сервер.
+      ignored: ["**/.*.tmpdir/**", "**/*.tmp"],
     },
   },
 }));
