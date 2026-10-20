@@ -179,6 +179,10 @@ export default function Checkout() {
             },
           });
         }
+      } else {
+        // 200 с success:false раньше молча разблокировал кнопку: заказ не
+        // создан, ошибки нет — тупик на последнем шаге покупки.
+        toast.error(response.message || "Не удалось создать заказ");
       }
     } catch (error: any) {
       console.error("Checkout error:", error);

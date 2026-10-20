@@ -1,8 +1,10 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Heart, ShoppingBag, Trash2 } from "lucide-react";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
+import { CartSidebar } from "@/components/CartSidebar";
+import { MobileNav } from "@/components/MobileNav";
 import { useFavorites } from "@/store/favorites";
 import { useCart, formatPrice } from "@/store/cart";
 import { toast } from "sonner";
@@ -12,8 +14,18 @@ import type { Product } from "@/data/products";
 export default function Favorites() {
   const { favorites, remove } = useFavorites();
   const { add } = useCart();
+  const navigate = useNavigate();
 
   const handleAddToCart = (product: Product) => {
+    // У товаров с обязательной конфигурацией (размер/цвет/изголовье) быстрый
+    // «В корзину» добавлял базовую модель по базовой цене — покупатель
+    // рисковал заказать не тот размер. Отправляем на страницу товара.
+    if (product.configuration) {
+      toast.info("Выберите размер и цвет", { description: product.name });
+      navigate(`/product/${product.slug}`);
+      return;
+    }
+
     add(product);
   };
 
@@ -156,6 +168,8 @@ export default function Favorites() {
         )}
       </main>
 
+      <CartSidebar />
+      <MobileNav />
       <Footer />
     </div>
   );

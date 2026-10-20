@@ -1,4 +1,4 @@
-﻿import { useMemo, useState, useEffect, lazy, Suspense } from "react";
+import { useMemo, useState, useEffect, lazy, Suspense } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { Search, SlidersHorizontal, X } from "lucide-react";
 import { products, allCategories, type Category } from "@/data/products";
@@ -125,6 +125,7 @@ export default function Catalog() {
                   <button
                     key={c}
                     onClick={() => setActive(c)}
+                    aria-pressed={active === c}
                     className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors border ${
                       active === c
                         ? "border-primary bg-primary text-primary-foreground"
@@ -158,6 +159,7 @@ export default function Catalog() {
               <select
                 value={sort}
                 onChange={(e) => setSort(e.target.value as CatalogSort)}
+                aria-label="Сортировка товаров"
                 className="w-full bg-secondary rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-accent/40"
               >
                 <option value="popular">По популярности</option>

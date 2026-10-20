@@ -1,4 +1,4 @@
-﻿import { useParams, Link, useNavigate } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import { useState, useEffect, useMemo } from "react";
 import { ChevronLeft, ShoppingBag, MessageCircle, Check, Clock } from "lucide-react";
 import { motion } from "framer-motion";
@@ -29,7 +29,9 @@ export default function ProductPage() {
   const { add: addToRecentlyViewed } = useRecentlyViewed();
   const navigate = useNavigate();
 
-  const [selectedImage, setSelectedImage] = useState<string>("");
+  // Инициализируем сразу данными товара: иначе первый кадр показывает
+  // пустую картинку и «0 ₽», пока не отработают эффекты ниже.
+  const [selectedImage, setSelectedImage] = useState<string>(product?.image ?? "");
   const [viewerOpen, setViewerOpen] = useState(false);
   const [currentImage, setCurrentImage] = useState(0);
 
@@ -38,7 +40,7 @@ export default function ProductPage() {
     options: {},
   });
 
-  const [finalPrice, setFinalPrice] = useState(0);
+  const [finalPrice, setFinalPrice] = useState(product?.price ?? 0);
 
   const [assemblySelected, setAssemblySelected] = useState<boolean>(() => {
     if (!product) return false;
@@ -158,6 +160,15 @@ export default function ProductPage() {
                 className="bg-surface rounded-xl overflow-hidden border border-border aspect-square mb-3 cursor-pointer group relative w-full max-w-[100%]"
                 transition={{ duration: 0.3 }}
                 onClick={() => openViewer(selectedImage)}
+                role="button"
+                tabIndex={0}
+                aria-label="Открыть фото товара крупным планом"
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault();
+                    openViewer(selectedImage);
+                  }
+                }}
               >
                 <img
                   src={selectedImage}
@@ -184,6 +195,9 @@ export default function ProductPage() {
                       key={index}
                       onClick={() => {
                         setCurrentImage(index);
+                        // Выбранное фото должно остаться главным и после
+                        // закрытия просмотрщика, а не откатываться к первому.
+                        setSelectedImage(img);
                         setViewerOpen(true);
                       }}
                       whileHover={{ scale: 1.05 }}
