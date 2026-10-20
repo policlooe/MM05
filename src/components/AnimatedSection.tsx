@@ -1,10 +1,5 @@
-import { ElementType, ReactNode, useRef } from "react";
-import gsap from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { useGSAP } from "@gsap/react";
+import { ElementType, ReactNode, useEffect, useRef } from "react";
 import { cn } from "@/lib/utils";
-
-gsap.registerPlugin(useGSAP, ScrollTrigger);
 
 interface AnimatedSectionProps {
   as?: ElementType;
@@ -15,6 +10,12 @@ interface AnimatedSectionProps {
   "aria-label"?: string;
 }
 
+/**
+ * Появление блоков при скролле на IntersectionObserver + CSS-переходах.
+ *
+ * Раньше здесь был GSAP + ScrollTrigger: ~27 КБ gzip в первой загрузке ради
+ * fade-in секций главной страницы. Поведение то же, JS-зависимость убрана.
+ */
 export function AnimatedSection({
   as: Component = "section",
   children,
@@ -24,40 +25,47 @@ export function AnimatedSection({
 }: AnimatedSectionProps) {
   const scope = useRef<HTMLElement | null>(null);
 
-  useGSAP(
-    () => {
-      const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-      const items = gsap.utils.toArray<HTMLElement>(itemSelector, scope.current);
+  useEffect(() => {
+    const root = scope.current;
+    if (!root) return;
 
-      if (!items.length) return;
+    const items = Array.from(root.querySelectorAll<HTMLElement>(itemSelector));
+    if (!items.length) return;
 
-      if (reduceMotion) {
-        gsap.set(items, { autoAlpha: 1, y: 0, clearProps: "transform,opacity,visibility" });
-        return;
-      }
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      return;
+    }
 
-      gsap.set(items, { autoAlpha: 0, y: 18, willChange: "transform,opacity" });
+    items.forEach((item, index) => {
+      const delay = Math.min(index, 5) * 70;
+      item.style.opacity = "0";
+      item.style.transform = "translateY(18px)";
+      item.style.transition = `opacity 550ms ease ${delay}ms, transform 550ms ease ${delay}ms`;
+    });
 
-      ScrollTrigger.batch(items, {
-        start: "top 88%",
-        once: true,
-        interval: 0.08,
-        batchMax: 6,
-        onEnter: (batch) => {
-          gsap.to(batch, {
-            autoAlpha: 1,
-            y: 0,
-            duration: 0.55,
-            ease: "power3.out",
-            stagger: 0.07,
-            overwrite: "auto",
-            clearProps: "transform,opacity,visibility,willChange",
-          });
-        },
-      });
-    },
-    { scope }
-  );
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (!entry.isIntersecting) return;
+
+          const target = entry.target as HTMLElement;
+          target.style.opacity = "1";
+          target.style.transform = "translateY(0)";
+          observer.unobserve(target);
+
+          window.setTimeout(() => {
+            target.style.transition = "";
+            target.style.transform = "";
+          }, 900);
+        });
+      },
+      { rootMargin: "0px 0px -12% 0px", threshold: 0.01 }
+    );
+
+    items.forEach((item) => observer.observe(item));
+
+    return () => observer.disconnect();
+  }, [itemSelector]);
 
   return (
     <Component ref={scope} className={cn(className)} {...props}>

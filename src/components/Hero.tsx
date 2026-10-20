@@ -1,13 +1,10 @@
-import { memo, useRef, useState } from "react";
+import { memo, useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import gsap from "gsap";
-import { useGSAP } from "@gsap/react";
 import { OptimizedImage } from "./OptimizedImage";
 import heroBanner from "@/assets/hero-banner.jpg";
 
-gsap.registerPlugin(useGSAP);
-
 const ROTATION_INTERVAL_MS = 5200;
+const FADE_OUT_MS = 180;
 
 const banners = [
   {
@@ -39,79 +36,62 @@ const banners = [
 export const Hero = memo(function Hero() {
   const rootRef = useRef<HTMLElement>(null);
   const intervalRef = useRef<number | null>(null);
-  const timelineRef = useRef<gsap.core.Timeline | null>(null);
+  const fadeTimerRef = useRef<number | null>(null);
   const activeIndexRef = useRef(0);
   const [activeIndex, setActiveIndex] = useState(0);
+  const [copyVisible, setCopyVisible] = useState(true);
 
-  useGSAP(
-    () => {
-      const root = rootRef.current;
-      if (!root) return;
+  // Ротация баннеров на CSS-переходах: раньше здесь стоял GSAP (~27 КБ gzip),
+  // который грузился в первую отрисовку ради одного fade заголовка.
+  useEffect(() => {
+    const root = rootRef.current;
+    if (!root) return;
 
-      const copy = root.querySelector<HTMLElement>("[data-hero-copy]");
-      const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (reduceMotion || banners.length <= 1) return;
 
-      if (copy) {
-        gsap.set(copy, { opacity: 1 });
-      }
+    const showSlide = (nextIndex: number) => {
+      if (nextIndex === activeIndexRef.current) return;
+      activeIndexRef.current = nextIndex;
 
-      if (reduceMotion || banners.length <= 1) return;
+      setCopyVisible(false);
+      if (fadeTimerRef.current) window.clearTimeout(fadeTimerRef.current);
+      fadeTimerRef.current = window.setTimeout(() => {
+        setActiveIndex(nextIndex);
+        setCopyVisible(true);
+      }, FADE_OUT_MS);
+    };
 
-      const showSlide = (nextIndex: number) => {
-        const currentIndex = activeIndexRef.current;
-        if (nextIndex === currentIndex) return;
+    const start = () => {
+      if (intervalRef.current) window.clearInterval(intervalRef.current);
+      intervalRef.current = window.setInterval(() => {
+        showSlide((activeIndexRef.current + 1) % banners.length);
+      }, ROTATION_INTERVAL_MS);
+    };
 
-        activeIndexRef.current = nextIndex;
+    const stop = () => {
+      if (!intervalRef.current) return;
+      window.clearInterval(intervalRef.current);
+      intervalRef.current = null;
+    };
 
-        timelineRef.current?.kill();
-        const tl = gsap.timeline({ defaults: { ease: "power2.out", overwrite: "auto" } });
-        timelineRef.current = tl;
+    const handlePointerEnter = () => stop();
+    const handlePointerLeave = () => start();
+    const handleVisibility = () => (document.hidden ? stop() : start());
 
-        if (copy) {
-          tl.to(copy, {
-            opacity: 0,
-            duration: 0.18,
-            onComplete: () => setActiveIndex(nextIndex),
-          }, 0)
-            .to(copy, { opacity: 1, duration: 0.28 }, 0.22);
-        } else {
-          setActiveIndex(nextIndex);
-        }
-      };
+    root.addEventListener("pointerenter", handlePointerEnter);
+    root.addEventListener("pointerleave", handlePointerLeave);
+    document.addEventListener("visibilitychange", handleVisibility);
+    start();
 
-      const start = () => {
-        if (intervalRef.current) window.clearInterval(intervalRef.current);
-        intervalRef.current = window.setInterval(() => {
-          showSlide((activeIndexRef.current + 1) % banners.length);
-        }, ROTATION_INTERVAL_MS);
-      };
-
-      const stop = () => {
-        if (!intervalRef.current) return;
-        window.clearInterval(intervalRef.current);
-        intervalRef.current = null;
-      };
-
-      const handlePointerEnter = () => stop();
-      const handlePointerLeave = () => start();
-      const handleVisibility = () => (document.hidden ? stop() : start());
-
-      root.addEventListener("pointerenter", handlePointerEnter);
-      root.addEventListener("pointerleave", handlePointerLeave);
-      document.addEventListener("visibilitychange", handleVisibility);
-      start();
-
-      return () => {
-        stop();
-        timelineRef.current?.kill();
-        timelineRef.current = null;
-        root.removeEventListener("pointerenter", handlePointerEnter);
-        root.removeEventListener("pointerleave", handlePointerLeave);
-        document.removeEventListener("visibilitychange", handleVisibility);
-      };
-    },
-    { scope: rootRef }
-  );
+    return () => {
+      stop();
+      if (fadeTimerRef.current) window.clearTimeout(fadeTimerRef.current);
+      root.removeEventListener("pointerenter", handlePointerEnter);
+      root.removeEventListener("pointerleave", handlePointerLeave);
+      document.removeEventListener("visibilitychange", handleVisibility);
+    };
+  }, []);
 
   const currentBanner = banners[activeIndex];
 
@@ -132,7 +112,7 @@ export const Hero = memo(function Hero() {
               priority
               loading="eager"
               fetchPriority="high"
-              decoding="sync"
+              decoding="async"
               className="hero-image h-full w-full object-cover"
               style={{ width: "100%", height: "100%", objectFit: "cover" }}
             />
@@ -140,7 +120,14 @@ export const Hero = memo(function Hero() {
           </div>
           <div className="hero-text-vignette absolute inset-0 z-[5] pointer-events-none" />
           <div className="pointer-events-none relative z-10 flex h-full items-center justify-center px-6 py-8 text-center text-white sm:px-10 sm:py-12 lg:px-14 lg:py-16">
-            <div data-hero-copy className="hero-copy-shell mx-auto flex max-w-[560px] flex-col items-center">
+            <div
+              data-hero-copy
+              className="hero-copy-shell mx-auto flex max-w-[560px] flex-col items-center"
+              style={{
+                opacity: copyVisible ? 1 : 0,
+                transition: `opacity ${copyVisible ? 280 : FADE_OUT_MS}ms ease`,
+              }}
+            >
               <p className="hero-copy-kicker mb-3 text-[11px] font-medium uppercase text-white sm:text-xs">
                 {currentBanner.eyebrow}
               </p>

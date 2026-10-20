@@ -7,6 +7,8 @@ interface SEOProps {
   url?: string;
   type?: 'website' | 'article' | 'product';
   keywords?: string[];
+  /** schema.org разметка: Product, BreadcrumbList и т.п. */
+  jsonLd?: Record<string, unknown> | Array<Record<string, unknown>>;
 }
 
 export const SEO = ({
@@ -16,6 +18,7 @@ export const SEO = ({
   url = 'https://mm05.vercel.app',
   type = 'website',
   keywords = [],
+  jsonLd,
 }: SEOProps) => {
   const siteUrl = (import.meta.env.VITE_APP_URL || 'https://mm05.vercel.app').replace(/\/$/, '');
   const fullTitle = `${title} | MM05 - мебель из массива`;
@@ -42,6 +45,10 @@ export const SEO = ({
       <meta name="twitter:image" content={fullImage} />
 
       <link rel="canonical" href={fullUrl} />
+
+      {jsonLd && (
+        <script type="application/ld+json">{JSON.stringify(jsonLd)}</script>
+      )}
     </Helmet>
   );
 };

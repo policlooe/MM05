@@ -1,4 +1,3 @@
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { Suspense } from "react";
 import Index from "./pages/Index";
@@ -8,7 +7,6 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { CartProvider } from "@/store/cart";
 import { SkipLink } from "@/components/SkipLink";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
-import { AdminGuard } from "@/components/AdminGuard";
 import { lazyWithChunkRecovery } from "@/lib/chunk-recovery";
 
 // Keep primary storefront routes eager to avoid white Suspense swaps on iOS.
@@ -24,6 +22,9 @@ const Login = lazyWithChunkRecovery(() => import("./pages/Login"));
 const Register = lazyWithChunkRecovery(() => import("./pages/Register"));
 const Favorites = lazyWithChunkRecovery(() => import("./pages/Favorites"));
 const NotFound = lazyWithChunkRecovery(() => import("./pages/NotFound"));
+
+// Админка грузится отдельным чанком вместе с react-query и проверкой роли
+const AdminShell = lazyWithChunkRecovery(() => import("./components/AdminShell"));
 
 // Admin pages
 const AdminDashboard = lazyWithChunkRecovery(() => import("./pages/admin/Dashboard"));
@@ -45,21 +46,9 @@ const PageLoader = () => (
   </div>
 );
 
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      staleTime: 1000 * 60 * 5,
-      gcTime: 1000 * 60 * 10,
-      refetchOnWindowFocus: false,
-      retry: 1,
-    },
-  },
-});
-
 function App() {
   return (
     <ErrorBoundary>
-    <QueryClientProvider client={queryClient}>
       <SkipLink />
       <CartProvider>
         <TooltipProvider>
@@ -85,23 +74,24 @@ function App() {
                 <Route path="/login" element={<Login />} />
                 <Route path="/register" element={<Register />} />
                 <Route path="/favorites" element={<Favorites />} />
-                
-                {/* Admin Routes */}
-                <Route path="/admin" element={<AdminGuard><AdminDashboard /></AdminGuard>} />
-                <Route path="/admin/products" element={<AdminGuard><ProductsManagement /></AdminGuard>} />
-                <Route path="/admin/products/new" element={<AdminGuard><ProductEdit /></AdminGuard>} />
-                <Route path="/admin/products/edit/:id" element={<AdminGuard><ProductEdit /></AdminGuard>} />
-                <Route path="/admin/orders" element={<AdminGuard><AdminOrders /></AdminGuard>} />
-                <Route path="/admin/orders/:id" element={<AdminGuard><AdminOrderDetail /></AdminGuard>} />
-                <Route path="/admin/users" element={<AdminGuard><AdminUsers /></AdminGuard>} />
-                
+
+                {/* Admin: оболочка с react-query и проверкой роли */}
+                <Route path="/admin" element={<AdminShell />}>
+                  <Route index element={<AdminDashboard />} />
+                  <Route path="products" element={<ProductsManagement />} />
+                  <Route path="products/new" element={<ProductEdit />} />
+                  <Route path="products/edit/:id" element={<ProductEdit />} />
+                  <Route path="orders" element={<AdminOrders />} />
+                  <Route path="orders/:id" element={<AdminOrderDetail />} />
+                  <Route path="users" element={<AdminUsers />} />
+                </Route>
+
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </Suspense>
           </BrowserRouter>
         </TooltipProvider>
       </CartProvider>
-    </QueryClientProvider>
     </ErrorBoundary>
   );
 }

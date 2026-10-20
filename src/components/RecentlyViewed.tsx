@@ -1,6 +1,5 @@
-﻿import { useRecentlyViewed } from "@/store/recentlyViewed";
+import { useRecentlyViewed } from "@/store/recentlyViewed";
 import { OptimizedProductCard } from "./OptimizedProductList";
-import { motion } from "framer-motion";
 import { Clock } from "lucide-react";
 
 export function RecentlyViewed() {
@@ -14,13 +13,7 @@ export function RecentlyViewed() {
   return (
     <section className="py-8 md:py-12 bg-surface">
       <div className="container-x">
-        <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.5 }}
-          className="flex items-center gap-3 mb-6 md:mb-8"
-        >
+        <div className="flex items-center gap-3 mb-6 md:mb-8 animate-in fade-in-0 slide-in-from-bottom-3 duration-500">
           <div className="w-10 h-10 bg-accent/10 rounded-xl flex items-center justify-center">
             <Clock className="w-5 h-5 text-accent" />
           </div>
@@ -32,7 +25,7 @@ export function RecentlyViewed() {
               Товары, которые вы смотрели ранее
             </p>
           </div>
-        </motion.div>
+        </div>
 
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3 md:gap-4">
           {products.slice(0, 6).map((product, index) => (

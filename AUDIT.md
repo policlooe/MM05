@@ -70,6 +70,26 @@ ECC-агентов). Ниже — что проверялось, что испр
 | Деплой только с ЮKassa не стартовал: `validateEnv` требовал Stripe-ключи, `stripe.service` бросал исключение на импорте | `validateEnv.ts`, `stripe.service.ts`, `webhook.controller.ts` | Stripe обязателен только при `PAYMENT_PROVIDER=STRIPE`; ключи ЮKassa стали реально обязательными при `YOOKASSA`; Stripe-вебхук отвечает 503, если провайдер отключён |
 | `DEPLOY.md` описывал Supabase как БД и `/health` как healthcheck | `DEPLOY.md` | Схема «Railway Postgres + Railway API + Vercel», таблица переменных, `/health/live`, раздел про cookie и CORS, вебхук ЮKassa |
 
+### Производительность, UX и SEO (третья итерация)
+
+| Проблема | Файл | Что сделано |
+|---|---|---|
+| `@tanstack/react-query` (~38 КБ) грузился всем покупателям, хотя нужен только админке | `src/App.tsx`, `src/components/AdminShell.tsx` (новый) | Провайдер и проверка роли переехали в ленивую оболочку `/admin`, админ-роуты стали вложенными |
+| GSAP + ScrollTrigger (~27 КБ gzip) в первой загрузке ради fade-in секций и одного заголовка | `Hero.tsx`, `AnimatedSection.tsx` | Ротация баннера на CSS-переходах, появление секций на `IntersectionObserver`; gsap полностью выпал из бандла |
+| `framer-motion` в `Navbar` и `RecentlyViewed` только ради hover/scale | оба файла | Заменено на CSS (`hover:scale`, `active:scale`, `animate-in` из tailwindcss-animate) |
+| Google Fonts блокировал первую отрисовку, дублирующий preload, 4 начертания | `index.html` | Неблокирующая загрузка (`onload` → `stylesheet`), 400/600, лишний prefetch `/catalog` убран |
+| В `sitemap.xml` 6 несуществующих slug'ов, 8 живых товаров отсутствовали | `public/sitemap.xml` | Перегенерирован по данным `src/data/products.ts` |
+| Нет schema.org разметки товара | `SEO.tsx`, `ProductPage.tsx` | `Product` (цена, валюта, наличие) + `BreadcrumbList` через `jsonLd`-проп |
+| Фильтры каталога жили только в состоянии | `Catalog.tsx` | Категория/сортировка/цена зеркалятся в URL — «назад» и ссылка сохраняют выбор |
+| На `/favorites` не было `CartSidebar`/`MobileNav`; быстрый «В корзину» добавлял конфигурируемый товар базовой модели | `Favorites.tsx` | Навигация смонтирована, товары с конфигурацией ведут на свою страницу |
+| Карточка товара: миниатюра не меняла главное фото, зум недоступен с клавиатуры, первый кадр с пустой картинкой и «0 ₽» | `ProductPage.tsx` | Выбранное фото сохраняется, `role="button"` + Enter/Space, состояние инициализируется из товара |
+| Каталог: активная категория только цветом, сортировка без подписи | `Catalog.tsx` | `aria-pressed`, `aria-label` |
+| `200 + success:false` на оформлении молча разблокировал кнопку | `Checkout.tsx` | Ветка с явной ошибкой |
+
+**Замер после правок:** критический путь 6 → 4 JS-чанка, `index` 249 → 205 КБ
+(83 → 65 КБ gzip), `gsap-vendor` 69 КБ → 0, `query-vendor` ушёл из preload в
+чанк админки.
+
 ---
 
 ## Осталось: критично (до продакшена)

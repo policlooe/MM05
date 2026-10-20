@@ -43,9 +43,33 @@ export default function Catalog() {
   useEffect(() => {
     const q = params.get("search") ?? params.get("q");
     const c = params.get("cat") as Category | null;
+    const nextSort = params.get("sort") as CatalogSort | null;
+    const nextPrice = Number(params.get("price"));
+
     setQuery(q ?? "");
     setActive(c && (allCategories as readonly string[]).includes(c) ? c : DEFAULT_CATALOG_CATEGORY);
+    setSort(nextSort && ["popular", "price_asc", "price_desc"].includes(nextSort) ? nextSort : DEFAULT_CATALOG_SORT);
+    setMaxPrice(
+      Number.isFinite(nextPrice) && nextPrice > 0 && nextPrice <= DEFAULT_CATALOG_MAX_PRICE
+        ? nextPrice
+        : DEFAULT_CATALOG_MAX_PRICE
+    );
   }, [params]);
+
+  // Зеркалим фильтры в URL: «назад» из карточки, перезагрузка и ссылка,
+  // отправленная другу, сохраняют выбранную категорию, сортировку и цену.
+  useEffect(() => {
+    const next = new URLSearchParams();
+    if (query) next.set("search", query);
+    if (active !== DEFAULT_CATALOG_CATEGORY) next.set("cat", active);
+    if (sort !== DEFAULT_CATALOG_SORT) next.set("sort", sort);
+    if (maxPrice !== DEFAULT_CATALOG_MAX_PRICE) next.set("price", String(maxPrice));
+    if (showPromo) next.set("promo", "true");
+
+    if (next.toString() !== params.toString()) {
+      setParams(next, { replace: true });
+    }
+  }, [query, active, sort, maxPrice, showPromo, params, setParams]);
 
   const filtered = useMemo(() => {
     return getCatalogProducts({

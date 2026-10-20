@@ -138,6 +138,40 @@ export default function ProductPage() {
     `Здравствуйте! Интересует "${product.name.replace(/[<>]/g, '')}" — ${formatPrice(product.price)}.`
   )}`;
 
+  // schema.org: расширенные сниппеты (цена, наличие) и хлебные крошки в выдаче
+  const siteUrl = (import.meta.env.VITE_APP_URL || 'https://mm05.vercel.app').replace(/\/$/, '');
+  const productUrl = `${siteUrl}/product/${product.slug}`;
+  const productImage = product.image.startsWith('http') ? product.image : `${siteUrl}${product.image}`;
+  const productJsonLd = [
+    {
+      '@context': 'https://schema.org',
+      '@type': 'Product',
+      name: product.name,
+      description: product.description || product.shortDescription,
+      image: [productImage],
+      sku: product.id,
+      category: product.category,
+      offers: {
+        '@type': 'Offer',
+        price: product.price,
+        priceCurrency: 'RUB',
+        availability: product.inStock
+          ? 'https://schema.org/InStock'
+          : 'https://schema.org/PreOrder',
+        url: productUrl,
+      },
+    },
+    {
+      '@context': 'https://schema.org',
+      '@type': 'BreadcrumbList',
+      itemListElement: [
+        { '@type': 'ListItem', position: 1, name: 'Главная', item: siteUrl },
+        { '@type': 'ListItem', position: 2, name: 'Каталог', item: `${siteUrl}/catalog` },
+        { '@type': 'ListItem', position: 3, name: product.name, item: productUrl },
+      ],
+    },
+  ];
+
   return (
     <div className="min-h-screen bg-background">
       {product && (
@@ -148,6 +182,7 @@ export default function ProductPage() {
           url={`/product/${product.slug}`}
           type="product"
           keywords={[product.name, product.category, 'мебель из массива']}
+          jsonLd={productJsonLd}
         />
       )}
       <Navbar />

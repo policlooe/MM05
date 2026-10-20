@@ -1,7 +1,6 @@
-﻿import { ShoppingBag, Search, User, Heart } from "lucide-react";
+import { ShoppingBag, Search, User, Heart } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useState, useEffect, useRef, memo } from "react";
-import { motion } from "framer-motion";
 import { useCart } from "@/store/cart";
 import { useFavorites } from "@/store/favorites";
 import { useCatalog } from "@/hooks/use-catalog";
@@ -129,14 +128,12 @@ export const Navbar = memo(function Navbar() {
               MM05
             </Link>
 
-            <motion.button
+            <button
               onClick={openCatalog}
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              className="hidden md:inline-flex items-center gap-2 px-4 py-2 bg-accent hover:bg-accent-hover text-accent-foreground rounded-lg font-medium text-sm transition shadow-sm shrink-0"
+              className="hidden md:inline-flex items-center gap-2 px-4 py-2 bg-accent hover:bg-accent-hover text-accent-foreground rounded-lg font-medium text-sm transition shadow-sm shrink-0 hover:scale-[1.02] active:scale-[0.98]"
             >
               Каталог
-            </motion.button>
+            </button>
 
             <form onSubmit={submit} className="flex-1 min-w-0 relative" role="search">
               <Search className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 stroke-2 text-muted-foreground/90 z-10" />
@@ -159,36 +156,31 @@ export const Navbar = memo(function Navbar() {
               >
                 <Heart className={`w-5 h-5 stroke-[1.5] ${favorites.length > 0 ? 'fill-current text-red-500' : ''}`} aria-hidden="true" />
                 {favorites.length > 0 && (
-                  <motion.span
-                    initial={{ scale: 0.6, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-semibold min-w-[16px] h-[16px] px-0.5 rounded-full flex items-center justify-center"
+                  <span
+                    className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-semibold min-w-[16px] h-[16px] px-0.5 rounded-full flex items-center justify-center animate-in zoom-in-75 duration-200"
                     aria-hidden="true"
                   >
                     {favorites.length}
-                  </motion.span>
+                  </span>
                 )}
               </Link>
 
-              <motion.button
+              <button
                 type="button"
                 onClick={open}
-                whileTap={{ scale: 0.95 }}
-                className="relative inline-flex items-center justify-center h-9 w-9 rounded-lg text-foreground hover:bg-muted/80 transition-colors"
+                className="relative inline-flex items-center justify-center h-9 w-9 rounded-lg text-foreground hover:bg-muted/80 transition-colors active:scale-95"
                 aria-label={`Корзина${count > 0 ? ` (${count})` : ''}`}
               >
                 <ShoppingBag className={`w-5 h-5 stroke-[1.5] ${count > 0 ? 'text-accent' : 'text-foreground'}`} aria-hidden="true" />
                 {count > 0 && (
-                  <motion.span
-                    initial={{ scale: 0.6, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    className="absolute -top-1 -right-1 bg-accent text-accent-foreground text-xs font-semibold min-w-[16px] h-[16px] px-0.5 rounded-full flex items-center justify-center"
+                  <span
+                    className="absolute -top-1 -right-1 bg-accent text-accent-foreground text-xs font-semibold min-w-[16px] h-[16px] px-0.5 rounded-full flex items-center justify-center animate-in zoom-in-75 duration-200"
                     aria-hidden="true"
                   >
                     {count}
-                  </motion.span>
+                  </span>
                 )}
-              </motion.button>
+              </button>
 
               {user ? (
                 <div className="flex items-center gap-1">
