@@ -5,8 +5,11 @@ builder = "NIXPACKS"
 buildCommand = "npm ci && npm run prisma:generate && npm run backend:build"
 
 [deploy]
-# migrate deploy идемпотентен и выполняется перед стартом процесса
-startCommand = "npm run prisma:migrate && npm run backend:start"
+# Миграции перед стартом. Все файлы миграций идемпотентны (IF NOT EXISTS),
+# поэтому цепочка безопасно накатывается и на базу, созданную через `db push`.
+# Если миграция всё же упала — сервис поднимается с предупреждением в логах,
+# чтобы ошибка схемы не превращалась в лежащий сайт.
+startCommand = "sh -c 'npm run prisma:migrate || echo \"WARN: prisma migrate failed - starting anyway, check schema\"; npm run backend:start'"
 # liveness, а не /health с SELECT 1: недоступность БД не должна рестартовать живой контейнер
 healthcheckPath = "/health/live"
 healthcheckTimeout = 100

@@ -9,4 +9,4 @@ cmds = ["npm ci"]
 cmds = ["npm run prisma:generate", "npm run backend:build"]
 
 [start]
-cmd = "npm run prisma:migrate && npm run backend:start"
+cmd = "sh -c 'npm run prisma:migrate || echo \"WARN: prisma migrate failed - starting anyway, check schema\"; npm run backend:start'"

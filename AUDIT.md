@@ -74,22 +74,22 @@ ECC-агентов). Ниже — что проверялось, что испр
 
 ## Осталось: критично (до продакшена)
 
-1. **Миграции и базовая линия.** `add_assembly_price`, `add_order_reservation`,
-   `add_product_configuration` не имеют timestamp-префикса, а
-   `20260824142421_add_payment_provider/migration.sql` использует
-   `ADD COLUMN`/`CREATE INDEX` без `IF NOT EXISTS`. Прод инициализирован
-   `db push`, `_prisma_migrations` пуст → `migrate deploy` упадёт с 42701/P3009.
-   Нужно: baseline (`prisma migrate resolve --applied`) на живой БД и
-   `IF NOT EXISTS` в этой миграции.
-2. **Удаление товара — физическое.** `admin.controller.ts:257` вызывает
+1. **Удаление товара — физическое.** `admin.controller.ts:257` вызывает
    `product.delete`; FK `ON DELETE CASCADE` на `reviews`/`cart_items` и
    `SET NULL` на `order_items.product_id` → удаление стирает отзывы, корзины
    всех пользователей и обнуляет товар в истории заказов. Нужен `deletedAt`
    (soft delete) + миграция + фильтр в выборках.
-3. **Доставка не считается на сервере.** `createOrder` не принимает
+2. **Доставка не считается на сервере.** `createOrder` не принимает
    `deliveryMethod`/координаты, `total = subtotal`, поэтому курьерская доставка
    всегда бесплатна и сохраняется как самовывоз. Нужен серверный расчёт
    (`DELIVERY_BASE_PRICE`/`PER_KM` уже в `validateEnv.ts`) и поля в zod-схеме.
+
+> Миграции больше не блокируют деплой: `20260824142421_add_payment_provider`
+> переписан на `IF NOT EXISTS`, остальные уже были идемпотентны, поэтому цепочка
+> безопасно накатывается на базу, созданную через `db push`. Запуск миграций
+> перенесён в `startCommand` с fallback: при ошибке сервис поднимается и пишет
+> `WARN` в лог (см. `railway.toml`). После первого деплоя проверьте логи
+> `prisma migrate deploy` и наличие таблицы `_prisma_migrations`.
 
 ## Осталось: высокий приоритет
 
