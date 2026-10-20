@@ -66,18 +66,31 @@ async function createBackup() {
   console.log(`📦 База: ${db.database}`);
   console.log(`🏠 Хост: ${db.host}`);
 
-  // Команда pg_dump с сжатием
+  // pipefail: без него код возврата конвейера равен коду gzip, поэтому
+  // упавший pg_dump записывался как «✅ Бэкап создан» — пустой файл, а
+  // cleanOldBackups затем удалял последние валидные бэкапы.
+  // Пароль передаём через окружение, а не в тексте команды.
+  const dumpCommand = `pg_dump -h ${db.host} -p ${db.port} -U ${db.user} -d ${db.database} -F p`;
   const command = COMPRESS_BACKUPS
-    ? `PGPASSWORD="${db.password}" pg_dump -h ${db.host} -p ${db.port} -U ${db.user} -d ${db.database} -F p | gzip > "${compressedFile}"`
-    : `PGPASSWORD="${db.password}" pg_dump -h ${db.host} -p ${db.port} -U ${db.user} -d ${db.database} -F p -f "${backupFile}"`;
+    ? `bash -o pipefail -c '${dumpCommand} | gzip > "${compressedFile}"'`
+    : `bash -o pipefail -c '${dumpCommand} > "${backupFile}"'`;
 
   try {
-    await execAsync(command);
+    await execAsync(command, {
+      env: { ...process.env, PGPASSWORD: db.password },
+    });
     const finalFile = COMPRESS_BACKUPS ? compressedFile : backupFile;
-    console.log(`✅ Бэкап создан: ${finalFile}`);
-    
-    // Получаем размер файла
     const stats = fs.statSync(finalFile);
+
+    if (stats.size < 1024) {
+      throw new Error(
+        `Файл бэкапа подозрительно мал (${stats.size} байт) — вероятно, pg_dump завершился с ошибкой`
+      );
+    }
+
+    console.log(`✅ Бэкап создан: ${finalFile}`);
+
+    // Получаем размер файла
     const fileSizeMB = (stats.size / (1024 * 1024)).toFixed(2);
     console.log(`📊 Размер: ${fileSizeMB} MB`);
 

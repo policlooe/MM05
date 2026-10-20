@@ -19,6 +19,7 @@ export default function PaymentSuccess() {
   const sessionId = searchParams.get('session_id');
   const orderId = searchParams.get('order_id');
   const provider = searchParams.get('provider');
+  const capabilityPid = searchParams.get('pid');
 
   // Для СБП/ЮKassa подтверждаем оплату серверным поллингом,
   // а не доверяем факту возврата на success-URL
@@ -28,8 +29,14 @@ export default function PaymentSuccess() {
 
   useEffect(() => {
     window.scrollTo(0, 0);
-    clear();
-  }, [clear]);
+  }, []);
+
+  // Корзину очищаем только после подтверждённой оплаты: при возврате со
+  // страницы СБП вебхук может ещё не прийти, и стирание корзины лишало
+  // покупателя возможности повторить оплату.
+  useEffect(() => {
+    if (confirmState === 'confirmed') clear();
+  }, [confirmState, clear]);
 
   useEffect(() => {
     if (!orderId || confirmState !== 'pending') return;
@@ -40,7 +47,10 @@ export default function PaymentSuccess() {
 
     const poll = async () => {
       try {
-        const status = await paymentService.getOrderPaymentStatus(orderId);
+        const status = await paymentService.getOrderPaymentStatus(
+          orderId,
+          capabilityPid ?? sessionStorage.getItem(`mm05_pid_${orderId}`)
+        );
         if (cancelled) return;
 
         if (status.paymentStatus === 'SUCCEEDED') {
@@ -68,7 +78,7 @@ export default function PaymentSuccess() {
       cancelled = true;
       clearTimeout(timer);
     };
-  }, [orderId, confirmState]);
+  }, [orderId, confirmState, capabilityPid]);
 
   const isConfirmed = confirmState === 'confirmed';
 

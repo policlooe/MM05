@@ -1,10 +1,14 @@
 [build]
 builder = "NIXPACKS"
-buildCommand = "npm ci && npm run prisma:migrate && npm run prisma:generate && npm run backend:build"
+# Миграции НЕ на этапе сборки: сборка не должна менять прод-БД до того,
+# как новая версия прошла healthcheck (иначе откат оставляет схему впереди кода).
+buildCommand = "npm ci && npm run prisma:generate && npm run backend:build"
 
 [deploy]
-startCommand = "npm run backend:start"
-healthcheckPath = "/health"
+# migrate deploy идемпотентен и выполняется перед стартом процесса
+startCommand = "npm run prisma:migrate && npm run backend:start"
+# liveness, а не /health с SELECT 1: недоступность БД не должна рестартовать живой контейнер
+healthcheckPath = "/health/live"
 healthcheckTimeout = 100
 restartPolicyType = "ON_FAILURE"
 restartPolicyMaxRetries = 10

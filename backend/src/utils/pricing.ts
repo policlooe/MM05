@@ -1,45 +1,34 @@
 /**
  * Серверный расчёт цены сконфигурированного товара.
  *
- * Зеркалит клиентскую логику src/types/product-config.ts (calculateConfiguredPrice),
- * но работает защитно: любые некорректные данные из БД или от клиента
- * просто игнорируются (не добавляют модификаторы), а не ломают заказ.
+ * Зеркалит клиентскую логику `calculatePrice` из
+ * `src/types/product-configuration.ts` (раздел «Расчёт финальной цены»), но
+ * работает защитно: любые некорректные данные из БД или от клиента просто
+ * игнорируются (не добавляют модификаторы), а не ломают заказ.
  *
  * ЦЕНА ВСЕГДА считается из данных БД. Данные клиента используются только
- * как указатель на то, КАКАЕ опции выбраны — не откуда брать цены.
+ * как указатель на то, КАКИЕ опции выбраны — не откуда брать цены.
+ *
+ * Поддерживаются обе исторические формы `product.configuration`:
+ *
+ *   1. Карта (актуальная, совпадает с `ProductConfiguration` во фронтенде):
+ *      { variants: { size: { label, options: [{ value, priceModifier }] } },
+ *        options:  { headboard: { type: 'select', options: [...] },
+ *                    mattress:  { type: 'toggle', price: 15000 } } }
+ *
+ *   2. Массивы (ранняя схема с `id`):
+ *      { variants: [{ id, options: [{ value, priceModifier }] }],
+ *        options:  [{ id, type: 'select', values: [{ value, price }] }] }
+ *
+ * Раньше поддерживалась только форма 2, поэтому конфигурация из формы 1
+ * оценивалась по базовой цене: сервер получал сумму меньше клиентской и
+ * отклонял заказ («Итоговая сумма заказа не совпадает»).
  */
 
 type Json = unknown;
 
-interface VariantOptionDef {
-  value?: unknown;
-  priceModifier?: unknown;
-}
-
-interface VariantDef {
-  id?: unknown;
-  options?: unknown;
-}
-
-interface ToggleOptionDef {
-  id?: unknown;
-  type?: unknown;
-  price?: unknown;
-  dependencies?: {
-    variant?: unknown;
-    priceModifier?: unknown;
-  } | null;
-}
-
-interface SelectValueDef {
-  value?: unknown;
-  price?: unknown;
-}
-
-interface SelectOptionDef {
-  id?: unknown;
-  type?: unknown;
-  values?: unknown;
+interface PriceAccumulator {
+  total: number;
 }
 
 function asRecord(value: Json): Record<string, Json> | null {
@@ -62,11 +51,144 @@ function asString(value: unknown): string | null {
 }
 
 /**
+ * Ключ опции «сборка» обрабатывается отдельно в
+ * `order.create.controller.ts` (product.assemblyPrice), поэтому здесь он
+ * пропускается — иначе цена сборки посчиталась бы дважды.
+ */
+const SEPARATELY_PRICED_OPTION_KEYS = new Set(['assembly']);
+
+/**
+ * Достаёт список значений варианта и добавляет модификатор выбранного.
+ * Понимает обе формы: `variant.options` (карта и массивы) и
+ * `option.priceModifier` / `option.price`.
+ */
+function accumulateVariantGroup(
+  acc: PriceAccumulator,
+  optionsList: Json[] | null,
+  selectedValue: string
+): void {
+  if (!optionsList) return;
+
+  for (const rawOption of optionsList) {
+    const option = asRecord(rawOption);
+    if (!option) continue;
+
+    if (asString(option.value) !== selectedValue) continue;
+
+    const modifier = asFiniteNumber(option.priceModifier) ?? asFiniteNumber(option.price);
+    if (modifier !== null) {
+      acc.total += modifier;
+    }
+    return;
+  }
+}
+
+function accumulateVariants(acc: PriceAccumulator, def: Record<string, Json>, selected: Record<string, Json>): void {
+  const rawVariants = def.variants;
+  if (rawVariants === undefined || rawVariants === null) return;
+
+  const selectedVariants = asRecord(selected.variants) ?? {};
+
+  // Форма 2: массив групп с явным id
+  const variantArray = asArray(rawVariants);
+  if (variantArray) {
+    for (const rawVariant of variantArray) {
+      const variant = asRecord(rawVariant);
+      if (!variant) continue;
+
+      const variantId = asString(variant.id);
+      const selectedValue = variantId ? asString(selectedVariants[variantId]) : null;
+      if (!selectedValue) continue;
+
+      accumulateVariantGroup(acc, asArray(variant.options), selectedValue);
+    }
+    return;
+  }
+
+  // Форма 1: карта «ключ → группа»
+  const variantMap = asRecord(rawVariants);
+  if (variantMap) {
+    for (const [variantId, rawGroup] of Object.entries(variantMap)) {
+      const selectedValue = asString(selectedVariants[variantId]);
+      if (!selectedValue) continue;
+
+      const group = asRecord(rawGroup);
+      if (!group) continue;
+
+      accumulateVariantGroup(acc, asArray(group.options), selectedValue);
+    }
+  }
+}
+
+function accumulateOptions(acc: PriceAccumulator, def: Record<string, Json>, selected: Record<string, Json>): void {
+  const rawOptions = def.options;
+  if (rawOptions === undefined || rawOptions === null) return;
+
+  const selectedOptions = asRecord(selected.options) ?? {};
+
+  // Форма 2: массив опций с явным id
+  const optionArray = asArray(rawOptions);
+  if (optionArray) {
+    for (const rawOption of optionArray) {
+      const option = asRecord(rawOption);
+      if (!option) continue;
+
+      const optionId = asString(option.id);
+      if (!optionId || SEPARATELY_PRICED_OPTION_KEYS.has(optionId)) continue;
+
+      if (option.type === 'toggle') {
+        if (selectedOptions[optionId] === true) {
+          const price = asFiniteNumber(option.price);
+          if (price !== null) acc.total += price;
+        }
+        continue;
+      }
+
+      if (option.type === 'select') {
+        const selectedValue = asString(selectedOptions[optionId]);
+        if (!selectedValue) continue;
+
+        // В форме 2 значения лежат в `values` и используют поле `price`.
+        accumulateVariantGroup(acc, asArray(option.values), selectedValue);
+      }
+    }
+    return;
+  }
+
+  // Форма 1: карта «ключ → опция»
+  const optionMap = asRecord(rawOptions);
+  if (!optionMap) return;
+
+  for (const [optionId, rawOption] of Object.entries(optionMap)) {
+    if (SEPARATELY_PRICED_OPTION_KEYS.has(optionId)) continue;
+
+    const option = asRecord(rawOption);
+    if (!option) continue;
+
+    if (option.type === 'toggle') {
+      if (selectedOptions[optionId] === true) {
+        const price = asFiniteNumber(option.price);
+        if (price !== null) acc.total += price;
+      }
+      continue;
+    }
+
+    if (option.type === 'select') {
+      const selectedValue = asString(selectedOptions[optionId]);
+      if (!selectedValue) continue;
+
+      // В форме 1 значения лежат в `options` и используют `priceModifier`.
+      accumulateVariantGroup(acc, asArray(option.options), selectedValue);
+    }
+  }
+}
+
+/**
  * Расчёт итоговой цены позиции заказа по данным БД.
  *
- * @param basePrice      базовая цена товара из БД (product.price)
- * @param configurationDef JSON product.configuration из БD (описание вариантов/опций)
- * @param selected       выбранные значения от клиента ({ variants: {...}, options: {...} })
+ * @param basePrice         базовая цена товара из БД (product.price)
+ * @param configurationDef  JSON product.configuration из БД (описание вариантов/опций)
+ * @param selected          выбранные значения от клиента ({ variants: {...}, options: {...} })
  * @returns итоговая цена за единицу товара
  */
 export function calculateServerItemPrice(
@@ -83,96 +205,12 @@ export function calculateServerItemPrice(
     return price;
   }
 
-  const selectedVariants = asRecord(sel.variants) ?? {};
-  const selectedOptions = asRecord(sel.options) ?? {};
+  const acc: PriceAccumulator = { total: price };
 
-  // Варианты (размер/цвет/материал): цена = base + priceModifier выбранного значения
-  const variants = asArray(def.variants);
-  if (variants) {
-    for (const rawVariant of variants) {
-      const variant = asRecord(rawVariant) as VariantDef | null;
-      if (!variant) continue;
+  accumulateVariants(acc, def, sel);
+  accumulateOptions(acc, def, sel);
 
-      const variantId = asString(variant.id);
-      if (!variantId) continue;
-
-      const selectedValue = asString(selectedVariants[variantId]);
-      if (!selectedValue) continue;
-
-      const optionList = asArray(variant.options);
-      if (!optionList) continue;
-
-      for (const rawOption of optionList) {
-        const option = asRecord(rawOption) as VariantOptionDef | null;
-        if (!option) continue;
-
-        if (asString(option.value) === selectedValue) {
-          const modifier = asFiniteNumber(option.priceModifier);
-          if (modifier !== null) {
-            price += modifier;
-          }
-          break;
-        }
-      }
-    }
-  }
-
-  // Опции (toggle: доп. услуги; select: выбор значения с ценой)
-  const options = asArray(def.options);
-  if (options) {
-    for (const rawOption of options) {
-      const option = asRecord(rawOption) as ToggleOptionDef & SelectOptionDef;
-      if (!option) continue;
-
-      const optionId = asString(option.id);
-      if (!optionId) continue;
-
-      if (option.type === 'toggle') {
-        // Считаем цену только если опция явно включена пользователем
-        if (selectedOptions[optionId] === true) {
-          const optionPrice = asFiniteNumber(option.price);
-          if (optionPrice !== null) {
-            price += optionPrice;
-          }
-
-          // Зависимость от варианта (зеркалим клиентскую логику calculateConfiguredPrice)
-          const deps = asRecord(option.dependencies ?? null);
-          if (deps) {
-            const variantDeps = asRecord(deps.variant ?? null);
-            const depModifier = asFiniteNumber(deps.priceModifier);
-
-            if (variantDeps && depModifier !== null) {
-              const depMet = Object.entries(variantDeps).every(
-                ([depVariantId, depValue]) => selectedVariants[depVariantId] === depValue
-              );
-              if (depMet) {
-                price += depModifier;
-              }
-            }
-          }
-        }
-      } else if (option.type === 'select') {
-        const selectedValue = asString(selectedOptions[optionId]);
-        if (!selectedValue) continue;
-
-        const valueList = asArray(option.values);
-        if (!valueList) continue;
-
-        for (const rawValue of valueList) {
-          const valueDef = asRecord(rawValue) as SelectValueDef | null;
-          if (!valueDef) continue;
-
-          if (asString(valueDef.value) === selectedValue) {
-            const valuePrice = asFiniteNumber(valueDef.price);
-            if (valuePrice !== null) {
-              price += valuePrice;
-            }
-            break;
-          }
-        }
-      }
-    }
-  }
+  price = acc.total;
 
   // Защита от отрицательных цен при ошибочных данных в БД
   return Math.max(0, Math.round(price * 100) / 100);

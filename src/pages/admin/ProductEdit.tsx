@@ -59,7 +59,9 @@ const slugify = (value: string) =>
 export default function ProductEdit() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const isNew = id === "new";
+  // Роут /admin/products/new объявлен БЕЗ :id, поэтому id === undefined —
+  // раньше такой заход считался редактированием и PUT уходил на /undefined.
+  const isNew = !id || id === "new";
   const [loading, setLoading] = useState(false);
   const [product, setProduct] = useState<ProductFormState>(emptyProduct);
   const [imageUrl, setImageUrl] = useState("");

@@ -13,6 +13,9 @@ export const api = axios.create({
 
 let csrfToken: string | null = null;
 let csrfTokenPromise: Promise<string> | null = null;
+let refreshPromise: Promise<void> | null = null;
+
+const AUTH_ENDPOINTS = ['/auth/login', '/auth/register', '/auth/refresh', '/auth/logout'];
 
 async function getCsrfToken() {
   if (csrfToken) return csrfToken;
@@ -40,21 +43,49 @@ api.interceptors.request.use(async (config) => {
   return config;
 });
 
+/**
+ * Обновление сессии: один запрос на все параллельные 401 (single-flight).
+ * Раньше каждый 401 отправлял свой /auth/refresh; из-за ротации токенов
+ * второй запрос падал и пользователя выкидывало из аккаунта посреди работы.
+ * CSRF-заголовок обязателен: сервер защищает все не-GET /api-роуты.
+ */
+async function refreshSession(): Promise<void> {
+  refreshPromise ??= (async () => {
+    const token = await getCsrfToken();
+    await axios.post(
+      `${API_URL}/auth/refresh`,
+      {},
+      {
+        withCredentials: true,
+        headers: { 'X-CSRF-Token': token },
+      }
+    );
+  })().finally(() => {
+    refreshPromise = null;
+  });
+
+  return refreshPromise;
+}
+
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
+    const requestUrl: string = originalRequest?.url ?? '';
+    const isAuthEndpoint = AUTH_ENDPOINTS.some((endpoint) => requestUrl.includes(endpoint));
 
-    if (error.response?.status === 401 && !originalRequest._retry) {
+    // 401 на /auth/login — это неверный пароль: форму нельзя перезагружать,
+    // иначе сообщение об ошибке никогда не показывается.
+    if (
+      error.response?.status === 401 &&
+      originalRequest &&
+      !originalRequest._retry &&
+      !isAuthEndpoint
+    ) {
       originalRequest._retry = true;
 
       try {
-        await axios.post(
-          `${API_URL}/auth/refresh`,
-          {},
-          { withCredentials: true }
-        );
-
+        await refreshSession();
         return api(originalRequest);
       } catch (refreshError) {
         localStorage.removeItem('user');

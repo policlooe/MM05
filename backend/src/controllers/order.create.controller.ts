@@ -94,7 +94,13 @@ export class OrderCreateController {
     tx: Prisma.TransactionClient
   ): Promise<ReservedOrderItem[]> {
     const reservedItems: ReservedOrderItem[] = [];
-    for (const item of items) {
+
+    // Единый порядок захвата строк: две корзины с теми же товарами в разном
+    // порядке иначе берут блокировки навстречу друг другу и получают 40P01
+    // (deadlock), который не ретраится и превращается в 500 на оформлении.
+    const orderedItems = [...items].sort((a, b) => a.productId.localeCompare(b.productId));
+
+    for (const item of orderedItems) {
       const product = await tx.product.findUnique({
         where: { id: item.productId },
         select: {
@@ -191,6 +197,21 @@ export class OrderCreateController {
         });
 
         if (existingOrder) {
+          // Ключ идемпотентности приходит от клиента и не является секретом:
+          // по нему нельзя отдавать заказ другого человека (имя, телефон,
+          // адрес, состав). Сверяем владельца и телефон покупателя.
+          const sameBuyer =
+            (existingOrder.userId ?? null) === userId &&
+            existingOrder.customerPhone === validatedData.customerPhone;
+
+          if (!sameBuyer) {
+            res.status(409).json({
+              success: false,
+              error: 'Конфликт ключа идемпотентности. Обновите страницу и попробуйте снова.',
+            });
+            return;
+          }
+
           console.log(`Idempotency hit: order ${existingOrder.orderNumber}`);
           res.status(200).json({
             success: true,
@@ -281,6 +302,40 @@ export class OrderCreateController {
           });
           break;
         } catch (txError) {
+          // Параллельный дубль с тем же ключом идемпотентности: транзакция
+          // проиграла гонку на уникальном индексе — отдаём уже созданный заказ
+          // тому же покупателю вместо 500.
+          if (isUniqueConstraintError(txError, 'idempotency_key') && validatedData.idempotencyKey) {
+            const duplicate = await prisma.order.findUnique({
+              where: { idempotencyKey: validatedData.idempotencyKey },
+              include: { items: { include: { product: true } } },
+            });
+
+            if (duplicate) {
+              const sameBuyer =
+                (duplicate.userId ?? null) === userId &&
+                duplicate.customerPhone === validatedData.customerPhone;
+
+              if (sameBuyer) {
+                res.status(200).json({
+                  success: true,
+                  message: 'Заказ уже создан',
+                  data: {
+                    order: duplicate,
+                    whatsappUrl: OrderCreateController.generateWhatsAppUrl(duplicate),
+                  },
+                });
+                return;
+              }
+
+              res.status(409).json({
+                success: false,
+                error: 'Конфликт ключа идемпотентности. Обновите страницу и попробуйте снова.',
+              });
+              return;
+            }
+          }
+
           const isOrderNumberRace =
             isUniqueConstraintError(txError, 'order_number') ||
             (txError instanceof Error && txError.message.includes('Итоговая сумма'));

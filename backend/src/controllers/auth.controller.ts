@@ -1,20 +1,15 @@
 import { Request, Response } from 'express';
 import { AuthService } from '../services/auth.service.js';
+import { BASE_COOKIE_OPTIONS } from '../utils/cookies.js';
 
 const REFRESH_COOKIE_OPTIONS = {
-  httpOnly: true,
-  secure: process.env.NODE_ENV === 'production',
-  sameSite: 'strict' as const,
+  ...BASE_COOKIE_OPTIONS,
   maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-  path: '/',
 };
 
 const ACCESS_COOKIE_OPTIONS = {
-  httpOnly: true,
-  secure: process.env.NODE_ENV === 'production',
-  sameSite: 'strict' as const,
+  ...BASE_COOKIE_OPTIONS,
   maxAge: 15 * 60 * 1000, // 15 minutes
-  path: '/',
 };
 
 export class AuthController {

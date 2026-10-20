@@ -1,5 +1,12 @@
 import { z } from 'zod';
 import { randomBytes } from 'node:crypto';
+import { COOKIE_SAME_SITE } from './cookies.js';
+
+// Активный платёжный провайдер определяет, какие ключи обязательны.
+// Раньше Stripe-ключи требовались всегда, и деплой только с ЮKassa не стартовал.
+const ACTIVE_PAYMENT_PROVIDER = (process.env.PAYMENT_PROVIDER || 'STRIPE').toUpperCase();
+const STRIPE_REQUIRED = ACTIVE_PAYMENT_PROVIDER !== 'YOOKASSA';
+const YOOKASSA_REQUIRED = ACTIVE_PAYMENT_PROVIDER === 'YOOKASSA';
 
 /**
  * Environment variables schema with strict validation
@@ -48,12 +55,17 @@ const envSchema = z.object({
       'JWT_REFRESH_EXPIRES_IN must be in format: 15m, 1h, 7d, etc.'
     ),
 
-  // Stripe Configuration
+  // Stripe Configuration (обязательна только при PAYMENT_PROVIDER=STRIPE)
   STRIPE_SECRET_KEY: z
     .string()
     .refine(
       (key) => key.startsWith('sk_test_') || key.startsWith('sk_live_'),
       'STRIPE_SECRET_KEY must start with sk_test_ or sk_live_'
+    )
+    .optional()
+    .refine(
+      (key) => !STRIPE_REQUIRED || Boolean(key),
+      'STRIPE_SECRET_KEY is required when PAYMENT_PROVIDER=STRIPE'
     ),
   
   // Publishable key используется только фронтендом (VITE_*) — на бэкенде опционален
@@ -70,17 +82,31 @@ const envSchema = z.object({
     .refine(
       (secret) => secret.startsWith('whsec_'),
       'STRIPE_WEBHOOK_SECRET must start with whsec_'
+    )
+    .optional()
+    .refine(
+      (secret) => !STRIPE_REQUIRED || Boolean(secret),
+      'STRIPE_WEBHOOK_SECRET is required when PAYMENT_PROVIDER=STRIPE'
     ),
 
   // Выбор платёжного провайдера ('STRIPE' | 'YOOKASSA'), по умолчанию STRIPE
   PAYMENT_PROVIDER: z.enum(['STRIPE', 'YOOKASSA']).optional(),
 
   // ЮKassa (СБП): обязательны при PAYMENT_PROVIDER=YOOKASSA
-  YOOKASSA_SHOP_ID: z.string().optional(),
-  YOOKASSA_SECRET_KEY:
-    process.env.YOOKASSA_SHOP_ID || process.env.PAYMENT_PROVIDER === 'YOOKASSA'
-      ? z.string().min(1, 'YOOKASSA_SECRET_KEY is required when YooKassa is enabled').optional()
-      : z.string().optional(),
+  YOOKASSA_SHOP_ID: z
+    .string()
+    .optional()
+    .refine(
+      (id) => !YOOKASSA_REQUIRED || Boolean(id),
+      'YOOKASSA_SHOP_ID is required when PAYMENT_PROVIDER=YOOKASSA'
+    ),
+  YOOKASSA_SECRET_KEY: z
+    .string()
+    .optional()
+    .refine(
+      (key) => !YOOKASSA_REQUIRED || Boolean(key),
+      'YOOKASSA_SECRET_KEY is required when PAYMENT_PROVIDER=YOOKASSA'
+    ),
   // Переопределение IP-allowlist вебхуков (csv, IPv4/CIDR)
   YOOKASSA_WEBHOOK_IPS: z.string().optional(),
   // Тестовый URL API (для мок-сервера); в production не задавать
@@ -161,20 +187,33 @@ export function validateEnv(): ValidatedEnv {
     console.log(`   - Environment: ${validated.NODE_ENV}`);
     console.log(`   - Port: ${validated.PORT}`);
     console.log(`   - Database: ${validated.DATABASE_URL.split('@')[1] || 'configured'}`);
-    console.log(`   - Stripe Mode: ${validated.STRIPE_SECRET_KEY.startsWith('sk_live_') ? 'LIVE' : 'TEST'}`);
+    console.log(`   - Stripe Mode: ${
+      validated.STRIPE_SECRET_KEY
+        ? validated.STRIPE_SECRET_KEY.startsWith('sk_live_')
+          ? 'LIVE'
+          : 'TEST'
+        : 'disabled'
+    }`);
+    console.log(`   - Payment provider: ${validated.PAYMENT_PROVIDER || 'STRIPE'}`);
     console.log(`   - Frontend URL: ${validated.FRONTEND_URL}`);
     
     // Security warnings
     if (validated.NODE_ENV === 'production') {
-      if (validated.STRIPE_SECRET_KEY.startsWith('sk_test_')) {
+      if (validated.STRIPE_SECRET_KEY?.startsWith('sk_test_')) {
         console.warn('⚠️  WARNING: Using Stripe TEST keys in PRODUCTION environment!');
       }
       
       if (validated.FRONTEND_URL.includes('localhost')) {
         console.warn('⚠️  WARNING: FRONTEND_URL points to localhost in PRODUCTION!');
       }
+
+      if (validated.FRONTEND_URL.includes('vercel.app') && COOKIE_SAME_SITE === 'strict') {
+        console.warn(
+          '⚠️  WARNING: COOKIE_SAME_SITE=strict with a vercel.app frontend — cross-site cookies will be dropped. Use none or a custom domain.'
+        );
+      }
     }
-    
+
     return validated;
   } catch (error) {
     console.error('❌ Environment validation failed!\n');

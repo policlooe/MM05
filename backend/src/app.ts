@@ -38,6 +38,10 @@ const ALLOWED_ORIGINS = new Set(
     .filter(Boolean)
 );
 const VERCEL_PREVIEW_ORIGIN = /^https:\/\/[a-z0-9-]+-[a-z0-9-]+\.vercel\.app$/i;
+// Preview-деплои Vercel открываются на произвольных доменах вида
+// `<project>-<hash>-<team>.vercel.app`, поэтому Wildcard включается явно:
+// с credentials:true он пускает любой чужой Vercel-проект.
+const ALLOW_VERCEL_PREVIEWS = process.env.ALLOW_VERCEL_PREVIEWS === 'true';
 
 // Security
 app.use(helmet({
@@ -53,7 +57,11 @@ app.use(helmet({
 
 app.use(cors({
   origin(origin, callback) {
-    if (!origin || ALLOWED_ORIGINS.has(origin) || VERCEL_PREVIEW_ORIGIN.test(origin)) {
+    if (
+      !origin ||
+      ALLOWED_ORIGINS.has(origin) ||
+      (ALLOW_VERCEL_PREVIEWS && VERCEL_PREVIEW_ORIGIN.test(origin))
+    ) {
       callback(null, true);
       return;
     }

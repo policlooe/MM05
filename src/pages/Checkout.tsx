@@ -1,4 +1,4 @@
-import { useState, useEffect, lazy, Suspense } from "react";
+import { useState, useEffect, useRef, lazy, Suspense } from "react";
 import { useNavigate } from "react-router-dom";
 import { z } from "zod";
 import { Loader2, ShoppingBag, CheckCircle2, AlertCircle } from "lucide-react";
@@ -32,6 +32,17 @@ export default function Checkout() {
   const { items, total, count } = useCart();
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  // Один ключ идемпотентности на попытку оформления. Раньше ключ
+  // генерировался заново на каждый сабмит, поэтому повтор после сетевой
+  // ошибки создавал второй заказ и второй раз резервировал склад.
+  const idempotencyKeyRef = useRef<string | null>(null);
+  const getIdempotencyKey = () => {
+    if (!idempotencyKeyRef.current) {
+      idempotencyKeyRef.current = `co-${Date.now()}-${Math.random().toString(36).slice(2, 11)}`;
+    }
+    return idempotencyKeyRef.current;
+  };
   
   const [form, setForm] = useState<CheckoutForm>({
     customerName: "",
@@ -102,8 +113,8 @@ export default function Checkout() {
       setLoading(true);
       setErrors({});
 
-      // Генерируем idempotency key для предотвращения дублирования заказов
-      const idempotencyKey = `${form.customerPhone}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+      // Ключ идемпотентности: стабилен для всех повторов этой попытки
+      const idempotencyKey = getIdempotencyKey();
 
       // Подготовка данных заказа
       const orderData = {
@@ -131,9 +142,43 @@ export default function Checkout() {
       const response = await orderService.createOrder(orderData);
 
       if (response.success) {
-        const checkoutSession = await paymentService.createCheckoutSession(response.data.order.id);
-        // Провайдер важен для allowlist хостов страницы оплаты (СБП ≠ Stripe)
-        await paymentService.redirectToCheckout(checkoutSession.data.url, checkoutSession.data.provider);
+        // Провайдера обязательно передаём в redirectToCheckout: без него
+        // allowlist принимал только Stripe, URL ЮKassa отвергался, и заказ
+        // выглядел как «не создан», хотя он уже был создан и зарезервирован.
+        try {
+          const checkoutSession = await paymentService.createCheckoutSession(
+            response.data.order.id
+          );
+
+          // sessionId ЮKassa = id платежа: он нужен странице успеха как
+          // capability-параметр для гостевого поллинга статуса.
+          if (checkoutSession?.data?.sessionId) {
+            try {
+              sessionStorage.setItem(
+                `mm05_pid_${response.data.order.id}`,
+                checkoutSession.data.sessionId
+              );
+            } catch {
+              // приватный режим — поллинг отработает по cookies/логину
+            }
+          }
+
+          await paymentService.redirectToCheckout(
+            checkoutSession.data.url,
+            checkoutSession.data.provider
+          );
+        } catch (redirectError) {
+          console.error("Payment redirect error:", redirectError);
+          toast.error(
+            "Заказ создан, но перейти к оплате не удалось. Мы свяжемся с вами для подтверждения."
+          );
+          navigate("/checkout/success", {
+            state: {
+              order: response.data.order,
+              whatsappUrl: response.data.whatsappUrl,
+            },
+          });
+        }
       }
     } catch (error: any) {
       console.error("Checkout error:", error);
@@ -184,7 +229,7 @@ export default function Checkout() {
                     onChange={handleChange("customerName")}
                     placeholder="Иванов Иван Иванович"
                     maxLength={100}
-                    className={`w-full px-4 py-3 border rounded-lg bg-background focus:outline-none focus:ring-2 transition ${
+                    className={`w-full px-4 py-3 border rounded-lg bg-background focus:outline-none focus:ring-2 transition-all ${
                       errors.customerName
                         ? "border-destructive focus:ring-destructive/20"
                         : "border-border focus:ring-accent/20 focus:border-accent"
@@ -217,7 +262,7 @@ export default function Checkout() {
                     onChange={handleChange("customerPhone")}
                     placeholder="+7 (999) 123-45-67"
                     maxLength={20}
-                    className={`w-full px-4 py-3 border rounded-lg bg-background focus:outline-none focus:ring-2 transition ${
+                    className={`w-full px-4 py-3 border rounded-lg bg-background focus:outline-none focus:ring-2 transition-all ${
                       errors.customerPhone
                         ? "border-destructive focus:ring-destructive/20"
                         : "border-border focus:ring-accent/20 focus:border-accent"
@@ -249,7 +294,7 @@ export default function Checkout() {
                     value={form.customerEmail}
                     onChange={handleChange("customerEmail")}
                     placeholder="example@mail.ru"
-                    className={`w-full px-4 py-3 border rounded-lg bg-background focus:outline-none focus:ring-2 transition ${
+                    className={`w-full px-4 py-3 border rounded-lg bg-background focus:outline-none focus:ring-2 transition-all ${
                       errors.customerEmail
                         ? "border-destructive focus:ring-destructive/20"
                         : "border-border focus:ring-accent/20 focus:border-accent"
@@ -282,7 +327,7 @@ export default function Checkout() {
                     onChange={handleChange("deliveryAddress")}
                     placeholder="г. Махачкала, ул. Ленина, д. 10, кв. 5"
                     maxLength={500}
-                    className={`w-full px-4 py-3 border rounded-lg bg-background focus:outline-none focus:ring-2 transition ${
+                    className={`w-full px-4 py-3 border rounded-lg bg-background focus:outline-none focus:ring-2 transition-all ${
                       errors.deliveryAddress
                         ? "border-destructive focus:ring-destructive/20"
                         : "border-border focus:ring-accent/20 focus:border-accent"
@@ -315,7 +360,7 @@ export default function Checkout() {
                     placeholder="Дополнительная информация о заказе..."
                     maxLength={1000}
                     rows={4}
-                    className="w-full px-4 py-3 border border-border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-accent/20 focus:border-accent transition resize-y"
+                    className="w-full px-4 py-3 border border-border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-accent/20 focus:border-accent transition-all resize-y"
                   />
                 </div>
 

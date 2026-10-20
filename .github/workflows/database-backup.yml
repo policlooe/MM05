@@ -17,7 +17,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
 
       - name: Install dependencies
         run: npm ci
@@ -36,7 +36,10 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: database-backup-${{ github.run_number }}
-          path: backend/backups/*.sql.gz
+          # Скрипт пишет в <cwd>/backups, а npm run backup запускается из корня
+          # репозитория — раньше здесь стоял backend/backups и артефакт был пустым.
+          path: backups/*.sql.gz
+          if-no-files-found: error
           retention-days: 30
 
       - name: Notify on failure

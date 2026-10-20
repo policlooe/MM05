@@ -4,14 +4,18 @@ import { emailService } from './email.service.js';
 import { captureError, captureMessage } from '../lib/sentry.js';
 import { prisma } from '../lib/prisma.js';
 
-if (!process.env.STRIPE_SECRET_KEY) {
+// Stripe обязателен только когда он выбран активным провайдером. При
+// PAYMENT_PROVIDER=YOOKASSA приложение должно стартовать без Stripe-ключей.
+if (!process.env.STRIPE_SECRET_KEY && process.env.PAYMENT_PROVIDER !== 'YOOKASSA') {
   throw new Error('STRIPE_SECRET_KEY is not defined');
 }
 
-export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
+export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY ?? 'sk_not_configured', {
   apiVersion: '2026-04-22.dahlia',
   typescript: true,
 });
+
+export const isStripeConfigured = Boolean(process.env.STRIPE_SECRET_KEY);
 
 interface CreateCheckoutSessionData {
   orderId: string;
@@ -106,8 +110,6 @@ export class StripeService {
             status: OrderStatus.CONFIRMED,
             isStockReserved: false,
             stripePaymentId: getPaymentIntentId(session),
-            paymentProvider: 'STRIPE',
-            providerPaymentId: getPaymentIntentId(session),
             paidAt: new Date(),
             confirmedAt: new Date(),
           },

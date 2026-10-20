@@ -195,7 +195,9 @@ export class YooKassaService {
         data: {
           paymentProvider: 'YOOKASSA',
           providerPaymentId: payment.id,
-          idempotencyKey: idempotenceKey,
+          // ВАЖНО: idempotencyKey заказа принадлежит созданию заказа
+          // (POST /api/orders) и здесь не перезаписывается — иначе повторный
+          // сабмит формы создаёт второй заказ и второй раз резервирует склад.
           stripeSessionId: null,
           paymentStatus: ykStatusToPaymentStatus(payment.status),
         },

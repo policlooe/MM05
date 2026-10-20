@@ -40,19 +40,20 @@ export class OrderPaymentService {
 
     try {
       const result = await prisma.$transaction(async (tx) => {
+        // Статус заказа намеренно не входит в условие: админ может подтвердить
+        // заказ (RESERVED → CONFIRMED) до прихода вебхука, и оплата всё равно
+        // должна быть учтена. Отменённый заказ сюда не попадёт — отмена
+        // освобождает резерв (isStockReserved = false).
         const claim = await tx.order.updateMany({
           where: {
             id: orderId,
             paymentStatus: { in: PAYABLE_STATUSES },
-            status: OrderStatus.RESERVED,
             isStockReserved: true,
           },
           data: {
             paymentStatus: PaymentStatus.SUCCEEDED,
-            status: OrderStatus.CONFIRMED,
             isStockReserved: false,
             paidAt: new Date(),
-            confirmedAt: new Date(),
             paymentProvider: provider,
             ...(externalPaymentId ? { providerPaymentId: externalPaymentId } : {}),
             ...(legacyStripePaymentId && externalPaymentId
@@ -76,6 +77,13 @@ export class OrderPaymentService {
                 : ('not-payable' as const),
           };
         }
+
+        // Переводим в CONFIRMED только если заказ ещё не ушёл дальше по воронке
+        // (иначе поздняя оплата откатила бы SHIPPED/PROCESSING назад).
+        await tx.order.updateMany({
+          where: { id: orderId, status: { in: [OrderStatus.NEW, OrderStatus.RESERVED] } },
+          data: { status: OrderStatus.CONFIRMED, confirmedAt: new Date() },
+        });
 
         const updatedOrder = await tx.order.findUnique({
           where: { id: orderId },

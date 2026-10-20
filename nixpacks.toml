@@ -4,8 +4,9 @@ nixPkgs = ["nodejs-22_x"]
 [phases.install]
 cmds = ["npm ci"]
 
+# Миграции не на сборке: прод-БД не должна меняться до успешного healthcheck
 [phases.build]
-cmds = ["npm run prisma:migrate", "npm run prisma:generate", "npm run backend:build"]
+cmds = ["npm run prisma:generate", "npm run backend:build"]
 
 [start]
-cmd = "npm run backend:start"
+cmd = "npm run prisma:migrate && npm run backend:start"

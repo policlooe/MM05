@@ -3,8 +3,8 @@ import { stripeService } from '../services/stripe.service.js';
 import {
   yooKassaService,
   YooKassaError,
-  ykStatusToPaymentStatus,
 } from '../services/yookassa.service.js';
+import { orderPaymentService } from '../services/order-payment.service.js';
 import { prisma } from '../lib/prisma.js';
 import { AuthRequest } from '../middleware/auth.middleware.js';
 
@@ -171,11 +171,19 @@ export class PaymentController {
         try {
           const payment = await yooKassaService.getPayment(order.providerPaymentId);
           liveStatus = payment.status;
-          if (payment.status !== 'pending' && payment.status !== 'waiting_for_capture') {
-            await prisma.order.update({
-              where: { id: order.id },
-              data: { paymentStatus: ykStatusToPaymentStatus(payment.status) },
+
+          // Статус меняется ТОЛЬКО через тот же идемпотентный фулфилмент, что и
+          // вебхук. Прямая запись paymentStatus оставляла заказ в RESERVED с
+          // оплаченным платежом: без paidAt, списания стока, salesCount,
+          // очистки корзины и письма.
+          if (payment.status === 'succeeded') {
+            await orderPaymentService.fulfillPaidOrder({
+              orderId: order.id,
+              provider: 'YOOKASSA',
+              externalPaymentId: payment.id,
             });
+          } else if (payment.status === 'canceled') {
+            await orderPaymentService.failOrder(order.id, 'YOOKASSA');
           }
         } catch (error) {
           // Недоступность провайдера не ломает поллинг — вернём сохранённый статус
@@ -183,12 +191,18 @@ export class PaymentController {
         }
       }
 
+      // Перечитываем статусы: поллинг мог только что перевести заказ в оплаченный
+      const fresh = await prisma.order.findUnique({
+        where: { id: order.id },
+        select: { paymentStatus: true, status: true },
+      });
+
       res.json({
         orderId: order.id,
         orderNumber: order.orderNumber,
-        paymentStatus: order.paymentStatus,
+        paymentStatus: fresh?.paymentStatus ?? order.paymentStatus,
         liveProviderStatus: liveStatus,
-        orderStatus: order.status,
+        orderStatus: fresh?.status ?? order.status,
         provider: order.paymentProvider,
       });
     } catch (error) {
@@ -238,69 +252,110 @@ export class PaymentController {
         return;
       }
 
-      const result = await prisma.$transaction(async (tx) => {
-        const order = await tx.order.findUnique({
-          where: { id: orderId },
-          include: { items: true },
-        });
+      const order = await prisma.order.findUnique({
+        where: { id: orderId },
+        include: { items: true },
+      });
 
-        if (!order) {
-          return { code: 404 as const, error: 'Order not found' };
-        }
+      if (!order) {
+        res.status(404).json({ error: 'Order not found' });
+        return;
+      }
 
-        if (!order.stripePaymentId) {
-          return { code: 400 as const, error: 'No payment found for this order' };
-        }
+      if (!order.stripePaymentId) {
+        res.status(400).json({ error: 'No payment found for this order' });
+        return;
+      }
 
-        if (order.paymentStatus !== 'SUCCEEDED') {
-          return { code: 400 as const, error: 'Order is not paid' };
-        }
+      if (order.paymentStatus !== 'SUCCEEDED') {
+        res.status(400).json({ error: 'Order is not paid' });
+        return;
+      }
 
-        const refund = await stripeService.createRefund(
+      const orderTotal = Number(order.total);
+      const requestedAmount =
+        amount === undefined || amount === null ? orderTotal : Number(amount);
+
+      if (!Number.isFinite(requestedAmount) || requestedAmount <= 0) {
+        res.status(400).json({ error: 'Invalid refund amount' });
+        return;
+      }
+
+      if (requestedAmount > orderTotal + 0.01) {
+        res.status(400).json({ error: 'Refund amount exceeds order total' });
+        return;
+      }
+
+      const isFullRefund = requestedAmount >= orderTotal - 0.01;
+
+      // Атомарный захват до вызова Stripe: два параллельных запроса не могут
+      // одновременно увидеть SUCCEEDED и вернуть деньги дважды.
+      const claim = await prisma.order.updateMany({
+        where: { id: orderId, paymentStatus: 'SUCCEEDED' },
+        data: { paymentStatus: 'PROCESSING' },
+      });
+
+      if (claim.count !== 1) {
+        res.status(409).json({ error: 'Refund already in progress for this order' });
+        return;
+      }
+
+      let refund;
+      try {
+        // Внешний вызов — ВНЕ транзакции БД: таймаут транзакции после успешного
+        // возврата оставлял деньги возвращёнными, а заказ — оплаченным.
+        refund = await stripeService.createRefund(
           order.stripePaymentId,
-          amount ? Number(amount) : undefined,
+          isFullRefund ? undefined : requestedAmount,
           reason,
           description
         );
-
-        await tx.order.update({
-          where: { id: orderId },
-          data: {
-            paymentStatus: 'REFUNDED',
-            status: 'CANCELLED',
-            cancelledAt: new Date(),
-            isStockReserved: false,
-          },
+      } catch (error) {
+        await prisma.order.updateMany({
+          where: { id: orderId, paymentStatus: 'PROCESSING' },
+          data: { paymentStatus: 'SUCCEEDED' },
         });
+        throw error;
+      }
 
-        // Возврат товара на склад после рефанда
-        for (const item of order.items) {
-          if (item.productId) {
+      if (isFullRefund) {
+        await prisma.$transaction(async (tx) => {
+          await tx.order.update({
+            where: { id: orderId },
+            data: {
+              paymentStatus: 'REFUNDED',
+              status: 'CANCELLED',
+              cancelledAt: new Date(),
+              isStockReserved: false,
+            },
+          });
+
+          // Возврат товара на склад только при полном возврате
+          for (const item of order.items) {
+            if (!item.productId) continue;
+
             await tx.product.update({
               where: { id: item.productId },
               data: { stockQuantity: { increment: item.quantity } },
             });
           }
-        }
-
-        return {
-          code: 200 as const,
-          refund: {
-            id: refund.id,
-            amount: refund.amount / 100,
-            status: refund.status,
-          },
-        };
-      });
-
-      if (result.code !== 200) {
-        res.status(result.code).json({ error: result.error });
-        return;
+        });
+      } else {
+        // Частичный возврат не отменяет заказ и не возвращает товар на склад
+        await prisma.order.update({
+          where: { id: orderId },
+          data: { paymentStatus: 'SUCCEEDED' },
+        });
       }
 
       res.json({
         success: true,
-        refund: result.refund,
+        refund: {
+          id: refund.id,
+          amount: refund.amount / 100,
+          status: refund.status,
+          full: isFullRefund,
+        },
       });
     } catch (error) {
       next(error);

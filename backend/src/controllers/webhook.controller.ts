@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { stripe, stripeService } from '../services/stripe.service.js';
+import { stripe, stripeService, isStripeConfigured } from '../services/stripe.service.js';
 import {
   amountsEqual,
   yooKassaService,
@@ -29,6 +29,12 @@ export class WebhookController {
   static async handleStripeWebhook(req: Request, res: Response): Promise<void> {
     const signature = req.headers['stripe-signature'];
     const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
+
+    // Провайдер может быть отключён (PAYMENT_PROVIDER=YOOKASSA)
+    if (!isStripeConfigured) {
+      res.status(503).json({ success: false, error: 'Stripe is not configured' });
+      return;
+    }
 
     if (!signature || !webhookSecret) {
       res.status(400).json({ success: false, error: 'Missing signature or secret' });

@@ -1,7 +1,11 @@
 import app from './app.js';
 import { prisma } from './lib/prisma.js';
+import { startReservationSweeper } from './services/reservation-sweeper.service.js';
 
 const PORT = process.env.PORT || 3000;
+
+// Брошенные оформления не должны держать склад вечно
+const stopReservationSweeper = startReservationSweeper();
 
 const server = app.listen(PORT, () => {
   console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
@@ -23,6 +27,8 @@ const server = app.listen(PORT, () => {
 // Graceful shutdown handler
 const gracefulShutdown = async (signal: string) => {
   console.log(`\n${signal} received. Starting graceful shutdown...`);
+
+  stopReservationSweeper();
   
   // Stop accepting new connections
   server.close(async () => {

@@ -19,6 +19,23 @@ interface OrderEmailData {
   customerPhone: string;
 }
 
+/**
+ * Экранирование HTML для всех значений, пришедших от покупателя.
+ *
+ * Имя, телефон и адрес вводятся в свободной форме и раньше подставлялись в
+ * письмо как есть: злоумышленник мог оформить заказ с HTML в адресе и отправить
+ * от имени магазина фишинговое письмо (например, «оплата не прошла, введите
+ * карту») на чужой email.
+ */
+function escapeHtml(value: unknown): string {
+  return String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
 export class EmailService {
   private transporter: Transporter | null = null;
 
@@ -128,7 +145,7 @@ export class EmailService {
       .map(
         item => `
         <tr>
-          <td style="padding: 12px; border-bottom: 1px solid #e5e7eb;">${item.name}</td>
+          <td style="padding: 12px; border-bottom: 1px solid #e5e7eb;">${escapeHtml(item.name)}</td>
           <td style="padding: 12px; border-bottom: 1px solid #e5e7eb; text-align: center;">${item.quantity}</td>
           <td style="padding: 12px; border-bottom: 1px solid #e5e7eb; text-align: right;">${item.price.toLocaleString('ru-RU')} ₽</td>
           <td style="padding: 12px; border-bottom: 1px solid #e5e7eb; text-align: right; font-weight: 600;">${item.total.toLocaleString('ru-RU')} ₽</td>
@@ -166,7 +183,7 @@ export class EmailService {
                 <span style="font-size: 32px;">✓</span>
               </div>
               <h2 style="margin: 0 0 10px 0; color: #111827; font-size: 24px; font-weight: 600;">Заказ успешно оформлен!</h2>
-              <p style="margin: 0; color: #6b7280; font-size: 16px;">Спасибо за ваш заказ, ${data.customerName}!</p>
+              <p style="margin: 0; color: #6b7280; font-size: 16px;">Спасибо за ваш заказ, ${escapeHtml(data.customerName)}!</p>
             </td>
           </tr>
 
@@ -189,13 +206,13 @@ export class EmailService {
                 <tr>
                   <td style="padding: 8px 0;">
                     <strong style="color: #374151;">Телефон:</strong>
-                    <span style="color: #6b7280; margin-left: 10px;">${data.customerPhone}</span>
+                    <span style="color: #6b7280; margin-left: 10px;">${escapeHtml(data.customerPhone)}</span>
                   </td>
                 </tr>
                 <tr>
                   <td style="padding: 8px 0;">
                     <strong style="color: #374151;">Адрес доставки:</strong>
-                    <span style="color: #6b7280; margin-left: 10px;">${data.deliveryAddress}</span>
+                    <span style="color: #6b7280; margin-left: 10px;">${escapeHtml(data.deliveryAddress)}</span>
                   </td>
                 </tr>
               </table>
@@ -327,14 +344,14 @@ export class EmailService {
           <!-- Status Update -->
           <tr>
             <td style="padding: 40px;">
-              <h2 style="margin: 0 0 20px 0; color: #111827; font-size: 24px; font-weight: 600;">Здравствуйте, ${customerName}!</h2>
+              <h2 style="margin: 0 0 20px 0; color: #111827; font-size: 24px; font-weight: 600;">Здравствуйте, ${escapeHtml(customerName)}!</h2>
               <p style="margin: 0 0 30px 0; color: #6b7280; font-size: 16px; line-height: 1.6;">
                 Статус вашего заказа <strong style="color: #111827;">${orderNumber}</strong> изменился.
               </p>
 
               <div style="padding: 30px; background-color: #f9fafb; border-radius: 8px; border-left: 4px solid ${statusColor};">
                 <p style="margin: 0 0 10px 0; color: #6b7280; font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px;">Новый статус</p>
-                <p style="margin: 0 0 15px 0; color: ${statusColor}; font-size: 20px; font-weight: 700;">${statusMessage}</p>
+                <p style="margin: 0 0 15px 0; color: ${statusColor}; font-size: 20px; font-weight: 700;">${escapeHtml(statusMessage)}</p>
                 <p style="margin: 0; color: #6b7280; font-size: 14px; line-height: 1.6;">
                   ${this.getStatusDescription(status)}
                 </p>

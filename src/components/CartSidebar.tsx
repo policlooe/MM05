@@ -70,7 +70,7 @@ export function CartSidebar() {
               ) : (
                 items.map((item) => (
                   <div 
-                    key={item.id} 
+                    key={item.cartItemKey} 
                     className="flex gap-4 p-3 bg-card rounded-xl border border-border"
                     role="article"
                     aria-label={`${item.name}, количество ${item.qty}, цена ${formatPrice(item.finalPrice)}`}
