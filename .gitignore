@@ -63,3 +63,6 @@ backend/dist/src/simple-server.js
 backend/dist/src/simple-server.d.ts
 backend/dist/src/simple-server.js.map
 backend/dist/src/simple-server.d.ts.map
+
+# Локальная база (бинари PostgreSQL + данные), не коммитим
+.localdb/
