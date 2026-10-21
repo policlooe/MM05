@@ -1,8 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { ChevronLeft, Plus, Save, Trash2, X } from "lucide-react";
-import { Footer } from "@/components/Footer";
-import { Navbar } from "@/components/Navbar";
+import { AdminLayout } from "@/components/AdminLayout";
 import api from "@/services/api";
 import { toast } from "sonner";
 
@@ -189,22 +188,17 @@ export default function ProductEdit() {
 
   if (loading && !isNew) {
     return (
-      <div className="min-h-screen bg-background">
-        <Navbar />
-        <main className="container-x py-6 pb-24 md:pb-10 max-w-4xl">
-          <div className="flex items-center justify-center h-64">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-accent" />
-          </div>
-        </main>
-        <Footer />
-      </div>
+      <AdminLayout>
+        <div className="flex items-center justify-center h-64">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-accent" />
+        </div>
+      </AdminLayout>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <Navbar />
-      <main className="container-x py-6 pb-24 md:pb-10 max-w-4xl">
+    <AdminLayout>
+      <div className="max-w-4xl mx-auto">
         <div className="mb-6">
           <Link to="/admin/products" className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-accent mb-4">
             <ChevronLeft className="w-4 h-4" />
@@ -346,8 +340,7 @@ export default function ProductEdit() {
             </button>
           </div>
         </form>
-      </main>
-      <Footer />
-    </div>
+      </div>
+    </AdminLayout>
   );
 }

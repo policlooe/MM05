@@ -1,16 +1,22 @@
 # Локальная база данных MM05
 
 PostgreSQL 18 для разработки без установки в систему и без прав администратора.
-Кластер и бинарники лежат в `.localdb/` (в git не попадают).
+Живёт **вне репозитория** — в `%LOCALAPPDATA%\mm05-localdb`.
 
 | Параметр | Значение |
 |---|---|
 | Хост / порт | `127.0.0.1:5433` |
 | Пользователь | `postgres` (trust, без пароля — только localhost) |
-| База | `mm05_dev` |
-| Данные кластера | `.localdb/data` |
-| Лог | `.localdb/postgres.log` |
-| Бинарники | `.localdb/pgsql` (перенесены из npm-пакета `@embedded-postgres/windows-x64`) |
+| База | `mm05_dev` (ICU-коллация `ru-RU`) |
+| Каталог | `%LOCALAPPDATA%\mm05-localdb` |
+| Данные кластера | `%LOCALAPPDATA%\mm05-localdb\data` |
+| Бинарники | `%LOCALAPPDATA%\mm05-localdb\pgsql` |
+| Лог | `%LOCALAPPDATA%\mm05-localdb\postgres.log` |
+
+> **Почему не в репозитории.** Путь проекта содержит кириллицу и длинное тире
+> (`Новая папка\MM05 — копия`), а `initdb` и `pg_ctl` на Windows не могут
+> работать с таким путём: падают на создании каталога и чтении `share`.
+> Поэтому и бинарники, и кластер лежат в ASCII-пути `%LOCALAPPDATA%`.
 
 ## Быстрый старт
 
@@ -38,10 +44,24 @@ FRONTEND_URL=http://127.0.0.1:5173
 VITE_API_URL=http://127.0.0.1:3000/api
 ```
 
+## Коллация и поиск
+
+База создаётся с ICU-коллацией `ru-RU`:
+
+```sql
+CREATE DATABASE mm05_dev TEMPLATE template0 ENCODING 'UTF8'
+  LOCALE_PROVIDER icu ICU_LOCALE 'ru-RU' LOCALE 'C';
+```
+
+Без ICU (кластер с `LOCALE=C`) `ILIKE` не складывает регистр кириллицы:
+поиск «кровать» не находил «Кровать». На проде Railway коллация обычно
+`en_US.UTF-8`/ICU, поэтому там `mode: 'insensitive'` в Prisma работает как надо.
+
 ## Наполнение данными
 
-В репозитории нет `prisma/seed.ts`: каталог на витрине берётся из
-`src/data/products.ts`. Для локальной админки товары можно залить разово:
+Витрина берёт каталог из `src/data/products.ts`; в БД товары заливаются
+скриптом-сидером (6 категорий, 8 товаров) — он лежит вне репозитория.
+Для ручной проверки достаточно одной категории:
 
 ```sql
 INSERT INTO categories (id, name, slug, is_active, created_at, updated_at)
@@ -50,15 +70,17 @@ VALUES (gen_random_uuid(), 'Кровати', 'krovati', true, now(), now());
 
 ## Если бинарников нет
 
-`.localdb/pgsql` в git не хранится. Восстановить:
+`%LOCALAPPDATA%\mm05-localdb` не восстанавливается из git. Пересобрать:
 
 ```bash
 npm i --no-save embedded-postgres @embedded-postgres/windows-x64
-# затем скопировать node_modules/@embedded-postgres/windows-x64/native → .localdb/pgsql
+# скопировать node_modules/@embedded-postgres/windows-x64/native
+#   → %LOCALAPPDATA%\mm05-localdb\pgsql
+npm run db:local
 ```
 
-Либо поставить обычный PostgreSQL и указать свой `DATABASE_URL` — больше ничего
-в проекте от `.localdb` не зависит.
+Либо поставить обычный PostgreSQL и указать свой `DATABASE_URL` — остальной
+проект от локального кластера не зависит.
 
 ## Перенос на прод
 

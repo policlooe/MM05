@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Package, ShoppingBag, Users, LogOut, Menu, X } from 'lucide-react';
+import { LayoutDashboard, Package, ShoppingBag, Users, LogOut, Menu, X, Store } from 'lucide-react';
 import api from '@/services/api';
 
 interface AdminLayoutProps {
@@ -24,11 +24,23 @@ export function AdminLayout({ children }: AdminLayoutProps) {
   };
 
   const menuItems = [
-    { path: '/admin', icon: LayoutDashboard, label: 'Dashboard', exact: true },
+    { path: '/admin', icon: LayoutDashboard, label: 'Обзор', exact: true },
     { path: '/admin/products', icon: Package, label: 'Товары' },
     { path: '/admin/orders', icon: ShoppingBag, label: 'Заказы' },
     { path: '/admin/users', icon: Users, label: 'Пользователи' },
   ];
+
+  // Escape закрывает мобильное меню — привычный паттерн для drawer
+  useEffect(() => {
+    if (!isMobileMenuOpen) return;
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setIsMobileMenuOpen(false);
+    };
+
+    document.addEventListener('keydown', onKeyDown);
+    return () => document.removeEventListener('keydown', onKeyDown);
+  }, [isMobileMenuOpen]);
 
   const isActive = (path: string, exact?: boolean) =>
     exact ? location.pathname === path : location.pathname.startsWith(path);
@@ -45,9 +57,11 @@ export function AdminLayout({ children }: AdminLayoutProps) {
       )}
 
       <aside
+        id="admin-sidebar"
         className={`fixed inset-y-0 left-0 z-50 w-64 bg-surface border-r border-border transform transition-transform duration-200 ease-in-out lg:translate-x-0 lg:static lg:h-screen flex flex-col ${
           isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
+        aria-label="Навигация администратора"
       >
         <div className="flex items-center justify-between p-6">
           <Link to="/" className="text-2xl font-bold text-foreground">
@@ -73,6 +87,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
                 key={item.path}
                 to={item.path}
                 onClick={() => setIsMobileMenuOpen(false)}
+                aria-current={active ? 'page' : undefined}
                 className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
                   active ? 'bg-accent text-white' : 'text-foreground hover:bg-muted'
                 }`}
@@ -84,7 +99,14 @@ export function AdminLayout({ children }: AdminLayoutProps) {
           })}
         </nav>
 
-        <div className="p-4 border-t border-border">
+        <div className="p-4 border-t border-border space-y-1">
+          <Link
+            to="/"
+            className="flex items-center gap-3 px-4 py-3 w-full rounded-lg text-foreground hover:bg-muted transition-colors"
+          >
+            <Store className="w-5 h-5" />
+            <span className="font-medium">Открыть сайт</span>
+          </Link>
           <button
             type="button"
             onClick={handleLogout}
@@ -103,6 +125,8 @@ export function AdminLayout({ children }: AdminLayoutProps) {
             onClick={() => setIsMobileMenuOpen(true)}
             className="p-2 -ml-2 hover:bg-muted rounded-lg"
             aria-label="Открыть меню"
+            aria-expanded={isMobileMenuOpen}
+            aria-controls="admin-sidebar"
           >
             <Menu className="w-6 h-6" />
           </button>

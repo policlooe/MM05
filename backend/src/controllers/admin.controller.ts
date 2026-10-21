@@ -1,8 +1,8 @@
 import { Request, Response } from 'express';
-import { Prisma } from '@prisma/client';
+import { Prisma, PaymentStatus, OrderStatus } from '@prisma/client';
 import { createProductSchema, updateProductSchema } from '../validators/product.validator.js';
 import { updateOrderStatusSchema } from '../validators/order.validator.js';
-import { paginationSchema, statsQuerySchema } from '../validators/admin.validator.js';
+import { paginationSchema, statsQuerySchema, ordersQuerySchema, productsQuerySchema } from '../validators/admin.validator.js';
 import { z } from 'zod';
 import { prisma } from '../lib/prisma.js';
 import { safeChangeOrderStatus } from '../services/order-status.service.js';
@@ -30,12 +30,26 @@ export class AdminController {
    */
   static async getAllProducts(req: Request, res: Response) {
     try {
-      // Валидация параметров пагинации
-      const { page, limit } = paginationSchema.parse(req.query);
+      // Валидация параметров пагинации + серверный поиск/фильтры
+      const { page, limit, search, categoryId, lowStock } = productsQuerySchema.parse(req.query);
       const skip = (page - 1) * limit;
+
+      const where: Prisma.ProductWhereInput = {
+        ...(categoryId ? { categoryId } : {}),
+        ...(lowStock ? { stockQuantity: { lte: 3 } } : {}),
+        ...(search
+          ? {
+              OR: [
+                { name: { contains: search, mode: 'insensitive' } },
+                { slug: { contains: search, mode: 'insensitive' } },
+              ],
+            }
+          : {}),
+      };
 
       const [products, total] = await Promise.all([
         prisma.product.findMany({
+          where,
           include: {
             category: true,
           },
@@ -45,7 +59,7 @@ export class AdminController {
           skip,
           take: limit,
         }),
-        prisma.product.count(),
+        prisma.product.count({ where }),
       ]);
 
       res.status(200).json({
@@ -253,6 +267,29 @@ export class AdminController {
   static async deleteProduct(req: Request, res: Response) {
     try {
       const id = req.params.id as string;
+      const force = req.query.force === 'true';
+
+      // По умолчанию — мягкое удаление: физическое каскадно стирает отзывы и
+      // корзины всех пользователей и обнуляет товар в истории заказов.
+      if (!force) {
+        const updated = await prisma.product.updateMany({
+          where: { id },
+          data: { isActive: false },
+        });
+
+        if (updated.count === 0) {
+          return res.status(404).json({
+            success: false,
+            error: 'Товар не найден',
+          });
+        }
+
+        return res.status(200).json({
+          success: true,
+          message: 'Товар скрыт из каталога',
+          softDeleted: true,
+        });
+      }
 
       await prisma.product.delete({
         where: { id },
@@ -287,17 +324,60 @@ export class AdminController {
   }
 
   /**
+   * GET /api/admin/categories
+   * Справочник категорий для формы товара и фильтров
+   */
+  static async getCategories(_req: Request, res: Response) {
+    try {
+      const categories = await prisma.category.findMany({
+        orderBy: [{ sortOrder: 'asc' }, { name: 'asc' }],
+        select: {
+          id: true,
+          name: true,
+          slug: true,
+          isActive: true,
+          _count: { select: { products: true } },
+        },
+      });
+
+      res.status(200).json({ success: true, data: categories });
+    } catch (error: unknown) {
+      console.error('Get categories error:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Failed to fetch categories',
+      });
+    }
+  }
+
+  /**
    * GET /api/admin/orders
    * Получение всех заказов с пагинацией
    */
   static async getAllOrders(req: Request, res: Response) {
     try {
-      // Валидация параметров пагинации
-      const { page, limit } = paginationSchema.parse(req.query);
+      // Валидация параметров + серверные фильтры (клиентский фильтр не масштабируется)
+      const { page, limit, search, status, paymentStatus } = ordersQuerySchema.parse(req.query);
       const skip = (page - 1) * limit;
+
+      const where: Prisma.OrderWhereInput = {
+        ...(status ? { status } : {}),
+        ...(paymentStatus ? { paymentStatus } : {}),
+        ...(search
+          ? {
+              OR: [
+                { orderNumber: { contains: search, mode: 'insensitive' } },
+                { customerName: { contains: search, mode: 'insensitive' } },
+                { customerPhone: { contains: search } },
+                { customerEmail: { contains: search, mode: 'insensitive' } },
+              ],
+            }
+          : {}),
+      };
 
       const [orders, total] = await Promise.all([
         prisma.order.findMany({
+          where,
           include: {
             user: {
               select: {
@@ -307,11 +387,8 @@ export class AdminController {
                 phone: true,
               },
             },
-            items: {
-              include: {
-                product: true,
-              },
-            },
+            // В списке нужен только состав, а не все поля товара с JSON-блобами
+            _count: { select: { items: true } },
           },
           orderBy: {
             createdAt: 'desc',
@@ -319,7 +396,7 @@ export class AdminController {
           skip,
           take: limit,
         }),
-        prisma.order.count(),
+        prisma.order.count({ where }),
       ]);
 
       res.status(200).json({
@@ -528,27 +605,89 @@ export class AdminController {
 
       const createdAtWindow = { gte: from, lte: to };
 
+      // «Ждут действия» — заказы, которые менеджер ещё не провёл по воронке.
+      // Раньше считался статус NEW, который нигде не создаётся (заказ стартует
+      // с RESERVED), поэтому виджет всегда показывал 0.
+      const AWAITING_STATUSES: OrderStatus[] = [
+        OrderStatus.RESERVED,
+        OrderStatus.CONFIRMED,
+        OrderStatus.PROCESSING,
+      ];
+
       const [
         totalUsers,
         totalOrders,
         totalProducts,
         pendingOrders,
+        paidOrders,
         revenueAggregate,
+        statusGroups,
+        topItems,
+        recentOrders,
+        lowStock,
       ] = await Promise.all([
         prisma.user.count({ where: { createdAt: createdAtWindow } }),
         prisma.order.count({ where: { createdAt: createdAtWindow } }),
         prisma.product.count(),
+        prisma.order.count({ where: { status: { in: AWAITING_STATUSES } } }),
         prisma.order.count({
-          where: { status: 'NEW', createdAt: createdAtWindow },
+          where: { paymentStatus: PaymentStatus.SUCCEEDED, paidAt: createdAtWindow },
         }),
         prisma.order.aggregate({
           _sum: { total: true },
+          where: { paymentStatus: PaymentStatus.SUCCEEDED, paidAt: createdAtWindow },
+        }),
+        prisma.order.groupBy({
+          by: ['status'],
+          _count: { _all: true },
+          where: { createdAt: createdAtWindow },
+        }),
+        prisma.orderItem.groupBy({
+          by: ['productId'],
+          _sum: { quantity: true, total: true },
           where: {
-            status: { in: ['CONFIRMED', 'PROCESSING', 'SHIPPED', 'DELIVERED', 'COMPLETED'] },
-            paidAt: { not: null },
+            productId: { not: null },
+            order: { paymentStatus: PaymentStatus.SUCCEEDED, paidAt: createdAtWindow },
+          },
+          orderBy: { _sum: { total: 'desc' } },
+          take: 5,
+        }),
+        prisma.order.findMany({
+          where: { createdAt: createdAtWindow },
+          orderBy: { createdAt: 'desc' },
+          take: 5,
+          select: {
+            id: true,
+            orderNumber: true,
+            customerName: true,
+            total: true,
+            status: true,
+            paymentStatus: true,
+            createdAt: true,
           },
         }),
+        prisma.product.findMany({
+          where: { isActive: true, stockQuantity: { lte: 3 } },
+          orderBy: { stockQuantity: 'asc' },
+          take: 5,
+          select: { id: true, name: true, slug: true, stockQuantity: true },
+        }),
       ]);
+
+      const revenue = Number(revenueAggregate._sum.total ?? 0);
+
+      const topProductIds = topItems
+        .map((item) => item.productId)
+        .filter((id): id is string => Boolean(id));
+
+      const topProductRows = topProductIds.length
+        ? await prisma.product.findMany({
+            where: { id: { in: topProductIds } },
+            select: { id: true, name: true, slug: true },
+          })
+        : [];
+
+      const productById = new Map(topProductRows.map((product) => [product.id, product]));
 
       res.status(200).json({
         success: true,
@@ -558,11 +697,34 @@ export class AdminController {
             to: to.toISOString(),
             type: period,
           },
+          // Плоские поля сохранены для совместимости со старым дашбордом
           totalUsers,
           totalOrders,
           totalProducts,
           pendingOrders,
-          totalRevenue: revenueAggregate._sum.total || 0,
+          totalRevenue: revenue,
+          // Новые метрики
+          paidOrders,
+          averageOrderValue: paidOrders > 0 ? Math.round((revenue / paidOrders) * 100) / 100 : 0,
+          statusBreakdown: statusGroups.map((group) => ({
+            status: group.status,
+            count: group._count._all,
+          })),
+          topProducts: topItems.map((item) => {
+            const product = item.productId ? productById.get(item.productId) : undefined;
+            return {
+              id: item.productId,
+              name: product?.name ?? 'Товар удалён',
+              slug: product?.slug ?? null,
+              quantity: item._sum.quantity ?? 0,
+              revenue: Number(item._sum.total ?? 0),
+            };
+          }),
+          recentOrders: recentOrders.map((order) => ({
+            ...order,
+            total: Number(order.total),
+          })),
+          lowStock,
         },
       });
     } catch (error: unknown) {

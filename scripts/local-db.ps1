@@ -20,7 +20,9 @@ param(
 $ErrorActionPreference = 'Stop'
 
 $root = Split-Path -Parent $PSScriptRoot
-$base = Join-Path $root '.localdb'
+# Данные и бинарники — вне репозитория: путь проекта содержит кириллицу и «—»,
+# а initdb/pg_ctl на Windows не умеют работать с таким путём.
+$base = Join-Path $env:LOCALAPPDATA 'mm05-localdb'
 $bin = Join-Path $base 'pgsql\bin'
 $data = Join-Path $base 'data'
 $log = Join-Path $base 'postgres.log'

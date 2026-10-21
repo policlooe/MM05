@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { OrderStatus } from '@prisma/client';
 
 /**
  * Схема валидации для параметра ID (универсальная)
@@ -16,6 +17,26 @@ export const paginationSchema = z.object({
   search: z.string().max(100).optional(),
   sortBy: z.string().max(50).optional(),
   sortOrder: z.enum(['asc', 'desc']).default('desc'),
+});
+
+/**
+ * Список заказов: пагинация + серверные фильтры.
+ * Фильтры на клиенте не масштабируются: при 10k заказов грузить всё нельзя.
+ */
+export const ordersQuerySchema = paginationSchema.extend({
+  status: z.nativeEnum(OrderStatus).optional(),
+  paymentStatus: z.enum(['PENDING', 'PROCESSING', 'SUCCEEDED', 'FAILED', 'REFUNDED']).optional(),
+});
+
+/**
+ * Список товаров: пагинация + поиск по названию/slug, категория, только дефицит.
+ */
+export const productsQuerySchema = paginationSchema.extend({
+  categoryId: z.string().uuid().optional(),
+  lowStock: z
+    .enum(['true', 'false'])
+    .optional()
+    .transform((value) => value === 'true'),
 });
 
 /**

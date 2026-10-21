@@ -9,8 +9,7 @@ import {
   Package,
   AlertCircle
 } from "lucide-react";
-import { Navbar } from "@/components/Navbar";
-import { Footer } from "@/components/Footer";
+import { AdminLayout } from "@/components/AdminLayout";
 import api from "@/services/api";
 import { toast } from "sonner";
 
@@ -64,14 +63,15 @@ export default function ProductsManagement() {
   });
 
   const handleDelete = async (productId: string) => {
-    if (confirm("Вы уверены, что хотите удалить этот товар?")) {
+    // Мягкое удаление: товар скрывается из каталога, но остаётся в истории заказов
+    if (confirm("Скрыть товар из каталога? Он останется в истории заказов и отзывах.")) {
       try {
         await api.delete(`/admin/products/${productId}`);
         setProducts(products.filter(p => p.id !== productId));
-        toast.success("Товар удален");
+        toast.success("Товар скрыт из каталога");
       } catch (error) {
         console.error(error);
-        toast.error("Не удалось удалить товар");
+        toast.error("Не удалось скрыть товар");
       }
     }
   };
@@ -88,22 +88,17 @@ export default function ProductsManagement() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background">
-        <Navbar />
-        <main className="container-x py-6 pb-24 md:pb-10">
-          <div className="flex items-center justify-center h-64">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-accent" />
-          </div>
-        </main>
-        <Footer />
-      </div>
+      <AdminLayout>
+        <div className="flex items-center justify-center h-64">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-accent" />
+        </div>
+      </AdminLayout>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <Navbar />
-      <main className="container-x py-6 pb-24 md:pb-10">
+    <AdminLayout>
+      <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <div>
@@ -263,8 +258,7 @@ export default function ProductsManagement() {
             </p>
           </div>
         </div>
-      </main>
-      <Footer />
-    </div>
+      </div>
+    </AdminLayout>
   );
 }
